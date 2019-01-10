@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coord", "Coord\Coord.csproj", "{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0FAE1BDC-28EF-46A1-AEEC-F2066AF2CCE0}
+	EndGlobalSection
+EndGlobal
