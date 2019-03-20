@@ -9,6 +9,18 @@ namespace Coord
     /// </summary>
     public class CurveVisualObject : VisualObject
     {
+        public override string Type
+        {
+            get
+            {
+                var definitionType = Series?.GetType();
+                if (definitionType == typeof(PointSeries)) return "PointCurve";
+                if (definitionType == typeof(StaticPointSeries)) return "StaticPointCurve";
+                if (definitionType == typeof(FunctionSeries)) return "FunctionCurve";
+                else return "Curve";
+            }
+        }
+
         private Series m_series;
         private bool m_smooth;
         private bool m_closed;
@@ -76,7 +88,7 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Fill, Stroke, Series, Closed, Smooth, SmoothValue);
-        public static Character[] GetCharacters(CoordinatesSystemManager coordinatesSystemManager, Brush fill, Pen stroke, Series series, bool closed, bool smooth, double smoothValue = 0.75) => new[] { new Character(GeometryHelper.GetCurve(series.GetOutPoints(coordinatesSystemManager), closed, smooth, smoothValue), fill, stroke) };
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Fill, Stroke, Series, Closed, Smooth, SmoothValue);
+        public static Character[] GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, Brush fill, Pen stroke, Series series, bool closed, bool smooth, double smoothValue = 0.75) => new[] { new Character(GeometryHelper.GetCurve(series.GetOutPoints(coordinatesSystemManager), closed, smooth, smoothValue), fill, stroke) };
     }
 }

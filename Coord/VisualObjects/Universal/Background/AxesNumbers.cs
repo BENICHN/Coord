@@ -9,6 +9,8 @@ namespace Coord
 {
     public class AxesNumbers : VisualObject
     {
+        public override string Type => "AxesNumbers";
+
         public AxesDirection Direction
         {
             get => m_direction;
@@ -78,14 +80,13 @@ namespace Coord
         }
         private static string FormatAxisNumber(double number) => number.ToString("G4").Replace(new[] { "+0", "+" }, string.Empty);
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()
             {
                 var direction = Direction;
                 var outRange = coordinatesSystemManager.OutputRange;
-                var inRange = coordinatesSystemManager.InputRange;
 
                 var center = coordinatesSystemManager.OrthonormalOrigin;
                 var demiThickness = FontSize + NumbersOffset;

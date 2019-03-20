@@ -65,10 +65,10 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var stroke = InPen ? Stroke?.Edit(pen => pen.Thickness = Stroke?.Thickness * coordinatesSystemManager.WidthRatio ?? 0) : Stroke;
-            characters.SubCollection(Interval).ForEach((i, character) => ApplyOn(character, Fill, stroke, EasedProgress.Get(i, RealLength)));
+            characters.SubCollection(Interval, true).ForEach((i, character) => ApplyOn(character, Fill, stroke, EasedProgress.Get(i, RealLength)));
         }
 
         public static void ApplyOn(Character character, Brush fill, Pen stroke, double progress)

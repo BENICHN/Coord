@@ -36,6 +36,6 @@ namespace Coord
         /// </summary>
         /// <param name="coordinatesSystemManager">Système de coordonnées du <see cref="Plane"/></param>
         /// <returns>Coordonnées à l'écran des <see cref="PointVisualObject"/> de cette <see cref="Series"/></returns>
-        public override Point[] GetOutPoints(CoordinatesSystemManager coordinatesSystemManager) => Points.Select(pointSourceBase => coordinatesSystemManager.ComputeOutCoordinates(pointSourceBase)).ToArray();
+        public override Point[] GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => Points.Select(pointSourceBase => coordinatesSystemManager.ComputeOutCoordinates(pointSourceBase)).ToArray();
     }
 }

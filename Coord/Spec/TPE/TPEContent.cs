@@ -21,7 +21,7 @@ namespace Coord
 
         private void ConfigurePlane()
         {
-            plane.InputRange = new MathRect(-10, -10, 40, 20);
+            plane.InputRange = new MathRect(-67.994455231128015, -14.104361337573064, 292.92869287526509, 219.69651965644886);
             plane.Grid.Primary = true;
             plane.Grid.Secondary = true;
             plane.Axes.Direction = AxesDirection.Both;
@@ -62,11 +62,16 @@ namespace Coord
 
             var watney = new Watney
             {
-                Mass = 150,
-                Pressure = 8.4,
+                Location = (Point)Num.VectorFromPolarCoordinates(200, PI / 4),
+                Speed = Num.VectorFromPolarCoordinates(12, PI / 12),
+                Mass = 100,
+
+                Pressure = 3.3,
                 HoleArea = 100,
+                MassRate = 0.0021,
                 Size = new Size(0.875, 2.0),
                 ArmAngle = PI / 2,
+                ArmResistance = 1.3,
 
                 BodyGraphic = corps,
                 BodyGraphicBounds = Character.FromCanvas(canvas).Geometry().Bounds,
@@ -150,6 +155,9 @@ namespace Coord
                 }
             };
 
+            tftb.LostFocus += (sender, e) => timeFactorSlider.Maximum = tftb.FinalText.ToDouble() ?? 20;
+            dmtb.LostFocus += (sender, e) => watney.MassRate = dmtb.FinalText.ToDouble() ?? 0;
+
             LRB.Checked += (sender, e) => ChangeCurve("L");
             XRB.Checked += (sender, e) => ChangeCurve("X");
             YRB.Checked += (sender, e) => ChangeCurve("Y");
@@ -187,6 +195,7 @@ namespace Coord
 
                     if (timeFactor > 0)
                     {
+                        if (FTB.IsChecked == true) plane.InputRange = new MathRect(138.7 + watney.Location.X - 141.42135623731, 136 + watney.Location.Y - 141.42135623731, 15.840907872701388, 11.880680904526047);
                         if (curves)
                         {
                             var location = (Vector)watney.Location;
@@ -244,6 +253,9 @@ namespace Coord
 
         private void Plane_PreviewMouseDown(object sender, MouseButtonEventArgs e) { if (e.RightButton == MouseButtonState.Pressed) Infos.Visibility = Infos.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible; }
 
-        private void SwitchableTextBox_LostFocus(object sender, RoutedEventArgs e) => timeFactorSlider.Maximum = tftb.FinalText.ToDouble() ?? 20;
+        private void SwitchableTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            
+        }
     }
 }

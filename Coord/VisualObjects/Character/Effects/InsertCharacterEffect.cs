@@ -109,21 +109,21 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (Text == null) return;
 
             bool withTransforms = WithTransforms;
-            var chars = characters.SubCollection(BoundsInterval.IsNullOrEmpty() ? Interval : BoundsInterval).ToArray();
+            var chars = characters.SubCollection(BoundsInterval.IsNullOrEmpty() ? Interval : BoundsInterval, true).ToArray();
 
             var diff = withTransforms ?
-                RectPoint.GetPoint(Text.GetTransformedCharacters(coordinatesSystemManager, true).SubCollection(TextInterval).Geometry().Bounds) - RectPoint.GetPoint(chars.Geometry().Bounds) :
-                RectPoint.GetPoint(Text.GetCharacters(coordinatesSystemManager).SubCollection(TextInterval).Geometry().Bounds) - RectPoint.GetPoint(chars.Geometry().Bounds);
+                RectPoint.GetPoint(Text.GetTransformedCharacters(coordinatesSystemManager, true).SubCollection(TextInterval, true).Geometry().Bounds) - RectPoint.GetPoint(chars.Geometry().Bounds) :
+                RectPoint.GetPoint(Text.GetCharacters(coordinatesSystemManager).SubCollection(TextInterval, true).Geometry().Bounds) - RectPoint.GetPoint(chars.Geometry().Bounds);
 
             if (!TranslateX) diff.X = 0;
             if (!TranslateY) diff.Y = 0;
 
-            characters.SubCollection(Interval).Translate(diff, EasedProgress).Enumerate();
+            characters.SubCollection(Interval, true).Translate(diff, EasedProgress).Enumerate();
         }
 
         /// <summary>

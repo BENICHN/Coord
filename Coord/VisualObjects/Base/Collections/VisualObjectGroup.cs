@@ -34,28 +34,32 @@ namespace Coord
 
     public class VisualObjectGroup : VisualObjectGroupBase
     {
+        public override string Type => "VisualObjectGroup";
+
         public VisualObjectGroup() { }
         public VisualObjectGroup(NotifyObjectCollection<VisualObject> children) : base(children) { }
         public VisualObjectGroup(params VisualObject[] children) : base(children) { }
         public VisualObjectGroup(IEnumerable<VisualObject> children) : base(children) { }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => Children.SelectMany(visualObject => visualObject.GetTransformedCharacters(coordinatesSystemManager, false)).ToArray();
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => Children.SelectMany(visualObject => visualObject.GetTransformedCharacters(coordinatesSystemManager, false)).ToArray();
     }
 
     public class VisualObjectRenderer : VisualObjectGroupBase
     {
+        public override string Type => "VisualObjectRenderer";
+
         public VisualObjectRenderer() { }
         public VisualObjectRenderer(NotifyObjectCollection<VisualObject> children) : base(children) { }
         public VisualObjectRenderer(params VisualObject[] children) : base(children) { }
         public VisualObjectRenderer(IEnumerable<VisualObject> children) : base(children) { }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => throw new System.NotImplementedException();
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => throw new System.NotImplementedException();
 
         /// <summary>
-        /// Appelle successivement la méthode <see cref="VisualObject.Render(DrawingContext, CoordinatesSystemManager)"/> de tous les éléments de <see cref="Children"/>
+        /// Appelle successivement la méthode <see cref="VisualObject.Render(DrawingContext, ReadOnlyCoordinatesSystemManager)"/> de tous les éléments de <see cref="Children"/>
         /// </summary>
         /// <param name="drawingContext">Dessine dans le <see cref="DrawingVisual"/> associé à l'objet</param>
         /// <param name="coordinatesSystemManager">Système de coordonnées du <see cref="Plane"/></param>
-        protected override void RenderCore(DrawingContext drawingContext, CoordinatesSystemManager coordinatesSystemManager) { foreach (var visualObject in Children) visualObject.Render(drawingContext, coordinatesSystemManager); }
+        protected override void RenderCore(DrawingContext drawingContext, ReadOnlyCoordinatesSystemManager coordinatesSystemManager) { foreach (var visualObject in Children) visualObject.Render(drawingContext, coordinatesSystemManager); }
     }
 }

@@ -49,7 +49,7 @@ namespace Coord
         }
 
         public abstract Geometry GetOutGeometry(Point outAnchorPoint, Vector arrow, ArrowEnd arrowEnd);
-        public abstract Geometry GetInGeometry(Point outAnchorPoint, Vector arrow, ArrowEnd arrowEnd, CoordinatesSystemManager coordinatesSystemManager);
+        public abstract Geometry GetInGeometry(Point outAnchorPoint, Vector arrow, ArrowEnd arrowEnd, ReadOnlyCoordinatesSystemManager coordinatesSystemManager);
 
         /// <summary>
         /// Calcule deux vecteurs orthogonaux définissant une flèche
@@ -127,7 +127,7 @@ namespace Coord
             }
         }
 
-        public override Geometry GetInGeometry(Point inAnchorPoint, Vector inArrow, ArrowEnd arrowEnd, CoordinatesSystemManager coordinatesSystemManager)
+        public override Geometry GetInGeometry(Point inAnchorPoint, Vector inArrow, ArrowEnd arrowEnd, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (arrowEnd == ArrowEnd.None) return Geometry.Empty;
 

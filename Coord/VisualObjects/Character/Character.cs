@@ -137,7 +137,7 @@ namespace Coord
         public void ReleaseTransforms()
         {
             Geometry.Transform = null;
-            Transformed = true;
+            Transformed = false;
         }
 
         public override string ToString() => $"{Matrix}, {Geometry}";

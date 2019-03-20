@@ -35,7 +35,7 @@ namespace Coord
             }
         }
 
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(Interval).ForEach((i, character) => ApplyOn(character, FillOpacity, StrokeOpacity, EasedProgress.Get(i, RealLength)));
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(Interval, true).ForEach((i, character) => ApplyOn(character, FillOpacity, StrokeOpacity, EasedProgress.Get(i, RealLength)));
 
         public static void ApplyOn(Character character, double fillOpacity, double strokeOpacity, double progress)
         {

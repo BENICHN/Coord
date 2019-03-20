@@ -9,6 +9,16 @@ namespace Coord
     /// </summary>
     public class SegmentVisualObject : LineVisualObjectBase
     {
+        public override string Type
+        {
+            get
+            {
+                var definitionType = Definition?.GetType();
+                if (definitionType == typeof(PointPointSegmentDefinition)) return "PointPointSegment";
+                else return "Segment";
+            }
+        }
+
         private SegmentDefinition m_definition;
 
         public SegmentVisualObject(SegmentDefinition definition) => Definition = definition;
@@ -35,7 +45,7 @@ namespace Coord
 
         public override string ToString() => Definition.Equation.ToString();
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Stroke, Definition);
-        public static Character[] GetCharacters(CoordinatesSystemManager coordinatesSystemManager, Pen stroke, SegmentDefinition definition) => new[] { Character.Line(coordinatesSystemManager.ComputeOutCoordinates(definition.Start), coordinatesSystemManager.ComputeOutCoordinates(definition.End), null, stroke) };
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Stroke, Definition);
+        public static Character[] GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, Pen stroke, SegmentDefinition definition) => new[] { Character.Line(coordinatesSystemManager.ComputeOutCoordinates(definition.Start), coordinatesSystemManager.ComputeOutCoordinates(definition.End), null, stroke) };
     }
 }

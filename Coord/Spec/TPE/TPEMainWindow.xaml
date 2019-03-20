@@ -313,39 +313,45 @@
         </Canvas>
     </Window.Resources>
     <Grid>
-        <local:Plane x:Name="plane" Width="2160" Height="1080" PreviewMouseDown="Plane_PreviewMouseDown"/>
+        <local:Plane x:Name="plane" Width="1280" Height="960" PreviewMouseDown="Plane_PreviewMouseDown" EnableSelection="True" EnableSelectionRect="True"/>
         <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left" Margin="5">
             <DockPanel>
-                <Label Content="Angle | 0" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Label Style="{x:Null}" Content="Angle | 0" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <Slider Name="angleSlider" Width="300" Margin="5,5,0,0" Value="0.5" Maximum="1" HorizontalAlignment="Left" VerticalAlignment="Center" LargeChange="0.1" SmallChange="0.01"/>
-                <Label Content="𝜋" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Label Style="{x:Null}" Content="𝜋" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </DockPanel>
             <DockPanel>
-                <Label Content="Facteur de temps | 0" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <Label Style="{x:Null}" Content="Facteur de temps | 0" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 <Slider Name="timeFactorSlider" Width="300" Margin="5,5,0,0" Value="1" Maximum="20" HorizontalAlignment="Left" VerticalAlignment="Center" IsSnapToTickEnabled="True"/>
-                <benlib:SwitchableTextBox Name="tftb" LostFocus="SwitchableTextBox_LostFocus" FinalText="20" ContentType="UnsignedInteger" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" Height="30" SBackground="#C000" SForeground="White"/>
+                <benlib:SwitchableTextBox Name="tftb" FinalText="20" ContentType="UnsignedInteger" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" Height="30" SBackground="#C000" SForeground="White"/>
             </DockPanel>
             <DockPanel>
-                <Label Name="crL" Content="Courbes | " Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <RadioButton Name="LRB" Content="L " Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="True"/>
-                <RadioButton Name="XRB" Content="X " Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
-                <RadioButton Name="YRB" Content="Y " Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                <Label Style="{x:Null}" Name="crL" Content="Courbes | " Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <RadioButton Name="LRB" Content="L " Foreground="White" Background="Transparent" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="True"/>
+                <RadioButton Name="XRB" Content="X " Foreground="White" Background="Transparent" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                <RadioButton Name="YRB" Content="Y " Foreground="White" Background="Transparent" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+            </DockPanel>
+            <DockPanel>
+                <CheckBox Name="FTB" Margin="5,0,0,0"  Content=" Focus" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
+                <Label Style="{x:Null}" Content=" | Débit massique" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <benlib:SwitchableTextBox Name="dmtb" FinalText="0,0021" ContentType="UnsignedDouble" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" Height="30" SBackground="#C000" SForeground="White"/>
+                <Label Style="{x:Null}" Content="kg/s" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </DockPanel>
         </StackPanel>
-        <StackPanel Name="Infos" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5, 0, 0, 50" Background="#C000">
-            <Label Content="0" Name="massL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Masse : {0} kg"/>
-            <Label Content="(0;0)" Name="forceL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Force : {0} kg·m/s²"/>
-            <Label Content="(0;0)" Name="momentumL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Quantité de mouvement : {0} kg·m/s"/>
-            <Label Content="(0;0)" Name="locationL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Position : {0} m"/>
-            <Label Content="(0;0)" Name="speedL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Vitesse : {0} m/s"/>
-            <Label Content="(0;0)" Name="accelerationL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Accélération : {0} m/s²"/>
-            <Label/>
-            <Label Content="0" Name="angularMassL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Moment d'inertie : {0} kg·m²"/>
-            <Label Content="0" Name="torqueL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Moment des forces : {0} kg·m²/s²"/>
-            <Label Content="0" Name="angularMomentL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Moment cinétique : {0} kg·m²/s"/>
-            <Label Content="0" Name="angleL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Angle : {0} rad"/>
-            <Label Content="0" Name="angularSpeedL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Vitesse angulaire : {0} rad/s"/>
-            <Label Content="0" Name="angularAccelerationL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Accélération angulaire : {0} rad/s²"/>
+        <StackPanel Name="Infos" Visibility="Collapsed" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="5, 0, 0, 55" Background="#C000">
+            <Label Style="{x:Null}" Content="0" Name="massL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Masse : {0} kg"/>
+            <Label Style="{x:Null}" Content="(0;0)" Name="forceL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Force : {0} kg·m/s²"/>
+            <Label Style="{x:Null}" Content="(0;0)" Name="momentumL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Quantité de mouvement : {0} kg·m/s"/>
+            <Label Style="{x:Null}" Content="(0;0)" Name="locationL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Position : {0} m"/>
+            <Label Style="{x:Null}" Content="(0;0)" Name="speedL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Vitesse : {0} m/s"/>
+            <Label Style="{x:Null}" Content="(0;0)" Name="accelerationL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Accélération : {0} m/s²"/>
+            <Label Style="{x:Null}"/>
+            <Label Style="{x:Null}" Content="0" Name="angularMassL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Moment d'inertie : {0} kg·m²"/>
+            <Label Style="{x:Null}" Content="0" Name="torqueL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Moment des forces : {0} kg·m²/s²"/>
+            <Label Style="{x:Null}" Content="0" Name="angularMomentL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Moment cinétique : {0} kg·m²/s"/>
+            <Label Style="{x:Null}" Content="0" Name="angleL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Angle : {0} rad"/>
+            <Label Style="{x:Null}" Content="0" Name="angularSpeedL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Vitesse angulaire : {0} rad/s"/>
+            <Label Style="{x:Null}" Content="0" Name="angularAccelerationL" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" ContentStringFormat="Accélération angulaire : {0} rad/s²"/>
         </StackPanel>
     </Grid>
 </Window>

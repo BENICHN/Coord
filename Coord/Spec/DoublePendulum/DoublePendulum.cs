@@ -9,6 +9,8 @@ namespace Coord
 {
     public class DoublePendulum : VisualObject
     {
+        public override string Type => "DoublePendulum";
+
         public (double angle1, double angle2, double length1, double length2, double mass1, double mass2) Configuration { get; }
         private (double theta1, double z1, double theta2, double z2) m_state;
         private const double g = 9.81;
@@ -19,7 +21,7 @@ namespace Coord
             m_state = (angle1 + Num.Random(1E-5), 0 + Num.Random(1E-5), angle2 + Num.Random(1E-5), 0 + Num.Random(1E-5));
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()

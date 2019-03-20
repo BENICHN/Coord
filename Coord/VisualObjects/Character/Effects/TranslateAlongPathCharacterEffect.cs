@@ -55,9 +55,9 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
-            var chars = characters.SubCollection(Interval);
+            var chars = characters.SubCollection(Interval, true);
             Geometry.GetPointAtFractionLength(EasedProgress.Value, out var point, out var tangent);
             var translation = Translation(point);
             chars.Translate(translation, 1.0).Enumerate();

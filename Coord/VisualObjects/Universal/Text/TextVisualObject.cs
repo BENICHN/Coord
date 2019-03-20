@@ -12,6 +12,8 @@ namespace Coord
     /// </summary>
     public class TextVisualObject : TextVisualObjectBase
     {
+        public override string Type => "Text";
+
         private readonly TexFormulaParser m_texFormulaParser = new TexFormulaParser();
         private string m_text;
         private double m_scale;

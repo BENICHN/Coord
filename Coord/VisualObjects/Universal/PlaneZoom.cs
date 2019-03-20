@@ -7,6 +7,8 @@ namespace Coord
 {
     public class PlaneZoom : VisualObjectGroupBase
     {
+        public override string Type => "PlaneZoom";
+
         private MathRect m_inputRange;
         private Rect m_outputRange;
         private Geometry m_clip;
@@ -55,7 +57,7 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()
@@ -78,9 +80,9 @@ namespace Coord
             }
         }
 
-        protected override void RenderCore(DrawingContext drawingContext, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void RenderCore(DrawingContext drawingContext, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
-            var characters = GetTransformedCharacters(m_coordinatesSystemManager, false) as Character[];
+            var characters = GetTransformedCharacters(m_coordinatesSystemManager.AsReadOnly(), false) as Character[];
             int lastIndex = characters.Length - 1;
 
             drawingContext.DrawCharacter(characters[0]);

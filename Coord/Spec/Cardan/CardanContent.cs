@@ -110,8 +110,8 @@ namespace Coord
                 .Insert((15, 24), (15, 15 + 1), step3, (12, 12 + 1), 1, true, false, default, syncp4b)
                 .Insert((24, null), (24, 24 + 1), step3, (16, 16 + 1), 1, true, false, default, syncp4b).Hide((IntRange)(0, 0 + 7) + (8, 8 + 7) + (16, 16 + 8));
 
-            var brace1 = InCharacters(step3, (5, 5 + 1)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp4c);
-            var brace2 = InCharacters(step3, (15, 15 + 1)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp4c);
+            var brace1 = InCharacters(step3, (5, 5 + 1)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp4c);
+            var brace2 = InCharacters(step3, (15, 15 + 1)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp4c);
 
             var upv1 = InCharacters(step3, (0, 0 + 5)).Insert(NSet, null, step4, (2, 2 + 5), 0, true, false, default, syncp4a);
             var upv2 = InCharacters(step3, (0, 0 + 5)).Insert(NSet, null, step4, (10, 10 + 5), 0, true, false, default, syncp4a);
@@ -145,10 +145,10 @@ namespace Coord
                 .Insert((13, null), (13, 13 + 1), step4, (15, 15 + 1), 1, true, false, default, syncp5b)
                 .Hide((IntRange)(0, 0 + 2) + (3, 3 + 2) + (6, 6 + 3) + (10, 10 + 3));
 
-            var brace51o = InCharacters(step4, (2, 2 + 1)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp5c);
-            var brace51f = InCharacters(step4, (6, 6 + 1)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp5c);
-            var brace52o = InCharacters(step4, (10, 10 + 1)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp5c);
-            var brace52f = InCharacters(step4, (14, 14 + 1)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp5c);
+            var brace51o = InCharacters(step4, (2, 2 + 1)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp5c);
+            var brace51f = InCharacters(step4, (6, 6 + 1)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp5c);
+            var brace52o = InCharacters(step4, (10, 10 + 1)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp5c);
+            var brace52f = InCharacters(step4, (14, 14 + 1)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp5c);
 
             var u25a = InCharacters(step4, (0, 0 + 1)).Insert(NSet, null, step5, (0, 0 + 1), 0, true, false, default, syncp5a);
             var u25b = InCharacters(step4, (0, 0 + 2)).Insert(NSet, null, step5, (7, 7 + 2), 0, true, false, default, syncp5a);
@@ -267,7 +267,7 @@ namespace Coord
             var step10 = OutTex("u^3+v^3+q=0", textSize, inAnchorPoint, RectPoint.NaN).Align(NSet, equation, 1);
             var s10c = InCharacters(step10, NSet).Insert((5, null), (6, 6 + 1), step9, (15, 15 + 1), 1, true, false, default, syncp10b);
 
-            var uvzerotoempty = InCharacters(step9, (5, 5 + 9)).Scale(NSet, 0, 0, new RectPoint(0, 0.5), 0, syncp10a);
+            var uvzerotoempty = InCharacters(step9, (5, 5 + 9)).Scale(NSet, 0, 0, RectPoint.Left, 0, syncp10a);
 
             group.Children.Add(s10c);
             group.Children.Add(uvzerotoempty);

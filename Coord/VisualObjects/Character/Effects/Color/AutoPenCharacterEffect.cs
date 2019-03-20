@@ -24,12 +24,12 @@ namespace Coord
 
         public override CharacterEffect Clone() => new AutoPenCharacterEffect(Interval, Sample, Progress, WithTransforms);
 
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var sample = Sample?.CloneCurrentValue();
             if (sample != null)
             {
-                foreach (var character in characters.SubCollection(Interval))
+                foreach (var character in characters.SubCollection(Interval, true))
                 {
                     if (character.Stroke == null)
                     {

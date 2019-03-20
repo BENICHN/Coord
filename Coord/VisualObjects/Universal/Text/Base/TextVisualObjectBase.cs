@@ -77,7 +77,7 @@ namespace Coord
             return InCache.CloneCharacters().ToArray();
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var characters = GetCharacters();
             var outAnchorPoint = coordinatesSystemManager.ComputeOutCoordinates(InAnchorPoint);

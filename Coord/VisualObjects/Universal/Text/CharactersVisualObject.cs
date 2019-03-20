@@ -8,6 +8,8 @@ namespace Coord
     /// </summary>
     public class CharactersVisualObject : TextVisualObjectBase
     {
+        public override string Type => "Characters";
+
         private Character[] m_characters;
 
         /// <summary>

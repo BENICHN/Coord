@@ -12,6 +12,8 @@ namespace Coord
 {
     public class ELC : VisualObject
     {
+        public override string Type => "ELC";
+
         private Rect[] m_inRectsCache;
         private Point[][] m_inPointsCache;
 
@@ -133,7 +135,7 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var fill = Fill;
             var stroke = Stroke;
@@ -173,7 +175,7 @@ namespace Coord
         public ELCWriteCharacterEffect(IntInterval interval, Progress progress, params SynchronizedProgress[] synchronizedProgresses) : this(interval, progress, false, synchronizedProgresses) { }
         public ELCWriteCharacterEffect(IntInterval interval, Progress progress, bool withTransforms, params SynchronizedProgress[] synchronizedProgresses) : base(interval, progress, withTransforms, synchronizedProgresses) { }
 
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (characters is ELCCharacters elccharacters)
             {
@@ -232,7 +234,7 @@ namespace Coord
             Opacity = opacity;
         }
 
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (characters is ELCCharacters elccharacters)
             {
@@ -287,7 +289,9 @@ namespace Coord
 
     public class EA : VisualObject
     {
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override string Type => "EA";
+
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()

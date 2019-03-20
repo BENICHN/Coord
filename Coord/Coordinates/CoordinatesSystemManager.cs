@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows;
 
 namespace Coord
 {
@@ -10,16 +12,6 @@ namespace Coord
         private MathRect m_inputRange;
         private Rect m_outputRange;
         private CoordinatesSystem m_coordinatesSystem;
-
-        /// <summary>
-        /// Point de l'écran correspondant à l'origine du plan transformée par le système de coordonnées
-        /// </summary>
-        public Point Origin => ComputeOutCoordinates(new Point(0.0, 0.0));
-
-        /// <summary>
-        /// Point de l'écran correspondant à l'origine du plan non transformée par le système de coordonnées
-        /// </summary>
-        public Point OrthonormalOrigin => ComputeOutOrthonormalCoordinates(new Point(0.0, 0.0));
 
         /// <summary>
         /// Zone du plan
@@ -108,6 +100,56 @@ namespace Coord
             InputRange = inputRange;
             OutputRange = outputRange;
         }
+
+        public ReadOnlyCoordinatesSystemManager AsReadOnly() => new ReadOnlyCoordinatesSystemManager(InputRange, OutputRange, CoordinatesSystem);
+    }
+
+    public struct ReadOnlyCoordinatesSystemManager : IEquatable<ReadOnlyCoordinatesSystemManager>
+    {
+        /// <summary>
+        /// Largeur et hauteur à l'écran maximale d'une celllule de la grille du plan
+        /// </summary>
+        public const double MaxCellSize = 200.0;
+
+        /// <summary>
+        /// Largeur et hauteur à l'écran maximale d'une celllule de la grille du plan
+        /// </summary>
+        public const double MinCellSize = 100.0;
+
+        /// <summary>
+        /// Point de l'écran correspondant à l'origine du plan transformée par le système de coordonnées
+        /// </summary>
+        public Point Origin { get; }
+
+        /// <summary>
+        /// Point de l'écran correspondant à l'origine du plan non transformée par le système de coordonnées
+        /// </summary>
+        public Point OrthonormalOrigin { get; }
+
+        /// <summary>
+        /// Zone du plan
+        /// </summary>
+        public MathRect InputRange { get; }
+
+        /// <summary>
+        /// Zone de l'écran
+        /// </summary>
+        public Rect OutputRange { get; }
+
+        /// <summary>
+        /// Rapport (largeur de la zone de l'écran) / (largeur de la zone du plan)
+        /// </summary>
+        public double WidthRatio { get; }
+
+        /// <summary>
+        /// Rapport (hauteur de la zone de l'écran) / (hauteur de la zone du plan)
+        /// </summary>
+        public double HeightRatio { get; }
+
+        /// <summary>
+        /// Système de coordonnées du plan
+        /// </summary>
+        public CoordinatesSystem CoordinatesSystem { get; }
 
         /// <summary>
         /// Calcule les coordonnées à l'écran d'un point du plan
@@ -209,15 +251,16 @@ namespace Coord
 
         public Rect ComputeInCoordinates(MathRect rect) => new Rect(ComputeInCoordinates(rect.TopLeft), ComputeInCoordinates(rect.BottomRight));
 
-        /// <summary>
-        /// Largeur et hauteur à l'écran maximale d'une celllule de la grille du plan
-        /// </summary>
-        public const double MaxCellSize = 200.0;
-
-        /// <summary>
-        /// Largeur et hauteur à l'écran maximale d'une celllule de la grille du plan
-        /// </summary>
-        public const double MinCellSize = 100.0;
+        public ReadOnlyCoordinatesSystemManager(MathRect inputRange, Rect outputRange, CoordinatesSystem coordinatesSystem) : this()
+        {
+            InputRange = inputRange;
+            OutputRange = outputRange;
+            CoordinatesSystem = coordinatesSystem;
+            WidthRatio = outputRange.Width / inputRange.Width;
+            HeightRatio = outputRange.Height / inputRange.Height;
+            Origin = ComputeOutCoordinates(new Point(0.0, 0.0));
+            OrthonormalOrigin = ComputeOutOrthonormalCoordinates(new Point(0.0, 0.0));
+        }
 
         /// <summary>
         /// Calcule la largeur unitaire de l'axe horizontal dans le plan
@@ -392,5 +435,22 @@ namespace Coord
             decimal end = inTop + step - inTop % step;
             return end;
         }
+
+        public override bool Equals(object obj) => obj is ReadOnlyCoordinatesSystemManager manager && Equals(manager);
+
+        public bool Equals(ReadOnlyCoordinatesSystemManager other) => EqualityComparer<MathRect>.Default.Equals(InputRange, other.InputRange) && EqualityComparer<Rect>.Default.Equals(OutputRange, other.OutputRange) && EqualityComparer<CoordinatesSystem>.Default.Equals(CoordinatesSystem, other.CoordinatesSystem);
+
+        public override int GetHashCode()
+        {
+            var hashCode = -7085462;
+            hashCode = hashCode * -1521134295 + EqualityComparer<MathRect>.Default.GetHashCode(InputRange);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Rect>.Default.GetHashCode(OutputRange);
+            hashCode = hashCode * -1521134295 + EqualityComparer<CoordinatesSystem>.Default.GetHashCode(CoordinatesSystem);
+            return hashCode;
+        }
+
+        public static bool operator ==(ReadOnlyCoordinatesSystemManager left, ReadOnlyCoordinatesSystemManager right) => left.Equals(right);
+
+        public static bool operator !=(ReadOnlyCoordinatesSystemManager left, ReadOnlyCoordinatesSystemManager right) => !(left == right);
     }
 }

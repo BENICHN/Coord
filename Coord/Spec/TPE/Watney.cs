@@ -12,9 +12,13 @@ namespace Coord
 {
     public class Watney : PhysicalObject
     {
+        public override string Type => "Watney";
+
         private double m_armAngle;
+        private double m_armResistance;
         private double m_pressure;
         private double m_holeArea;
+        private double m_massRate;
         private Size m_size;
         private IEnumerable<Character> m_bodyGraphic;
         private Rect m_bodyGraphicBounds;
@@ -32,7 +36,20 @@ namespace Coord
             set
             {
                 m_armAngle = value;
-                SetArm();
+                SetArm(false);
+                NotifyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Quantifie la résistance du bras au changement d'orientation par rapport au repère
+        /// </summary>
+        public double ArmResistance
+        {
+            get => m_armResistance;
+            set
+            {
+                m_armResistance = value;
                 NotifyChanged();
             }
         }
@@ -59,6 +76,19 @@ namespace Coord
             set
             {
                 m_holeArea = value;
+                NotifyChanged();
+            }
+        }
+
+        /// <summary>
+        /// Débit massique de l'air qui s'échappe de la combinaison [kg/s]
+        /// </summary>
+        public double MassRate
+        {
+            get => m_massRate;
+            set
+            {
+                m_massRate = value;
                 NotifyChanged();
             }
         }
@@ -168,7 +198,7 @@ namespace Coord
         /// </summary>
         private Vector m_arm;
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var location = coordinatesSystemManager.ComputeOutCoordinates(Location);
             var speed = coordinatesSystemManager.ComputeOutCoordinates(Speed);
@@ -222,14 +252,15 @@ namespace Coord
                 return new[] { bodyGraphic[0] }.Concat(armGraphic).Concat(bodyGraphic.Skip(1));
             }
 
-            return (Minimal == true ? MinimalCharacters() : Minimal == null ? GraphicCharacters().Concat(MinimalCharacters()) : GraphicCharacters()).Concat(VectorVisualObject.GetCharacters(location, speed, new TriangleArrow(false, false, 15, 5), ArrowEnd.End, FlatBrushes.Nephritis, new Pen(FlatBrushes.Nephritis, 2))).ToArray(); // Vecteur vitesse
+            return (Minimal == true ? MinimalCharacters() : Minimal == null ? GraphicCharacters().Concat(MinimalCharacters()) : GraphicCharacters()).Concat(VectorVisualObject.GetCharacters(location, speed, new TriangleArrow(false, false, 15, 5), ArrowEnd.End, FlatBrushes.Nephritis, new Pen(FlatBrushes.Nephritis, 2)))/*.Concat(VectorVisualObject.GetCharacters(location, coordinatesSystemManager.ComputeOutCoordinates(Acceleration), new TriangleArrow(false, false, 15, 5), ArrowEnd.End, FlatBrushes.PeterRiver, new Pen(FlatBrushes.PeterRiver, 2)))*/.ToArray(); // Vecteur vitesse
         }
 
         public override void Update()
         {
-            double pressure = 6894.76 * Pressure; //Pression (PSI -> Pa)
-            double holeArea = 1E-6 * HoleArea; //Surface du trou (mm² -> m²)
-            double forceLength = pressure * holeArea; //Norme de la force (N)
+            double pressure = 6894.76 * Pressure; //Pression [PSI -> Pa]
+            double holeArea = 1E-6 * HoleArea; //Surface du trou [mm² -> m²]
+            double density = pressure * 32E-3 / (8.314 * 293); //ρ=(PM)/(RT)
+            double forceLength = pressure * holeArea + MassRate.Pow(2) / (holeArea * density); //Norme de la force (F=qm·ve+A·P=qm²/(A·ρ)+A·P) [N]
             var force = m_arm.ReLength(-forceLength); //Vecteur force (mise à l'échelle du vecteur bras)
 
             var dimensions = m_body[0] + m_body.VectorBetween(3, 0) * ArmLocation.YProgress - Location; //Vecteur ((Centre d'inertie) -> (Point d'application de la force))
@@ -239,7 +270,7 @@ namespace Coord
 
             m_body.Translate(Speed / FPS);
             m_body.RotateAt(AngularSpeed / FPS, Location);
-            SetArm();
+            SetArm(true);
 
             NotifyChanged();
         }
@@ -247,7 +278,33 @@ namespace Coord
         /// <summary>
         /// Calcule le vecteur bras à partir de <see cref="m_body"/> et de <see cref="ArmAngle"/>
         /// </summary>
-        private void SetArm() => m_arm = m_body.VectorBetween(1, 0).ReLength(0.4).Rotate(-ArmAngle - PI / 2);
+        private void SetArm(bool resist)
+        {
+            if (resist)
+            {
+                var arm = m_body.VectorBetween(1, 0).ReLength(0.4).Rotate(-ArmAngle - PI / 2);
+                var newAngle = PM(Num.AngleBetweenVectors(new Vector(1, 0), arm));
+                var oldAngle = PM(Num.AngleBetweenVectors(new Vector(1, 0), m_arm));
+                var angle = IA(oldAngle, newAngle, AngularSpeed, m_arm.Length == 0 ? 1 : 1 / ArmResistance);
+                m_armAngle = (m_armAngle + newAngle - angle).Trim(0, PI);
+            }
+
+            m_arm = m_body.VectorBetween(1, 0).ReLength(0.4).Rotate(-ArmAngle - PI / 2);
+
+            double PM(double agl)
+            {
+                double result = agl % (2 * PI);
+                if (result < 0) result += 2 * PI;
+                return result;
+            }
+
+            double IA(double start, double end, double speed, double progress)
+            {
+                if (speed < 0 && start < end) start += 2 * PI;
+                if (speed > 0 && start > end) end += 2 * PI;
+                return Num.Interpolate(start, end, progress);
+            }
+        }
 
         /// <summary>
         /// Calcule le moment d'inertie de Mark

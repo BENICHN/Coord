@@ -10,6 +10,17 @@ namespace Coord
     /// </summary>
     public class PolygonVisualObject : VisualObject
     {
+        public override string Type
+        {
+            get
+            {
+                var definitionType = Definition?.GetType();
+                if (definitionType == typeof(PointsPolygonDefinition)) return "PointsPolygon";
+                if (definitionType == typeof(RegularPolygonDefinition)) return "RegularPolygon";
+                else return "Polygon";
+            }
+        }
+
         private PolygonDefinition m_definition;
 
         public PolygonVisualObject(PolygonDefinition definition) => Definition = definition;
@@ -29,6 +40,6 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => new[] { new Character(GeometryHelper.GetCurve(Definition.InPoints.Select(pointVisualObject => coordinatesSystemManager.ComputeOutCoordinates(pointVisualObject)).ToArray(), true, false), Fill, Stroke) };
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new[] { new Character(GeometryHelper.GetCurve(Definition.InPoints.Select(pointVisualObject => coordinatesSystemManager.ComputeOutCoordinates(pointVisualObject)).ToArray(), true, false), Fill, Stroke) };
     }
 }

@@ -83,7 +83,7 @@ namespace Coord
         /// </summary>
         /// <param name="coordinatesSystemManager">Système de coordonnées du <see cref="Plane"/></param>
         /// <returns>Coordonnées à l'écran des points de <see cref="Function"/> de cette <see cref="Series"/></returns>
-        public override Point[] GetOutPoints(CoordinatesSystemManager coordinatesSystemManager)
+        public override Point[] GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             decimal step = coordinatesSystemManager.GetHorizontalStep() / (Density > 0 ? Density : 100);
 

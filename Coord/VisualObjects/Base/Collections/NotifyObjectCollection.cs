@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BenLib;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -9,7 +10,7 @@ namespace Coord
     /// Représente une collection de <see cref="NotifyObject"/> qui fournit des notifications quand des éléments sont ajoutés, supprimés, changés ou que l'intégralité de la liste est actualisée
     /// </summary>
     /// <typeparam name="T">Type des éléments de la collection</typeparam>
-    public class NotifyObjectCollection<T> : ObservableCollection<T> where T : NotifyObject
+    public class NotifyObjectCollection<T> : ObservableRangeCollection<T> where T : NotifyObject
     {
         /// <summary>
         /// Se produit quand l'événement <see cref="NotifyObject.Changed"/> d'un élément ou l'événement <see cref="ObservableCollection{T}.CollectionChanged"/> est déclenché

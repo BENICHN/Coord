@@ -9,6 +9,17 @@ namespace Coord
     /// </summary>
     public class CircleVisualObject : VisualObject
     {
+        public override string Type
+        {
+            get
+            {
+                var definitionType = Definition?.GetType();
+                if (definitionType == typeof(CenterRadiusCircleDefinition)) return "CenterRadiusCircle";
+                if (definitionType == typeof(CenterPointCircleDefinition)) return "CenterPointCircle";
+                else return "Circle";
+            }
+        }
+
         private CircleDefinition m_definition;
 
         public CircleVisualObject(CircleDefinition definition) => Definition = definition;
@@ -28,8 +39,8 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => GetCharacters(Definition.Center, Definition.Radius, Fill, Stroke, coordinatesSystemManager);
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(Definition.Center, Definition.Radius, Fill, Stroke, coordinatesSystemManager);
 
-        public static Character[] GetCharacters(Point center, double radius, Brush fill, Pen stroke, CoordinatesSystemManager coordinatesSystemManager) => new[] { Character.Ellipse(coordinatesSystemManager.ComputeOutCoordinates(center), radius * coordinatesSystemManager.WidthRatio, radius * coordinatesSystemManager.HeightRatio, fill, stroke) };
+        public static Character[] GetCharacters(Point center, double radius, Brush fill, Pen stroke, ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new[] { Character.Ellipse(coordinatesSystemManager.ComputeOutCoordinates(center), radius * coordinatesSystemManager.WidthRatio, radius * coordinatesSystemManager.HeightRatio, fill, stroke) };
     }
 }

@@ -12,6 +12,8 @@ namespace Coord
 {
     public class Balance : PhysicalObject
     {
+        public override string Type => "Balance";
+
         private Polygon m_body;
 
         private double m_radius;
@@ -49,7 +51,7 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var location = coordinatesSystemManager.ComputeOutCoordinates(Location);
             var length = new Vector(Length * coordinatesSystemManager.WidthRatio, 0);

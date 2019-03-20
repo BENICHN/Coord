@@ -11,6 +11,8 @@ namespace Coord
 {
     public class AsymptoteVisualObject : VisualObject
     {
+        public override string Type => "Asymptote";
+
         private Func<double, double> m_function;
         public Func<double, double> Function
         {
@@ -99,7 +101,7 @@ namespace Coord
             }
         }
 
-        public static Character[] GetCharacters(CoordinatesSystemManager coordinatesSystemManager, Pen stroke, Pen diffStroke, (Brush fill, Pen stroke, double radius) points, Func<double, double> function, double x, double length)
+        public static Character[] GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, Pen stroke, Pen diffStroke, (Brush fill, Pen stroke, double radius) points, Func<double, double> function, double x, double length)
         {
             var point1i = new Point(x, function(x));
             var point1 = coordinatesSystemManager.ComputeOutCoordinates(point1i);
@@ -119,6 +121,6 @@ namespace Coord
             };
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Stroke, DiffStroke, (PointsFill, PointsStroke, PointsRadius), Function, X, Length);
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Stroke, DiffStroke, (PointsFill, PointsStroke, PointsRadius), Function, X, Length);
     }
 }

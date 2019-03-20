@@ -7,6 +7,8 @@ namespace Coord
 {
     public class GridVisualObject : VisualObject
     {
+        public override string Type => "Grid";
+
         private bool m_secondary;
         private bool m_primary;
         private decimal m_horizontalStep;
@@ -80,7 +82,7 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()

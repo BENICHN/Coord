@@ -29,7 +29,7 @@ namespace Coord
 
         public void Translate(Vector vector) => Points = Points.Select(point => point + vector).ToArray();
 
-        public Polygon ComputeOutCoordinates(CoordinatesSystemManager coordinatesSystemManager) => new Polygon(Points.Select(point => coordinatesSystemManager.ComputeOutCoordinates(point)).ToArray());
+        public Polygon ComputeOutCoordinates(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new Polygon(Points.Select(point => coordinatesSystemManager.ComputeOutCoordinates(point)).ToArray());
 
         public PathGeometry ToGeometry() => GeometryHelper.GetCurve(Points, true, false);
 

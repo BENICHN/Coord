@@ -74,10 +74,10 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var progress = EasedProgress.Value;
-            var chars = characters.SubCollection(Interval);
+            var chars = characters.SubCollection(Interval, true);
             var bounds = chars.Geometry().Bounds;
             var size = bounds.Size;
             var newSize = new Size(size.Width + (NewSize.Width - size.Width) * progress, size.Height + (NewSize.Height - size.Height) * progress);

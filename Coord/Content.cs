@@ -34,14 +34,9 @@ namespace Coord
         {
             ConfigurePlane();
 
-            var a = new AsymptoteVisualObject { Function = x => x * x, X = -2, Length = 0.5, DiffStroke = new Pen(FlatBrushes.Alizarin, 2) { DashStyle = new DashStyle(new double[] { 2 }, 0)} }.Style(new Pen(FlatBrushes.SunFlower, 2));
-
-            plane.VisualObjects.Add(Curve(new FunctionSeries(x => x * x, SeriesType.Y), false, false).Style(new Pen(FlatBrushes.PeterRiver, 2)));
-            plane.VisualObjects.Add(a);
-
             async Task Animate()
             {
-                await AnimateDouble(null, x => a.X = x, -2, 2, TimeSpan.FromSeconds(5), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60);
+
             }
 
             this.Animate = Animate;

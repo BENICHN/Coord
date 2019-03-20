@@ -12,6 +12,19 @@ namespace Coord
     /// </summary>
     public class VectorVisualObject : VisualObject
     {
+        public override string Type
+        {
+            get
+            {
+                var definitionType = Definition?.GetType();
+                if (definitionType == typeof(VectorVectorDefinition)) return "VectorVector";
+                if (definitionType == typeof(PointPointVectorDefinition)) return "PointPointVector";
+                if (definitionType == typeof(OperationsVectorDefinition)) return "OperationsVector";
+                if (definitionType == typeof(MultiOperationsVectorDefinition)) return "MultiOperationsVector";
+                else return "Vector";
+            }
+        }
+
         private VectorDefinition m_definition;
         private PointVisualObject m_inAnchorPoint = new Point(0.0, 0.0);
         private Arrow m_arrow = new TriangleArrow(true, false);
@@ -96,9 +109,9 @@ namespace Coord
 
         public override string ToString() => Definition.InVector.ToString();
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => GetCharacters(InAnchorPoint, Definition.InVector, Arrow, ArrowEnd, Fill, Stroke, coordinatesSystemManager);
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(InAnchorPoint, Definition.InVector, Arrow, ArrowEnd, Fill, Stroke, coordinatesSystemManager);
 
-        public static Character[] GetCharacters(Point inAnchorPoint, Vector inVector, Arrow arrow, ArrowEnd arrowEnd, Brush fill, Pen stroke, CoordinatesSystemManager coordinatesSystemManager)
+        public static Character[] GetCharacters(Point inAnchorPoint, Vector inVector, Arrow arrow, ArrowEnd arrowEnd, Brush fill, Pen stroke, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()

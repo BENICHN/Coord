@@ -79,9 +79,9 @@ namespace Coord
 
         public override CharacterEffect Clone() => new AlignCharacterEffect(Interval, Text, Progress, WithTransforms, TranslateX, TranslateY, RectPoint);
 
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
-            var chars = characters.SubCollection(Interval).ToArray();
+            var chars = characters.SubCollection(Interval, true).ToArray();
             var diff = RectPoint.GetPoint(Text.GetTransformedCharacters(coordinatesSystemManager, true).Geometry().Bounds) - RectPoint.GetPoint(chars.Geometry().Bounds);
 
             if (!TranslateX) diff.X = 0;

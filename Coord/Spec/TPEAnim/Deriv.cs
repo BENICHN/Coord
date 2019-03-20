@@ -16,6 +16,8 @@ namespace Coord.Spec.TPEAnim
 {
     public class Deriv : VisualObject
     {
+        public override string Type => "Deriv";
+
         public const double FuncEnd = 6.5235;
         public const double PointsRadius = 6;
         public const double StrokeThickness = 4;
@@ -75,8 +77,6 @@ namespace Coord.Spec.TPEAnim
 
         private readonly TextVisualObject m_accL = OutTex("a(t)", 80, Point(0.25, -1.6)).Color(FlatBrushes.PeterRiver);
         private readonly TextVisualObject m_speedL = OutTex("v(t)", 80, Point(0.3, -0.17)).Color(FlatBrushes.Alizarin);
-        private readonly FunctionSeries m_speedS = new FunctionSeries(SpeedF, DecimalInterval.EmptySet, SeriesType.Y);
-        private readonly AsymptoteVisualObject m_asy = new AsymptoteVisualObject(SpeedF, 0, 1) { Stroke = new Pen(FlatBrushes.SunFlower, 5), PointsRadius = 8, PointsFill = FlatBrushes.SunFlower };
 
         public Deriv()
         {
@@ -85,7 +85,7 @@ namespace Coord.Spec.TPEAnim
             m_accL.Write(NSet, false, 1, new Progress(0, ProgressMode.LaggedStart, 1.5), m_syncpe);
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) =>
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) =>
             CurveVisualObject.GetCharacters(coordinatesSystemManager, null, new Pen(FlatBrushes.Alizarin, StrokeThickness), new FunctionSeries(SpeedF, (0, SpeedEnd), SeriesType.Y), false, false).Concat( //[0;1[
             CurveVisualObject.GetCharacters(coordinatesSystemManager, null, new Pen(FlatBrushes.PeterRiver, StrokeThickness), new FunctionSeries(AccF, (0, AccEnd), SeriesType.Y), false, false)).Concat( //[1;2[
             AsymptoteVisualObject.GetCharacters(coordinatesSystemManager, new Pen(FlatBrushes.SunFlower, StrokeThickness), null, (FlatBrushes.SunFlower, null, PointsRadius), SpeedF, X, Length)).Concat( //[2;7[
@@ -109,7 +109,9 @@ namespace Coord.Spec.TPEAnim
         public async Task Animate()
         {
             await Step1();
+            await Timing.FramesDelay(60);
             await Step2();
+            await Timing.FramesDelay(60);
             await Step3();
         }
     }

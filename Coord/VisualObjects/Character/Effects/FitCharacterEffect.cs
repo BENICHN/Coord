@@ -76,21 +76,21 @@ namespace Coord
             }
         }
 
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (Text == null) return;
 
             bool withTransforms = WithTransforms;
-            var chars = characters.SubCollection(BoundsInterval.IsNullOrEmpty() ? Interval : BoundsInterval).ToArray();
+            var chars = characters.SubCollection(BoundsInterval.IsNullOrEmpty() ? Interval : BoundsInterval, true).ToArray();
 
             var (from, to) = withTransforms ?
-                (chars.Geometry().Bounds.Size, Text.GetTransformedCharacters(coordinatesSystemManager, true).SubCollection(TextInterval).Geometry().Bounds.Size) :
-                (chars.Geometry().Bounds.Size, Text.GetCharacters(coordinatesSystemManager).SubCollection(TextInterval).Geometry().Bounds.Size);
+                (chars.Geometry().Bounds.Size, Text.GetTransformedCharacters(coordinatesSystemManager, true).SubCollection(TextInterval, true).Geometry().Bounds.Size) :
+                (chars.Geometry().Bounds.Size, Text.GetCharacters(coordinatesSystemManager).SubCollection(TextInterval, true).Geometry().Bounds.Size);
 
             double scaleX = ScaleX ? to.Width / from.Width : 0;
             double scaleY = ScaleY ? to.Height / from.Height : 0;
 
-            characters.SubCollection(Interval).Scale(scaleX, scaleY, EasedProgress).Enumerate();
+            characters.SubCollection(Interval, true).Scale(scaleX, scaleY, EasedProgress).Enumerate();
         }
 
         public override CharacterEffect Clone() => new FitCharacterEffect(Interval, BoundsInterval, Text, TextInterval, Progress, WithTransforms, ScaleX, ScaleY);

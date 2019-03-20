@@ -7,6 +7,8 @@ namespace Coord
 {
     public class AxesVisualObject : VisualObject
     {
+        public override string Type => "Axes";
+
         private AxesNumbers m_numbers;
         private AxesDirection m_direction;
 
@@ -38,7 +40,7 @@ namespace Coord
             }
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             return GetCharactersCore().ToArray();
             IEnumerable<Character> GetCharactersCore()
@@ -58,7 +60,7 @@ namespace Coord
             }
         }
 
-        //public override Geometry GetOutGeometry(CoordinatesSystemManager coordinatesSystemManager)
+        //public override Geometry GetOutGeometry(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         //{
         //    var inRange = coordinatesSystemManager.InputRange;
         //    return new GeometryGroup
@@ -71,7 +73,7 @@ namespace Coord
         //    };
         //}
 
-        /*public override Point[] Intersection(VisualObject visualObject, CoordinatesSystemManager coordinatesSystemManager)
+        /*public override Point[] Intersection(VisualObject visualObject, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (visualObject is CurveVisualObject curveVisualObject && curveVisualObject.Function != null)
             {

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Costura.Fody.3.2.0\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.3.2.0\build\Costura.Fody.props')" />
+  <Import Project="..\packages\Costura.Fody.3.3.3\build\Costura.Fody.props" Condition="Exists('..\packages\Costura.Fody.3.3.3\build\Costura.Fody.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -27,7 +27,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -38,7 +38,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
@@ -54,8 +54,11 @@
     <Reference Include="BenLib.WPF">
       <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.WPF.dll</HintPath>
     </Reference>
-    <Reference Include="Costura, Version=3.2.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Costura.Fody.3.2.0\lib\net46\Costura.dll</HintPath>
+    <Reference Include="Costura, Version=3.3.3.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Costura.Fody.3.3.3\lib\net40\Costura.dll</HintPath>
+    </Reference>
+    <Reference Include="MathConverter, Version=1.2.1.5, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathConverter.1.2.1.5\lib\net40-client\MathConverter.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -83,7 +86,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <None Include="Content.cs" />
+    <Compile Include="Coordinates\CoordinatesSystemManager.cs" />
     <Compile Include="Spec\Balance\Balance.cs" />
+    <None Include="Snippets\vobj.snippet" />
     <None Include="Spec\Balance\BalanceContent.cs" />
     <None Include="Spec\Cardan\CardanContent.cs" />
     <None Include="Spec\DoublePendulum\DPContent.cs" />
@@ -92,21 +97,33 @@
     <None Include="Spec\TPE\TPEContent.cs" />
     <None Include="Spec\Base\Content.cs" />
     <None Include="Spec\Base\AnimContent.cs" />
+    <Compile Include="Spec\ConfigEdit\ConfigEditMainWindow.xaml.cs">
+      <DependentUpon>ConfigEditMainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Global.xaml.cs">
+      <DependentUpon>Global.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Spec\ConfigEdit\TexEdit.xaml.cs">
+      <DependentUpon>TexEdit.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Spec\DoublePendulum\DoublePendulum.cs" />
     <Compile Include="Spec\ELC\ELC.cs" />
-    <Compile Include="MainWindow.xaml.cs">
+    <None Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
+    </None>
     <Compile Include="Spec\TPEAnim\Deriv.cs" />
     <Compile Include="Spec\TPEAnim\MAF.cs" />
-    <Compile Include="Spec\TPEAnim\TPEAnimContent.cs" />
+    <None Include="Spec\TPEAnim\TPEAnimContent.cs" />
     <Compile Include="Spec\TPE\PhysicalObject.cs" />
+    <Compile Include="VisualObjects\CharacterSelection.cs" />
+    <Compile Include="VisualObjects\Character\HitTestCharacterResult.cs" />
     <Compile Include="VisualObjects\Character\Effects\FitCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\RotateCharacterEffect.cs" />
     <Compile Include="VisualObjects\Character\Effects\ScaleCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Plane.cs" />
     <Compile Include="Spec\TPE\Polygon.cs" />
     <Compile Include="Spec\TPE\Watney.cs" />
     <Compile Include="VisualObjects\Character\Effects\AlignCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Plane.cs" />
     <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\AsymptoteVisualObject.cs" />
     <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\Series\StaticPointSeries.cs" />
     <Compile Include="VisualObjects\Universal\InCharactersVisualObject.cs" />
@@ -116,11 +133,11 @@
     <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\Series\PointSeries.cs" />
     <Compile Include="VisualObjects\Base\Collections\VisualObjectGroup.cs" />
     <Compile Include="VisualObjects\Base\NotifyObject.cs" />
+    <Compile Include="VisualObjects\Universal\Points\VisualObjectIntersection.cs" />
     <Compile Include="VisualObjects\Universal\Vectors\Arrows.cs" />
     <Compile Include="VisualObjects\Universal\Background\AxesNumbers.cs" />
     <Compile Include="VisualObjects\Universal\Background\AxisVisualObject.cs" />
     <Compile Include="Coordinates\CoordinatesSystems\ComplexCoordinatesSystem.cs" />
-    <Compile Include="Coordinates\CoordinatesSystemManager.cs" />
     <Compile Include="Coordinates\CoordinatesSystems\CoordinatesSystem.cs" />
     <Compile Include="VisualObjects\Universal\GeometricShapes\Circles\Definitions\CenterPointCircleDefinition.cs" />
     <Compile Include="VisualObjects\Universal\GeometricShapes\Circles\Definitions\CenterRadiusCircleDefinition.cs" />
@@ -197,15 +214,26 @@
     </None>
     <None Include="Spec\TPE\TPEMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </None>
     <None Include="Spec\Base\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </None>
-    <Page Include="Spec\TPEAnim\TPEAnimMainWindow.xaml">
+    <Page Include="Spec\ConfigEdit\ConfigEditMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <None Include="Spec\TPEAnim\TPEAnimMainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </None>
+    <Page Include="Global.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Spec\ConfigEdit\TexEdit.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -252,12 +280,12 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Fody.3.3.2\build\Fody.targets" Condition="Exists('..\packages\Fody.3.3.2\build\Fody.targets')" />
+  <Import Project="..\packages\Fody.4.0.2\build\Fody.targets" Condition="Exists('..\packages\Fody.4.0.2\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>Ce projet fait référence à des packages NuGet qui sont manquants sur cet ordinateur. Utilisez l'option de restauration des packages NuGet pour les télécharger. Pour plus d'informations, consultez http://go.microsoft.com/fwlink/?LinkID=322105. Le fichier manquant est : {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Fody.3.3.2\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.3.3.2\build\Fody.targets'))" />
-    <Error Condition="!Exists('..\packages\Costura.Fody.3.2.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.3.2.0\build\Costura.Fody.props'))" />
+    <Error Condition="!Exists('..\packages\Fody.4.0.2\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.4.0.2\build\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Costura.Fody.3.3.3\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.3.3.3\build\Costura.Fody.props'))" />
   </Target>
 </Project>

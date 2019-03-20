@@ -6,6 +6,8 @@ namespace Coord
 {
     public class InCharactersVisualObject : VisualObject
     {
+        public override string Type => "InCharacters";
+
         private VisualObject m_visualObject;
         public VisualObject VisualObject
         {
@@ -35,6 +37,6 @@ namespace Coord
             Interval = interval;
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager) => VisualObject.GetTransformedCharacters(coordinatesSystemManager, false).SubCollection(Interval).ToArray();
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => VisualObject.GetTransformedCharacters(coordinatesSystemManager, false).SubCollection(Interval, true).ToArray();
     }
 }

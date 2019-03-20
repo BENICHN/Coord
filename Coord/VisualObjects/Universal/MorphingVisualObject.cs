@@ -11,6 +11,8 @@ namespace Coord
 {
     public class OutMorphingVisualObject : VisualObject, IProgressive
     {
+        public override string Type => "OutMorphing";
+
         private MorphingCharacter[] m_fromCharacters;
         private IReadOnlyCollection<Character> m_from;
         public IReadOnlyCollection<Character> From
@@ -86,7 +88,7 @@ namespace Coord
             foreach (var synchronizedProgress in synchronizedProgresses) synchronizedProgress.Objects.Add(this);
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             double progress = Progress.Value;
 
@@ -100,7 +102,7 @@ namespace Coord
             }).ToArray();
         }
 
-        public override IReadOnlyCollection<Character> GetTransformedCharacters(CoordinatesSystemManager coordinatesSystemManager, bool applyTransforms)
+        public override IReadOnlyCollection<Character> GetTransformedCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, bool applyTransforms)
         {
             var outAnchorPoint = coordinatesSystemManager.ComputeOutCoordinates(InAnchorPoint);
             var characters = GetCharacters(coordinatesSystemManager);
@@ -113,6 +115,8 @@ namespace Coord
 
     public class InMorphingVisualObject : VisualObject, IProgressive
     {
+        public override string Type => "InMorphing";
+
         private VisualObject m_from;
         public VisualObject From
         {
@@ -167,7 +171,7 @@ namespace Coord
             foreach (var synchronizedProgress in synchronizedProgresses) synchronizedProgress.Objects.Add(this);
         }
 
-        public override IReadOnlyCollection<Character> GetCharacters(CoordinatesSystemManager coordinatesSystemManager)
+        public override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             double progress = Progress.Value;
 

@@ -7,5 +7,5 @@
         xmlns:local="clr-namespace:Coord"
         mc:Ignorable="d"
         Title="Coord" Loaded="Window_Loaded" SizeToContent="WidthAndHeight" WindowState="Maximized" Closing="Window_Closing">
-    <local:Plane x:Name="plane" Width="1920" Height="960"/>
+    <local:Plane x:Name="plane" Width="1920" Height="800"/>
 </Window>

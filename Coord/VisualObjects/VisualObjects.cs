@@ -35,6 +35,8 @@ namespace Coord
             return pointVisualObject;
         }
 
+        public static VisualObjectIntersection Intersection(VisualObject object1, VisualObject object2, double radius = 10) => new VisualObjectIntersection(object1, object2, radius);
+
         #endregion
 
         #region VectorVisualObject
@@ -125,7 +127,7 @@ namespace Coord
         #region CharactersVisualObject
 
         public static InCharactersVisualObject InCharacters(VisualObject visualObject, IntInterval interval) => new InCharactersVisualObject(visualObject, interval);
-        public static CharactersVisualObject Characters(PointVisualObject inAnchorPoint, RectPoint rectPoint, bool inText, IEnumerable<Character> characters, IntInterval interval) => new CharactersVisualObject(inAnchorPoint, rectPoint, inText, characters.SubCollection(interval));
+        public static CharactersVisualObject Characters(PointVisualObject inAnchorPoint, RectPoint rectPoint, bool inText, IEnumerable<Character> characters, IntInterval interval) => new CharactersVisualObject(inAnchorPoint, rectPoint, inText, characters.SubCollection(interval, true));
 
         #endregion
 
@@ -393,8 +395,7 @@ namespace Coord
         public static T Brace<T>(this T visualObject, int openingBraceIndex, int contentLength, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
             int closingBraceIndex = openingBraceIndex + contentLength + 1;
-            var rectPoint = new RectPoint(0, 0.5);
-            return visualObject.Size((openingBraceIndex, openingBraceIndex + 1), default, rectPoint, progress, synchronizedProgresses).Size((closingBraceIndex, closingBraceIndex + 1), default, rectPoint, progress, synchronizedProgresses);
+            return visualObject.Size((openingBraceIndex, openingBraceIndex + 1), default, RectPoint.Left, progress, synchronizedProgresses).Size((closingBraceIndex, closingBraceIndex + 1), default, RectPoint.Left, progress, synchronizedProgresses);
         }
 
         public static T Stroke<T>(this T visualObject, IntInterval interval, bool reverse, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
@@ -449,8 +450,8 @@ namespace Coord
             if (destroy) characterEffects.ForEach(effect => effect.Destroy());
             return visualObject;
         }
-        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, params CharacterEffect[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, null, characterEffects);
-        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, params CharacterEffect[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, from, to, null, characterEffects, default, false, false, FPS);
+        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, params CharacterEffect[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, easingFunction, characterEffects);
+        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, params CharacterEffect[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, from, to, easingFunction, characterEffects, default, false, false, FPS);
 
         public static async Task ReColor(this VisualObject visualObject, IntInterval interval, Brush fill, Pen stroke, bool inPen, double secondsDelay = 0.5)
         {
@@ -510,7 +511,6 @@ namespace Coord
 
         public static async Task PowerFrom(this TextVisualObjectBase textVisualObject, params TextVisualObjectBase[] textVisualObjects)
         {
-            int length = textVisualObjects.Length;
             int newCount = textVisualObject.CharactersCount;
 
             var op0 = new OpacityCharacterEffect(NSet, 0, 0, 1);

@@ -80,7 +80,7 @@ namespace Coord
         /// Transforme éventuellement une collection de <see cref="Character"/> puis applique l'effet sur celle-ci
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        public virtual void Apply(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager)
+        public virtual void Apply(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             int realLength = RealLength;
             RealLength = (Interval * (0, characters.Count)).Length;
@@ -107,7 +107,7 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected abstract void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager);
+        protected abstract void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager);
 
         /// <summary>
         /// Crée un une copie des valeurs de l'instance actuelle de <see cref="CharacterEffect"/>

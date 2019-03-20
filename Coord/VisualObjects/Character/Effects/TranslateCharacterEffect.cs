@@ -45,7 +45,7 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(Interval).Translate(In ? coordinatesSystemManager.ComputeOutCoordinates(Vector) : Vector, EasedProgress).Enumerate();
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(Interval, true).Translate(In ? coordinatesSystemManager.ComputeOutCoordinates(Vector) : Vector, EasedProgress).Enumerate();
 
         /// <summary>
         /// Crée un une copie des valeurs de l'instance actuelle de <see cref="TranslateCharacterEffect"/>

@@ -71,6 +71,8 @@ namespace Coord
 
         public bool WidthContainsRange(double rangeBeginning, double rangeEnd, bool allRange) => allRange ? Left <= rangeBeginning && rangeEnd <= Right : Right > rangeBeginning && Left < rangeEnd;
         public bool HeightContainsRange(double rangeBeginning, double rangeEnd, bool allRange) => allRange ? Bottom <= rangeBeginning && rangeEnd <= Top : Bottom > rangeBeginning && Top < rangeEnd;
+
+        public override string ToString() => $"{X};{Y};{Width};{Height}";
     }
 
     public static partial class Extensions

@@ -28,7 +28,7 @@ namespace Coord
         /// Applique l'effet à une collection de <see cref="Character"/>
         /// </summary>
         /// <param name="characters">Collection de <see cref="Character"/> sur qui appliquer l'effet</param>
-        protected override void ApplyCore(IReadOnlyCollection<Character> characters, CoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(Interval).ForEach((i, character) => ApplyOn(character, Reverse, EasedProgress.Get(i, RealLength)));
+        protected override void ApplyCore(IReadOnlyCollection<Character> characters, ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(Interval, true).ForEach((i, character) => ApplyOn(character, Reverse, EasedProgress.Get(i, RealLength)));
 
         public static void ApplyOn(Character character, bool reverse, double progress)
         {

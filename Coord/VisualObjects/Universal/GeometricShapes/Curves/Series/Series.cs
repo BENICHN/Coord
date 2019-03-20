@@ -12,6 +12,6 @@ namespace Coord
         /// </summary>
         /// <param name="coordinatesSystemManager">Système de coordonnées du <see cref="Plane"/></param>
         /// <returns>Coordonnées à l'écran des points de cette <see cref="Series"/></returns>
-        public abstract Point[] GetOutPoints(CoordinatesSystemManager coordinatesSystemManager);
+        public abstract Point[] GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager);
     }
 }
