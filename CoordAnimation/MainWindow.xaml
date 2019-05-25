@@ -1,0 +1,17 @@
+﻿<Window x:Class="CoordAnimation.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CoordAnimation"
+        mc:Ignorable="d"
+        Title="CoordAnimation" WindowState="Maximized">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Name="scenes">
+            <local:Scene Height="750"/>
+            <!--<local:Scene Height="430"/>-->
+            <local:IntervalEditor IntervalType="Int" FontSize="16" Height="50"/>
+            <local:RectPointEditor Foreground="{StaticResource VSBorderBrush}" FontSize="16" Height="100" Width="100" PointsRadius="7"/>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

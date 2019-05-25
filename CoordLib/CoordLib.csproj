@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E2CA3FAC-92D4-4FEA-A1AF-A2F04FCBDDBA}</ProjectGuid>
+    <OutputType>library</OutputType>
+    <RootNamespace>CoordLib</RootNamespace>
+    <AssemblyName>CoordLib</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BenLib">
+      <HintPath>..\..\BenLib\BenLib\bin\Debug\BenLib.dll</HintPath>
+    </Reference>
+    <Reference Include="BenLib.Standard">
+      <HintPath>..\..\BenLib\BenLib.Standard\bin\Debug\netstandard2.0\BenLib.Standard.dll</HintPath>
+    </Reference>
+    <Reference Include="BenLib.WPF">
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Debug\BenLib.WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="MathConverter, Version=1.2.1.5, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathConverter.1.2.1.5\lib\net40-client\MathConverter.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WpfMath, Version=0.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\WpfMath.0.6.0\lib\net40\WpfMath.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Coordinates\CoordinatesSystemManager.cs" />
+    <Compile Include="Coordinates\CoordinatesSystems\ComplexCoordinatesSystem.cs" />
+    <Compile Include="Coordinates\CoordinatesSystems\CoordinatesSystem.cs" />
+    <Compile Include="Coordinates\MathRect.cs" />
+    <Compile Include="Coordinates\RectPoint.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="VisualObjects\Base\Collections\NotifyObjectCollection.cs" />
+    <Compile Include="VisualObjects\Base\Collections\VisualObjectGroup.cs" />
+    <Compile Include="VisualObjects\Base\NotifyObject.cs" />
+    <Compile Include="VisualObjects\Base\VisualObject.cs" />
+    <Compile Include="VisualObjects\CharacterSelection.cs" />
+    <Compile Include="VisualObjects\Character\Character.cs" />
+    <Compile Include="VisualObjects\Character\Effects\AlignCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Base\CharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Base\Progress.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Base\ProgressiveCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Base\SynchronizedProgress.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Color\AutoPenCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Color\ColorCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Color\OpacityCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Color\StrokeCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Color\StrokeThicknessCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\Color\WriteCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\FitCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\InsertCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\MaskCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\RotateCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\ScaleCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\SizeCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\TranslateAlongPathCharacterEffect.cs" />
+    <Compile Include="VisualObjects\Character\Effects\TranslateCharacterEffect.cs" />
+    <Compile Include="VisualObjects\DrawingContextExtensions.cs" />
+    <Compile Include="VisualObjects\Plane.cs" />
+    <Compile Include="VisualObjects\PlanePen.cs" />
+    <Compile Include="VisualObjects\Universal\Background\AxesNumbers.cs" />
+    <Compile Include="VisualObjects\Universal\Background\AxisVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\Background\CadreVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\Background\GridVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Circles\CircleVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Circles\Definitions\CenterPointCircleDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Circles\Definitions\CenterRadiusCircleDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Circles\Definitions\CircleDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\AsymptoteVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\CurveVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\Series\FunctionSeries.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\Series\PointSeries.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\Series\Series.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Curves\Series\StaticPointSeries.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\Constructions\ParallelLineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\Constructions\PerpendicularBisectorLineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\Constructions\PerpendicularLineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\EquationLineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\LineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\PointPointLineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\Definitions\PointVectorLineDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Lines\LineVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\LineVisualObjectBase.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Segments\Definitions\PointPointSegmentDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Segments\Definitions\SegmentDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\LineBase\Segments\SegmentVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Polygons\Definitions\PointsPolygonDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Polygons\Definitions\PolygonDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Polygons\Definitions\RegularPolygonDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\GeometricShapes\Polygons\PolygonVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\InCharactersVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\MorphingVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\PlaneZoom.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\LineIntersectionPointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\MiddlePointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\MultiOperationsPointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\OperationsPointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\PointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\PointPointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\Definitions\TranslationPointDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Points\PointVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\Points\VisualObjectIntersection.cs" />
+    <Compile Include="VisualObjects\Universal\Text\Base\TextVisualObjectBase.cs" />
+    <Compile Include="VisualObjects\Universal\Text\CharactersVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\Text\TextVisualObject.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\Arrows.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\Definitions\MultiOperationsVectorDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\Definitions\OperationsVectorDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\Definitions\PointPointVectorDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\Definitions\VectorDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\Definitions\VectorVectorDefinition.cs" />
+    <Compile Include="VisualObjects\Universal\Vectors\VectorVisualObject.cs" />
+    <Compile Include="VisualObjects\VisualObjects.cs" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="Snippets\obsregm.snippet" />
+    <None Include="Snippets\pdpnc.snippet" />
+    <None Include="Snippets\pdpncv.snippet" />
+    <None Include="Snippets\pdpncr.snippet" />
+    <None Include="Snippets\propchimpl.snippet" />
+    <None Include="Snippets\pdpn.snippet" />
+    <None Include="Snippets\prrn.snippet" />
+    <None Include="Snippets\propch.snippet" />
+    <None Include="Snippets\obsregf.snippet" />
+    <None Include="Snippets\_prn.snippet" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="VisualObjects\Universal\GeometricShapes\Text\Character\Effects\Base\" />
+    <Folder Include="VisualObjects\Universal\Points\Base\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,39 @@
+﻿<UserControl x:Class="CoordAnimation.RectPointEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CoordAnimation"
+             xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="100">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="25"/>
+        </Grid.ColumnDefinitions>
+
+        <benlib:SwitchableTextBox Name="xprogressSB" ContentType="UnsignedDouble" Text="0" Height="25" HorizontalContentAlignment="Center" Desactivated="XprogressSB_Desactivated"/>
+        <benlib:SwitchableTextBox Name="yprogressSB" ContentType="UnsignedDouble" Text="0" Height="25" HorizontalContentAlignment="Center" Desactivated="YprogressSB_Desactivated" Grid.Row="1" Grid.Column="1"/>
+
+        <Ellipse Name="currentPoint" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{Binding Foreground}"/>
+
+        <Border Name="border" Grid.Row="1" Background="Transparent" BorderBrush="{Binding Foreground}" BorderThickness="1" Margin="3" MouseDown="Border_MouseDown" MouseMove="Border_MouseMove" MouseUp="Border_MouseUp"/>
+        <Border Grid.Row="1" Background="{Binding Foreground}" Opacity="0.5" HorizontalAlignment="Center" Width="1" Margin="{Binding Margin, ElementName=border}"/>
+        <Border Grid.Row="1" Background="{Binding Foreground}" Opacity="0.5" VerticalAlignment="Center" Height="1" Margin="{Binding Margin, ElementName=border}"/>
+        
+        <Ellipse Name="topLeftB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="topB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="topRightB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="rightB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="bottomRightB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="bottomB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="bottomLeftB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="leftB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center"  Stroke="{Binding Foreground}"/>
+        <Ellipse Name="centerB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Stroke="{Binding Foreground}"/>
+    </Grid>
+</UserControl>

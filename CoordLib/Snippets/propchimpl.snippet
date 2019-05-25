@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>PropertyChangedImplementation</Title>
+			<Shortcut>propchimpl</Shortcut>
+			<Description></Description>
+			<Author></Author>
+			<SnippetTypes>
+				<SnippetType>Expansion</SnippetType>
+			</SnippetTypes>
+		</Header>
+		<Snippet>
+			<Declarations>
+				<Literal>
+					<ID>event</ID>
+					<ToolTip>Événement</ToolTip>
+					<Default>PropertyChanged</Default>
+				</Literal>
+			</Declarations>
+			<Code Language="csharp">
+        <![CDATA[public event PropertyChangedEventHandler $event$;
+        protected void NotifyPropertyChanged(string propertyName) => $event$?.Invoke(this, new PropertyChangedEventArgs(propertyName));]]>
+			</Code>
+		</Snippet>
+	</CodeSnippet>
+</CodeSnippets>

@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Coord", "Coord\Coord.csproj", "{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoordSpec", "CoordSpec\CoordSpec.csproj", "{089A56CD-997A-451E-A67A-4005FEBCAEFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoordLib", "CoordLib\CoordLib.csproj", "{E2CA3FAC-92D4-4FEA-A1AF-A2F04FCBDDBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoordAnimation", "CoordAnimation\CoordAnimation.csproj", "{4571EF64-E456-49A9-82D5-F821FC225D25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DE7290FA-7CF8-4EC3-8584-E06A00BEB07B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{089A56CD-997A-451E-A67A-4005FEBCAEFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{089A56CD-997A-451E-A67A-4005FEBCAEFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{089A56CD-997A-451E-A67A-4005FEBCAEFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{089A56CD-997A-451E-A67A-4005FEBCAEFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2CA3FAC-92D4-4FEA-A1AF-A2F04FCBDDBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2CA3FAC-92D4-4FEA-A1AF-A2F04FCBDDBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2CA3FAC-92D4-4FEA-A1AF-A2F04FCBDDBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2CA3FAC-92D4-4FEA-A1AF-A2F04FCBDDBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4571EF64-E456-49A9-82D5-F821FC225D25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4571EF64-E456-49A9-82D5-F821FC225D25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4571EF64-E456-49A9-82D5-F821FC225D25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4571EF64-E456-49A9-82D5-F821FC225D25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
