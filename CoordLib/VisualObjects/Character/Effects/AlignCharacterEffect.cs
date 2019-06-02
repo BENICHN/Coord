@@ -5,8 +5,21 @@ using System.Windows;
 
 namespace Coord
 {
-    public class AlignCharacterEffect : CharacterEffect
+    public class AlignCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("VisualObject", VisualObjectProperty);
+                yield return ("RectPoint", RectPointProperty);
+                yield return ("TranslateX", TranslateXProperty);
+                yield return ("TranslateY", TranslateYProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         /// <summary>
         /// <see cref="VisualObject"/> dans lequel insérer les <see cref="Character"/> de la collection
         /// </summary>

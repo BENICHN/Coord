@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
@@ -9,7 +10,7 @@ namespace Coord
     /// <summary>
     /// Définit un <see cref="TextVisualObjectBase"/> à partir d'une chaîne de caractères au format LaTex ou non
     /// </summary>
-    public class TextVisualObject : TextVisualObjectBase
+    public class TextVisualObject : TextVisualObjectBase, ICoordEditable
     {
         public override string Type => (In, LaTex) switch
         {
@@ -18,6 +19,20 @@ namespace Coord
             (false, true) => "OutTex",
             (false, false) => "OutText"
         };
+
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Text", TextProperty);
+                yield return ("Scale", ScaleProperty);
+                yield return ("LaTex", LaTexProperty);
+                yield return ("Typeface", TypefaceProperty);
+                yield return ("InAnchorPoint", InAnchorPointProperty);
+                yield return ("In", InProperty);
+                yield return ("RectPoint", RectPointProperty);
+            }
+        }
 
         private readonly TexFormulaParser m_texFormulaParser = new TexFormulaParser();
 

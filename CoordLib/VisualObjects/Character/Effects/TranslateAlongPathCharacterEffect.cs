@@ -18,7 +18,7 @@ namespace Coord
         public static readonly DependencyProperty PathGeometryProperty = CreateProperty<PathGeometry>(true, true, "PathGeometry", typeof(TranslateAlongPathCharacterEffect));
 
         /// <summary>
-        /// Méthode permettant d'obtenir le vecteur de translation à partir d'un point de <see cref="System.Windows.Media.Geometry"/>
+        /// Méthode permettant d'obtenir le vecteur de translation à partir d'un point de <see cref="Geometry"/>
         /// </summary>
         public Func<Point, Vector> Translation { get => (Func<Point, Vector>)GetValue(TranslationProperty); set => SetValue(TranslationProperty, value); }
         public static readonly DependencyProperty TranslationProperty = CreateProperty<Func<Point, Vector>>(true, true, "Translation", typeof(TranslateAlongPathCharacterEffect));

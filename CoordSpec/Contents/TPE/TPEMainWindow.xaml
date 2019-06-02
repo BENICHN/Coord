@@ -335,7 +335,7 @@
             <DockPanel>
                 <CheckBox Name="FTB" Margin="5,0,0,0"  Content=" Focus" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                 <Label Style="{x:Null}" Content=" | Débit massique" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                <benlib:SwitchableTextBox Name="dmtb" Text="0,0021" ContentType="UnsignedDouble" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" Height="30" SBackground="#C000" SForeground="White"/>
+                <benlib:SwitchableTextBox Name="dmtb" Text="0,0021" ContentType="UnsignedDecimal" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center" Height="30" SBackground="#C000" SForeground="White"/>
                 <Label Style="{x:Null}" Content="kg/s" Foreground="White" FontFamily="Cambria Math" FontSize="24" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </DockPanel>
         </StackPanel>

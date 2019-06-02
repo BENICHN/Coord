@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using BenLib.Standard;
+using Coord;
+using System.Windows;
 
 namespace CoordAnimation
 {

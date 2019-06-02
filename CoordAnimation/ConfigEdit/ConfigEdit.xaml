@@ -7,7 +7,7 @@
              mc:Ignorable="d"
              Loaded="UserControl_Loaded">
     <DockPanel>
-        <Border Background="#2C3E50" Panel.ZIndex="1" DockPanel.Dock="Top">
+        <Border Background="{StaticResource VSBackground}" Panel.ZIndex="1" DockPanel.Dock="Top">
             <Grid>
                 <DockPanel HorizontalAlignment="Left">
                     <Button Name="Point" Content="Point" Width="50" Height="50" Click="Button_Click"/>

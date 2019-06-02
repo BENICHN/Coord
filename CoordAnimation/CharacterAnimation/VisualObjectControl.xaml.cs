@@ -22,11 +22,7 @@ namespace CoordAnimation
         }
         public static readonly DependencyProperty ObjectTypeProperty = DependencyProperty.Register("ObjectType", typeof(string), typeof(VisualObjectControl));
 
-        public VisualObjectControl()
-        {
-            InitializeComponent();
-            dk.DataContext = this;
-        }
+        public VisualObjectControl() => InitializeComponent();
     }
 
     public class VisualObjectIcon : ContentControl

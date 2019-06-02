@@ -209,15 +209,18 @@ namespace Coord
         public VisualObjectCollection(params VisualObject[] collection) : base(collection) { }
 
         public event PropertyChangedExtendedEventHandler<Interval<int>> SelectionChanged;
+        internal Func<VisualObject, Interval<int>, Interval<int>> CoerceSelection { get; set; }
 
         protected override void Register(VisualObject item)
         {
             if (item != null)
             {
                 base.Register(item);
+                item.CoerceSelection += Item_CoerceSelection;
                 item.SelectionChanged += Item_SelectionChanged;
             }
         }
+
         protected override void UnRegister(VisualObject item)
         {
             if (item != null)
@@ -227,6 +230,7 @@ namespace Coord
             }
         }
 
+        private Interval<int> Item_CoerceSelection(VisualObject sender, Interval<int> value) => CoerceSelection == null ? value : CoerceSelection(sender, value);
         private void Item_SelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e) => SelectionChanged?.Invoke(sender, e);
     }
 }

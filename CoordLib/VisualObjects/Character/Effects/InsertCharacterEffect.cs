@@ -9,8 +9,22 @@ namespace Coord
     /// <para>Translate progressivement une sous-collection de <see cref="Character"/> à l'index spécifié des <see cref="Character"/> d'un <see cref="VisualObject"/></para>
     /// <para>Idéalement, la sous-collection de <see cref="Character"/> à translater, décrite par les propriétés <see cref="CharacterEffect.Index"/> et <see cref="CharacterEffect.Length"/> de ce <see cref="InsertCharacterEffect"/> doit être équivalente à celle décrite par les propriétés <see cref="TextIndex"/> et <see cref="TextLength"/></para>
     /// </summary>
-    public class InsertCharacterEffect : CharacterEffect
+    public class InsertCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("BoundsInterval", BoundsIntervalProperty);
+                yield return ("VisualObject", VisualObjectProperty);
+                yield return ("RectPoint", RectPointProperty);
+                yield return ("TranslateX", TranslateXProperty);
+                yield return ("TranslateY", TranslateYProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public Interval<int> BoundsInterval { get => (Interval<int>)GetValue(BoundsIntervalProperty); set => SetValue(BoundsIntervalProperty, value); }
         public static readonly DependencyProperty BoundsIntervalProperty = CreateProperty<Interval<int>>(true, true, "BoundsInterval", typeof(InsertCharacterEffect));
 

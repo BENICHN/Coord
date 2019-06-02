@@ -9,8 +9,18 @@ namespace Coord
     /// <summary>
     /// Dessine progressivement le contour des <see cref="Character"/> d'une sous-collection
     /// </summary>
-    public class StrokeCharacterEffect : CharacterEffect
+    public class StrokeCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Reverse", ReverseProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public bool Reverse { get => (bool)GetValue(ReverseProperty); set => SetValue(ReverseProperty, value); }
         public static readonly DependencyProperty ReverseProperty = CreateProperty<bool>(true, true, "Reverse", typeof(StrokeCharacterEffect));
 

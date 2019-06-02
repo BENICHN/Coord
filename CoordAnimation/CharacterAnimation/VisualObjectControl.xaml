@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:CoordAnimation"
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
              mc:Ignorable="d">
-    <DockPanel Name="dk">
+    <DockPanel DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}, AncestorLevel=1}}">
         <local:VisualObjectIcon Type="{Binding ObjectType}" VerticalAlignment="Center"/>
         <benlib:SwitchableTextBox Margin="5,0,0,0" Text="{Binding ObjectName, Mode=TwoWay}" VerticalAlignment="Center" Resistant="True"/>
     </DockPanel>

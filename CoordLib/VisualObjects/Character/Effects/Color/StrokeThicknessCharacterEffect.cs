@@ -4,8 +4,18 @@ using System.Windows;
 
 namespace Coord
 {
-    public class StrokeThicknessCharacterEffect : CharacterEffect
+    public class StrokeThicknessCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("StrokeThickness", StrokeThicknessProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public double StrokeThickness { get => (double)GetValue(StrokeThicknessProperty); set => SetValue(StrokeThicknessProperty, value); }
         public static readonly DependencyProperty StrokeThicknessProperty = CreateProperty<double>(true, true, "StrokeThickness", typeof(StrokeThicknessCharacterEffect));
 

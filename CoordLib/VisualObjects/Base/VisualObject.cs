@@ -1,5 +1,6 @@
 ﻿using BenLib.Standard;
 using BenLib.WPF;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -14,10 +15,12 @@ namespace Coord
         public event PropertyChangedExtendedEventHandler<(Character[] Characters, ReadOnlyCoordinatesSystemManager ReadOnlyCoordinatesSystemManager)> CacheChanged;
         public event PropertyChangedExtendedEventHandler<Interval<int>> SelectionChanged;
 
+        internal Func<VisualObject, Interval<int>, Interval<int>> CoerceSelection { get; set; }
+
         public abstract string Type { get; }
         public bool IsChanged { get; private set; }
 
-        public static PlanePen SelectionStroke = new PlanePen(FlatBrushes.Asbestos, 3);
+        public static PlanePen SelectionStroke = new PlanePen(FlatBrushes.Asbestos, 2);
 
         public bool RenderAtChange { get => (bool)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
         public static readonly DependencyProperty RenderAtChangeProperty = CreateProperty(false, false, "RenderAtChange", typeof(VisualObject), true);
@@ -60,7 +63,7 @@ namespace Coord
 	                if (!owner.Cache.Characters.IsNullOrEmpty()) { foreach (var character in owner.Cache.Characters.SubCollection(diff, true)) character.NotifyIsSelectedChanged(); }
                 }
             }
-        });
+        }, (d, v) => d is VisualObject visualObject ? visualObject.CoerceSelection == null ? v : visualObject.CoerceSelection(visualObject, v as Interval<int>) : v);
 
         public VisualObject() => SetValue(EffectsProperty, new CharacterEffectDictionary());
 

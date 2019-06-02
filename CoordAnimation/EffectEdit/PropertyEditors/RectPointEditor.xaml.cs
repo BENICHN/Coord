@@ -1,54 +1,47 @@
-﻿using BenLib.Standard;
-using BenLib.Framework;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using Coord;
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 
 namespace CoordAnimation
 {
     /// <summary>
     /// Logique d'interaction pour RectPointEditor.xaml
     /// </summary>
-    public partial class RectPointEditor : UserControl
+    public partial class RectPointEditor : UserControl, INotifyPropertyChanged
     {
         public bool IsPointing { get; private set; }
 
-        private RectPoint m_rectPoint;
-        public RectPoint RectPoint
-        {
-            get => m_rectPoint;
-            set
-            {
-                m_rectPoint = value;
-                SetPoint();
-                SetText();
-                RectPointChanged?.Invoke(this, EventArgs.Empty);
-            }
-        }
+        public Thickness PointMargin => new Thickness(RectPoint.XProgress * (border?.ActualWidth ?? 0 - 1), RectPoint.YProgress * (border?.ActualHeight ?? 0 - 1), 0, 0);
+        public double RectPointXProgress { get => RectPoint.XProgress; set => RectPoint = new RectPoint(value, RectPoint.YProgress); }
+        public double RectPointYProgress { get => RectPoint.YProgress; set => RectPoint = new RectPoint(RectPoint.XProgress, value); }
 
-        public event EventHandler RectPointChanged;
+        public RectPoint RectPoint { get => (RectPoint)GetValue(RectPointProperty); set => SetValue(RectPointProperty, value); }
+        public static readonly DependencyProperty RectPointProperty = DependencyProperty.Register("RectPoint", typeof(RectPoint), typeof(RectPointEditor));
+
+        public event PropertyChangedExtendedEventHandler<RectPoint> RectPointChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public double PointsRadius
         {
             get => (double)GetValue(PointsRadiusProperty);
             set => SetValue(PointsRadiusProperty, value);
         }
-        public static readonly DependencyProperty PointsRadiusProperty = DependencyProperty.Register("PointsRadius", typeof(double), typeof(RectPointEditor), new PropertyMetadata(7.0, OnPointsRadiusChangd));
-
-        private static void OnPointsRadiusChangd(DependencyObject d, DependencyPropertyChangedEventArgs e) { if (d is RectPointEditor rectPointEditor && e.NewValue is double value) rectPointEditor.border.Margin = new Thickness((value - 1) / 2); }
+        public static readonly DependencyProperty PointsRadiusProperty = DependencyProperty.Register("PointsRadius", typeof(double), typeof(RectPointEditor), new PropertyMetadata(7.0));
 
         public RectPointEditor()
         {
-            DataContext = this;
             InitializeComponent();
-            Foreground ??= Brushes.Black;
-            xprogressSB.CoerceText = IsProgress;
-            yprogressSB.CoerceText = IsProgress;
+            Loaded += (sender, e) => NotifyPropertyChanged("PointMargin");
+            xprogressSB.TextValidation = IsProgress;
+            yprogressSB.TextValidation = IsProgress;
 
-            bool IsProgress(string s)
+            static bool IsProgress(string s)
             {
                 if (s.IsDouble(out double d).ShowException())
                 {
@@ -63,13 +56,19 @@ namespace CoordAnimation
             }
         }
 
-        private void SetText()
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            xprogressSB.Text = RectPoint.XProgress.ToString();
-            yprogressSB.Text = RectPoint.YProgress.ToString();
+            if (e.Property == RectPointProperty)
+            {
+                NotifyPropertyChanged("PointMargin");
+                NotifyPropertyChanged("RectPointXProgress");
+                NotifyPropertyChanged("RectPointYProgress");
+                RectPointChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<RectPoint>("RectPoint", (RectPoint)e.OldValue, (RectPoint)e.NewValue));
+            }
+            else if (e.Property == PointsRadiusProperty) border.Margin = new Thickness(((double)e.NewValue - 1) / 2);
+            base.OnPropertyChanged(e);
         }
 
-        private void SetPoint() => currentPoint.Margin = new Thickness(RectPoint.XProgress * (border.ActualWidth - 1), RectPoint.YProgress * (border.ActualHeight - 1), 0, 0);
         private RectPoint GetPoint(Point position)
         {
             double w = border.ActualWidth - 1;
@@ -97,8 +96,5 @@ namespace CoordAnimation
                 RectPoint = GetPoint(e.GetPosition(border));
             }
         }
-
-        private void XprogressSB_Desactivated(object sender, EventArgs<IInputElement> e) => RectPoint = new RectPoint(xprogressSB.Text.ToDouble() ?? 0, RectPoint.YProgress);
-        private void YprogressSB_Desactivated(object sender, EventArgs<IInputElement> e) => RectPoint = new RectPoint(RectPoint.XProgress, yprogressSB.Text.ToDouble() ?? 0);
     }
 }

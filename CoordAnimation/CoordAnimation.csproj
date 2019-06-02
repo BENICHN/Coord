@@ -63,7 +63,7 @@
       <HintPath>..\packages\MathConverter.1.2.1.5\lib\net40-client\MathConverter.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -79,6 +79,12 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.8.19076.18510, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xceed.Wpf.AvalonDock.3.8.19076.18510\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.8.19076.18510, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xceed.Wpf.Toolkit.3.8.19076.18510\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -89,17 +95,31 @@
     <Compile Include="ConfigEdit\ConfigEdit.xaml.cs">
       <DependentUpon>ConfigEdit.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EffectEdit\PropertiesEditor.xaml.cs">
+      <DependentUpon>PropertiesEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EffectEdit\PropertiesSelector.xaml.cs">
+      <DependentUpon>PropertiesSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EffectEdit\PropertyEditors\RectEditor.xaml.cs">
+      <DependentUpon>RectEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EffectEdit\PropertyEditors\VectorEditor.xaml.cs">
+      <DependentUpon>VectorEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="EffectEdit\PropertyEditors\PointEditor.xaml.cs">
+      <DependentUpon>PointEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="EffectEdit\PropertyEditors\VisualObjectSelector.xaml.cs">
       <DependentUpon>VisualObjectSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="CharacterAnimation\VisualObjectControl.xaml.cs">
       <DependentUpon>VisualObjectControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EffectEdit\PropertyEditors\SizeEditor.xaml.cs">
+      <DependentUpon>SizeEditor.xaml</DependentUpon>
+    </Compile>
     <Page Include="ConfigEdit\ConfigEdit.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="EffectEdit\EffectEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -108,17 +128,33 @@
       <SubType>Designer</SubType>
     </Page>
     <None Include="app.manifest" />
-    <None Include="ConfigEdit\ConfigEditMainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </None>
     <Page Include="ConfigEdit\TexEdit.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="EffectEdit\PropertiesEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EffectEdit\PropertiesSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="EffectEdit\PropertyEditors\IntervalEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EffectEdit\PropertyEditors\RectEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EffectEdit\PropertyEditors\VectorEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EffectEdit\PropertyEditors\PointEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="EffectEdit\PropertyEditors\RangeEditor.xaml">
       <SubType>Designer</SubType>
@@ -140,16 +176,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="EffectEdit\EffectEdit.xaml.cs">
-      <DependentUpon>EffectEdit.xaml</DependentUpon>
-    </Compile>
     <Compile Include="CharacterAnimation\Elements.cs" />
     <Compile Include="CharacterAnimation\Scene.xaml.cs">
       <DependentUpon>Scene.xaml</DependentUpon>
     </Compile>
-    <None Include="ConfigEdit\ConfigEditMainWindow.xaml.cs">
-      <DependentUpon>ConfigEditMainWindow.xaml</DependentUpon>
-    </None>
     <Compile Include="ConfigEdit\TexEdit.xaml.cs">
       <DependentUpon>TexEdit.xaml</DependentUpon>
     </Compile>
@@ -174,6 +204,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CharacterAnimation\VisualObjectControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EffectEdit\PropertyEditors\SizeEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

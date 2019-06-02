@@ -1,12 +1,23 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 
 namespace Coord
 {
     /// <summary>
     /// Détermine la translation d'un <see cref="PointVisualObject"/> par un <see cref="VectorVisualObject"/>
     /// </summary>
-    public class TranslationPointDefinition : PointDefinition
+    public class TranslationPointDefinition : PointDefinition, ICoordEditable
     {
+        public override string Type => "TranslationPointDefinition";
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Point", PointProperty);
+                yield return ("Vector", VectorProperty);
+            }
+        }
+
         /// <summary>
         /// Point du plan à translater
         /// </summary>

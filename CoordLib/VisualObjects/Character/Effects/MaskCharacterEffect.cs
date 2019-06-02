@@ -7,8 +7,20 @@ namespace Coord
     /// <summary>
     /// Rétrécit progressivement une sous-collection de <see cref="Character"/> au point spécifié puis translate progressivement les <see cref="Character"/> après cette sous-collection par la différence entre <see cref="BigSize"/> et <see cref="SmallSize"/>
     /// </summary>
-    public class MaskCharacterEffect : CharacterEffect
+    public class MaskCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("SmallSize", SmallSizeProperty);
+                yield return ("BigSize", BigSizeProperty);
+                yield return ("RectPoint", RectPointProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         private Vector m_sizeDiff;
 
         /// <summary>

@@ -8,7 +8,8 @@ namespace Coord
         {
             bool transformed = character.Transformed;
             if (transform) character.ApplyTransforms();
-            drawingContext.DrawGeometry(character.Fill, character.IsSelected ? VisualObject.SelectionStroke : character.Stroke, character.Geometry);
+            drawingContext.DrawGeometry(character.Fill, character.Stroke, character.Geometry);
+            if (character.IsSelected) drawingContext.DrawGeometry(null, VisualObject.SelectionStroke, character.Geometry);
             if (release == true || release == null && transformed) character.ReleaseTransforms();
         }
     }

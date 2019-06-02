@@ -5,8 +5,21 @@ using System.Windows;
 
 namespace Coord
 {
-    public class FitCharacterEffect : CharacterEffect
+    public class FitCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("BoundsInterval", BoundsIntervalProperty);
+                yield return ("VisualObject", VisualObjectProperty);
+                yield return ("ScaleX", ScaleXProperty);
+                yield return ("ScaleY", ScaleYProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public Interval<int> BoundsInterval { get => (Interval<int>)GetValue(BoundsIntervalProperty); set => SetValue(BoundsIntervalProperty, value); }
         public static readonly DependencyProperty BoundsIntervalProperty = CreateProperty<Interval<int>>(true, true, "BoundsInterval", typeof(FitCharacterEffect));
 

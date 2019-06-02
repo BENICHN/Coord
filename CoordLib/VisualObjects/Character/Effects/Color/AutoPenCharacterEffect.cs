@@ -4,8 +4,17 @@ using System.Windows;
 
 namespace Coord
 {
-    public class AutoPenCharacterEffect : CharacterEffect
+    public class AutoPenCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public PlanePen Template { get => (PlanePen)GetValue(TemplateProperty); set => SetValue(TemplateProperty, value); }
         public static readonly DependencyProperty TemplateProperty = CreateProperty<PlanePen>(true, true, "Template", typeof(AutoPenCharacterEffect));
 

@@ -8,6 +8,8 @@ namespace Coord
     /// </summary>
     public class OperationsPointDefinition : PointDefinition
     {
+        public override string Type => "OperationsPointDefinition";
+
         /// <summary>
         /// Point du plan
         /// </summary>

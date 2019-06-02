@@ -3,7 +3,6 @@ using BenLib.WPF;
 using Coord;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
@@ -82,8 +81,8 @@ namespace CoordAnimation
 
                 if (owner.HasOwner)
                 {
-                    if (newValue == false) owner.OwnerElement.SC--;
-                    else if (oldValue == false) owner.OwnerElement.SC++;
+                    if (newValue == false) owner.OwnerElement.SelectedChildrenCount--;
+                    else if (oldValue == false) owner.OwnerElement.SelectedChildrenCount++;
                 }
                 owner.NotifyPropertyChanged("Background");
             }
@@ -132,19 +131,18 @@ namespace CoordAnimation
 
         public bool IsIndependent { get; set; }
 
-        public int SC
+        private int m_selectedChildrenCount;
+        public int SelectedChildrenCount
         {
-            get => m_sC;
+            get => m_selectedChildrenCount;
             set
             {
-                m_sC = value;
+                m_selectedChildrenCount = value;
                 if (value == 0) SetIsSelected(false, false);
             }
         }
 
         private bool m_refreshAtChange;
-        private int m_sC;
-
         public bool RefreshAtChange
         {
             get => m_refreshAtChange;
@@ -248,6 +246,8 @@ namespace CoordAnimation
                 if (fromOwner != false && value.HasValue) { foreach (var e in Children.Nodes) e.SetIsSelected(value, true); }
 
                 if (fromOwner == null) IndependentElement.VisualObject.RenderAtSelectionChange = true;
+
+                if (SelectedChildrenCount == 0) SetValue(IsSelectedProperty, false);
             }
         }
         public override void SetIsEnabled(bool value)
@@ -353,53 +353,6 @@ namespace CoordAnimation
                 Character.IsSelectedChanged -= Character_IsSelectedChanged;
                 SetValue(IsSelectedProperty, false);
                 IsAttached = false;
-            }
-        }
-    }
-
-    public class SelectedVisualObjectsCollection : FreezableCollection<VisualObject>
-    {
-        public VisualObjectCollection VisualObjects { get => (VisualObjectCollection)GetValue(VisualObjectsProperty); set => SetValue(VisualObjectsProperty, value); }
-        public static readonly DependencyProperty VisualObjectsProperty = DependencyProperty.Register("VisualObjects", typeof(VisualObjectCollection), typeof(SelectedVisualObjectsCollection), new PropertyMetadata((sender, e) =>
-        {
-            if (sender is SelectedVisualObjectsCollection owner)
-            {
-                if (e.OldValue is VisualObjectCollection oldValue)
-                {
-                    owner.Clear();
-                    oldValue.CollectionChanged -= owner.VisualObjects_CollectionChanged;
-                    oldValue.SelectionChanged -= owner.VisualObjects_SelectionChanged;
-                }
-                if (e.NewValue is VisualObjectCollection newValue)
-                {
-                    newValue.CollectionChanged += owner.VisualObjects_CollectionChanged;
-                    newValue.SelectionChanged += owner.VisualObjects_SelectionChanged;
-                    owner.AddRange(newValue.Where(vo => vo.Selection.IsNullOrEmpty()));
-                }
-            }
-        }));
-
-        public SelectedVisualObjectsCollection() { }
-        public SelectedVisualObjectsCollection(VisualObjectCollection visualObjects) : base(visualObjects.Where(vo => vo.Selection.IsNullOrEmpty())) => VisualObjects = visualObjects;
-
-        private void VisualObjects_SelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e)
-        {
-            if (sender is VisualObject vo)
-            {
-                bool empty = e.NewValue.IsNullOrEmpty();
-                int index = IndexOf(vo);
-                if (empty && index != -1) RemoveAt(index);
-                else if (!empty && index == -1) Add(vo);
-            }
-        }
-
-        private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Reset) Clear();
-            else
-            {
-                if (e.OldItems != null) foreach (var vo in e.OldItems.OfType<VisualObject>()) { /*int index = IndexOf(voe) if (Contains(voe)) */Remove(vo); }
-                if (e.NewItems != null) foreach (var vo in e.NewItems.OfType<VisualObject>()) { if (!vo.Selection.IsNullOrEmpty() && !Contains(vo)) Add(vo); }
             }
         }
     }

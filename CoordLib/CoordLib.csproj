@@ -176,7 +176,9 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="Snippets\obsregm.snippet" />
+    <None Include="Snippets\propm.snippet" />
+    <None Include="Snippets\yrt.snippet" />
+    <None Include="Snippets\yrp.snippet" />
     <None Include="Snippets\pdpnc.snippet" />
     <None Include="Snippets\pdpncv.snippet" />
     <None Include="Snippets\pdpncr.snippet" />
@@ -184,7 +186,7 @@
     <None Include="Snippets\pdpn.snippet" />
     <None Include="Snippets\prrn.snippet" />
     <None Include="Snippets\propch.snippet" />
-    <None Include="Snippets\obsregf.snippet" />
+    <None Include="Snippets\obsreg.snippet" />
     <None Include="Snippets\_prn.snippet" />
   </ItemGroup>
   <ItemGroup>

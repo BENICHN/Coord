@@ -215,7 +215,7 @@ namespace Coord
             BackgroundVisualObject = Renderer(Grid, Axes);
 
             Selection = new TrackingCharacterSelection(this);
-            Selection.SelectionChanged += (sender, e) => { if (RenderAtSelectionChange && sender is VisualObject visualObject && visualObject.RenderAtSelectionChange) Render(visualObject); };
+            Selection.Changed += (sender, e) => { if (RenderAtSelectionChange && sender is VisualObject visualObject && visualObject.RenderAtSelectionChange) Render(visualObject); }; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             Cadre = new CadreVisualObject { CharacterSelection = Selection, Stroke = new Pen(FlatBrushes.Carrot, 1) };
 
@@ -303,7 +303,8 @@ namespace Coord
             var png = new PngBitmapEncoder();
             png.Frames.Add(BitmapFrame.Create(rtb));
 
-            using (var stream = File.Create(fileName)) png.Save(stream);
+            using var stream = File.Create(fileName);
+            png.Save(stream);
         }
 
         #endregion 
@@ -454,7 +455,7 @@ namespace Coord
                     }
                 }
 
-                if (EnableSelectionRect && !CharactersManipulating && !Selecting && characters.Length == 0) //SelectionRect
+                if (EnableSelectionRect && Selection.AllowMultiple && !CharactersManipulating && !Selecting && characters.Length == 0) //SelectionRect
                 {
                     m_outSelectionClick = position;
                     Selection.Lock();
@@ -475,7 +476,7 @@ namespace Coord
             InOffset = new Vector(OutOffset.X / CoordinatesSystemManager.WidthRatio, -OutOffset.Y / CoordinatesSystemManager.HeightRatio);
             m_previousPoint = position;
 
-            if (e.AllReleased()) Cursor = characters.Length > 0 ? Cursors.Hand : RestoreCursor;
+            if (e.AllReleased()) Cursor = characters.Length > 0 && (Selection.Filter == null || characters.GroupBy(c => c.Owner).Any(group => Selection.Filter(group.Key))) ? Cursors.Hand : RestoreCursor;
 
             if (Moving)
             {
@@ -488,7 +489,7 @@ namespace Coord
             {
                 SelectionRect = new Rect(m_outSelectionClick, position);
                 var rectContent = HitTestCharacters(SelectionRect);
-                if (!m_previousRectContent.IsNullOrEmpty()) Selection.UnSelect(m_previousRectContent.Except(rectContent), Input.IsControlPressed());
+                if (!m_previousRectContent.IsNullOrEmpty()) Selection.UnSelect(m_previousRectContent.Except(rectContent), Input.IsControlPressed(), rectContent);
                 Selection.Select(m_previousRectContent.IsNullOrEmpty() ? rectContent : rectContent.Except(m_previousRectContent), Input.IsControlPressed());
                 m_previousRectContent = rectContent;
                 RenderChanged();

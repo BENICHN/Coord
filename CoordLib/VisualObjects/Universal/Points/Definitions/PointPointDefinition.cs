@@ -1,12 +1,16 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 
 namespace Coord
 {
     /// <summary>
     /// Détermine un point du plan grâce à un <see cref="Point"/>
     /// </summary>
-    public class PointPointDefinition : PointDefinition
+    public class PointPointDefinition : PointDefinition, ICoordEditable
     {
+        public override string Type => "PointPointDefinition";
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties { get { yield return ("InPoint", InPointProperty); } }
+
         /// <summary>
         /// Point du plan
         /// </summary>

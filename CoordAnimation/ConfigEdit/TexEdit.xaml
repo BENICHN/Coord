@@ -11,7 +11,7 @@
     <StackPanel>
         <DockPanel Panel.ZIndex="1">
             <TextBox Name="formulaTB" Height="25" TextChanged="FormulaTB_TextChanged" Width="950"/>
-            <TextBox Name="scaleTB" benlib:TypedTextBox.ContentType="UnsignedDouble" Width="25" Text="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="ScaleTB_TextChanged"/>
+            <benlib:TypedTextBox Name="scaleTB" ContentType="UnsignedDecimal" Width="25" Text="2" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" TextChanged="ScaleTB_TextChanged"/>
             <Button Content="OK" Width="25" HorizontalAlignment="Right" Click="Button_Click"/>
         </DockPanel>
         <c:Plane x:Name="plane" Width="1000" Height="300"/>

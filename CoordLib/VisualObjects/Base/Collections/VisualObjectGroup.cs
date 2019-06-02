@@ -9,26 +9,8 @@ namespace Coord
 {
     public abstract class VisualObjectGroupBase : VisualObject
     {
-        //private VisualObjectCollection m_children;
-
-        /*public VisualObjectCollection Children
-        {
-            get => m_children;
-            set
-            {
-                UnRegister(m_children);
-                //if (m_children != null) m_children.SelectionChanged -= Children_SelectionChanged;
-                m_children = value;
-                Register(value);
-                //if (value != null) value.SelectionChanged += Children_SelectionChanged;
-                NotifyChanged();
-            }
-        }*/
-
         public VisualObjectCollection Children { get => (VisualObjectCollection)GetValue(ChildrenProperty); set => SetValue(ChildrenProperty, value); }
         public static readonly DependencyProperty ChildrenProperty = CreateProperty<VisualObjectCollection>(true, true, "Children", typeof(VisualObjectGroupBase));
-
-        //private void Children_SelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e) => NotifySelectionChanged(e.OldValue, e.NewValue);
 
         public override void ClearSelection()
         {
@@ -66,13 +48,22 @@ namespace Coord
         public override IEnumerable<Character> HitTestCache(Rect rect) => Children.SelectMany(vo => vo.HitTestCache(rect));
 
         private void OnChildrenSelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e) => NotifySelectionChanged(e.OldValue, e.NewValue, sender);
+        private Interval<int> OnChildrenCoerceValue(VisualObject sender, Interval<int> value) => CoerceSelection == null ? value : CoerceSelection(sender, value);
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property.Name == "Children")
+            if (e.Property == ChildrenProperty)
             {
-                if (e.OldValue is VisualObjectCollection oldValue) oldValue.SelectionChanged -= OnChildrenSelectionChanged;
-                if (e.NewValue is VisualObjectCollection newValue) newValue.SelectionChanged += OnChildrenSelectionChanged;
+                if (e.OldValue is VisualObjectCollection oldValue)
+                {
+                    oldValue.CoerceSelection -= OnChildrenCoerceValue;
+                    oldValue.SelectionChanged -= OnChildrenSelectionChanged;
+                }
+                if (e.NewValue is VisualObjectCollection newValue)
+                {
+                    newValue.CoerceSelection += OnChildrenCoerceValue;
+                    newValue.SelectionChanged += OnChildrenSelectionChanged;
+                }
             }
             base.OnPropertyChanged(e);
         }

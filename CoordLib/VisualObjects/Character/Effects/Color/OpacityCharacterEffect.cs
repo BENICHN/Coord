@@ -5,8 +5,19 @@ using System.Windows;
 
 namespace Coord
 {
-    public class OpacityCharacterEffect : CharacterEffect
+    public class OpacityCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("FillOpacity", FillOpacityProperty);
+                yield return ("StrokeOpacity", StrokeOpacityProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public double FillOpacity { get => (double)GetValue(FillOpacityProperty); set => SetValue(FillOpacityProperty, value); }
         public static readonly DependencyProperty FillOpacityProperty = CreateProperty<double>(true, true, "FillOpacity", typeof(OpacityCharacterEffect));
 

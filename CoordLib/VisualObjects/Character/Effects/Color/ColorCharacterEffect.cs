@@ -9,8 +9,19 @@ namespace Coord
     /// <summary>
     /// Colore progressivement une sous-collection de <see cref="CharacterEffect"/>
     /// </summary>
-    public class ColorCharacterEffect : CharacterEffect
+    public class ColorCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Fill", FillProperty);
+                yield return ("Stroke", StrokeProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         /// <summary>
         /// Remplissage des <see cref="Character"/>
         /// </summary>

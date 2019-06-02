@@ -1,4 +1,5 @@
 ﻿using BenLib.Framework;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace Coord
@@ -6,8 +7,18 @@ namespace Coord
     /// <summary>
     /// Détermine l'intersection de deux droites du plan
     /// </summary>
-    public class LineIntersectionPointDefinition : PointDefinition
+    public class LineIntersectionPointDefinition : PointDefinition, ICoordEditable
     {
+        public override string Type => "LineIntersectionPointDefinition";
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("LineA", LineAProperty);
+                yield return ("LineB", LineBProperty);
+            }
+        }
+
         /// <summary>
         /// Première droite
         /// </summary>

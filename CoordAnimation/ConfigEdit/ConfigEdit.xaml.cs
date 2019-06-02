@@ -129,7 +129,7 @@ namespace CoordAnimation
             }
             else if (Moving)
             {
-                var selectedPoints = plane.Selection.Where(kvp => kvp.Key.Type == "PointPoint").Select(kvp => kvp.Key).OfType<PointVisualObject>().ToArray();
+                var selectedPoints = plane.Selection.VisualObjects.Where(vo => vo.Type == "PointPoint").OfType<PointVisualObject>().ToArray();
                 foreach (var pointVisualObject in selectedPoints) { if (m_basePoint == null && e.Param2.Any(hr => hr.Owner == pointVisualObject)) m_basePoint = pointVisualObject; }
                 var offset = m_basePoint == null ? plane.InOffset : (Vector)(plane.InMouseMagnetPosition - (Vector)m_basePoint.Definition.InPoint);
                 foreach (var pointVisualObject in selectedPoints) pointVisualObject.SetInPoint(pointVisualObject.Definition.InPoint + offset);

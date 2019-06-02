@@ -2,15 +2,16 @@
 using BenLib.WPF;
 using Coord;
 using CoordSpec;
+using System;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Threading.Tasks;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using static BenLib.Standard.Interval<int>;
 using static Coord.VisualObjects;
 using static System.Math;
 
@@ -26,15 +27,13 @@ namespace CoordAnimation
 
         public WpfObservableRangeCollection<CharacterEffectElement> EffectElements { get; } = new WpfObservableRangeCollection<CharacterEffectElement>();
 
-        private Element m_shiftFirstElement;
+        private Element m_lastSelectedElement;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public Scene()
         {
-            DataContext = this;
-
             InitializeComponent();
 
             Elements.Add(new VisualObjectElement(null, Plane.Grid));
@@ -43,15 +42,19 @@ namespace CoordAnimation
 
             Plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
             Plane.OverAxesNumbersChanged += Plane_OverAxesNumbersChanged;
-            //Plane.BehaviorChanged += PreviewPlane_BehaviorChanged;
-            //Plane.Zoomed += (sndr, args) => Elements.Refresh();
+            Plane.Selection.Changed += Selection_Changed;
+
+            var cm = TryFindResource("PlaneCM") as ContextMenu;
+            (cm.Items[0] as MenuItem).ItemsSource = App.CharacterEffectTypes.Select(t => new ContextMenuCharacterEffectType(t)).ToArray();
+            Plane.ContextMenu = cm;
         }
+
+        private void Selection_Changed(object sender, EventArgs e) => EffectsEditor.Object = Plane.Selection.VisualObjects.FirstOrDefault();
 
         private void Plane_OverAxesNumbersChanged(object sender, PropertyChangedExtendedEventArgs<VisualObject> e) => Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.OldItems != null) foreach (VisualObject visualObject in e.OldItems) { }
             if (e.NewItems != null)
             {
                 foreach (VisualObject visualObject in e.NewItems)
@@ -64,39 +67,6 @@ namespace CoordAnimation
             Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
         }
 
-        /*public void RefreshElements()
-        {
-            //m_elementNames.Clear();
-            //m_expanded = Elements.AllTreeNodes().OfType<VisualObjectElement>().ToDictionary(element => element.VisualObject, element => element.IsExpanded);
-            Elements.Clear();
-            foreach (var element in ElementsFromPlane()) Elements.Add(element);
-            //foreach (var element in Elements.AllTreeNodes().OfType<VisualObjectElement>()) { if (m_expanded.TryGetValue(element.VisualObject, out bool isExpanded)) element.IsExpanded = isExpanded; }
-            //m_expanded = null;
-            GC.Collect();
-            //VisualObjectsTreeView.IsEnabled = true;
-
-            IEnumerable<VisualObjectElement> ElementsFromPlane()
-            {
-                yield return new VisualObjectElement(null, Plane.Grid);
-                yield return new VisualObjectElement(null, Plane.Axes);
-                int offset = 0;
-                int axesNumbersIndex = Plane.AxesNumbersIndex - 2;
-                for (int i = 0; i <= Plane.VisualObjects.Count; i++)
-                {
-                    if (i == axesNumbersIndex)
-                    {
-                        offset++;
-                        yield return new VisualObjectElement(null, Plane.AxesNumbers);
-                    }
-                    else
-                    {
-                        var visualObject = Plane.VisualObjects[i - offset];
-                        yield return new VisualObjectElement(null, visualObject);
-                    }
-                }
-            }
-        }*/
-
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             var p = Point(4, 2).Style(FlatBrushes.Alizarin);
@@ -108,7 +78,7 @@ namespace CoordAnimation
             //var m = new MAF();//.Insert(PositiveReals, PositiveReals, c, default, true, true, 1).Fit(PositiveReals, PositiveReals, c, true, true, 1);
             //VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
             //previewPlane.OverAxesNumbersChanged += (sender, e) => UpdateAxesNumbers();
-            Plane.InputRange = new MathRect(-2, -2, 9.6, 4.0 * 750 / 430);
+            Plane.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
             Plane.VisualObjects.Add(p);
             //VisualObjects.Add(g2);
             Plane.VisualObjects.Add(FunctionCurve(x => x + Sin(PI * x), false).Style(new Pen(FlatBrushes.Nephritis, 3)));
@@ -116,6 +86,11 @@ namespace CoordAnimation
             Plane.VisualObjects.Add(t);
             Plane.VisualObjects.Add(new ELC { Center = new PointVisualObject { Definition = p.Definition, Fill = FlatBrushes.Amethyst, Radius = 15 }, Rank = 5, Stroke = new Pen(FlatBrushes.Pumpkin, 3) });
             Plane.VisualObjects.Add(d);
+
+            EffectElements.Add(new CharacterEffectElement(new InsertCharacterEffect(), new AnimationData((0, 60), null), t));
+            EffectElements.Add(new CharacterEffectElement(new TranslateCharacterEffect { Vector = new Vector(0, 5), In = true }, new AnimationData((0, 60), null), t));
+            EffectElements.Add(new CharacterEffectElement(new ScaleCharacterEffect(), new AnimationData((0, 80), null), t));
+            EffectElements.Add(new CharacterEffectElement(new SizeCharacterEffect(), new AnimationData((70, 100), null), t));
 
             var dp1 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Alizarin, new PlanePen(FlatBrushes.Clouds, 3));
             var dp2 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.PeterRiver, new PlanePen(FlatBrushes.Clouds, 3));
@@ -151,54 +126,55 @@ namespace CoordAnimation
             //await m.Animate();
             //previewPlane.Zoom(true, new MathRect(4, 1, 1, 1), new Rect(100, 100, 300, 300), null, t);
             //RefreshElements();
-            EffectElements.Add(new CharacterEffectElement(new TranslateCharacterEffect { Vector = new Vector(0, 5), In = true }, new AnimationData((0, 60), null), t));
         }
 
-        private void VisualObjectsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-        {
-            var oldSelectedItem = (Element)e.OldValue ?? Elements[0];
-            var newSelectedItem = (Element)e.NewValue;
-            if (newSelectedItem == null || oldSelectedItem == newSelectedItem) return;
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) => EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect;
 
-            if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is MenuItem menuItem)
             {
-                Elements.ClearSelection();
-                foreach (var element in Elements.SubTree(m_shiftFirstElement ?? (m_shiftFirstElement = oldSelectedItem), newSelectedItem, false).TreeItems()) element.IsSelected = true;
-            }
-            else
-            {
-                m_shiftFirstElement = null;
-                if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) newSelectedItem.IsSelected = newSelectedItem.IsSelected == true ? false : true;
-                else
+                if (menuItem.Header is ContextMenuCharacterEffectType characterEffectType)
                 {
-                    Elements.ClearSelection();
-                    newSelectedItem.IsSelected = true;
+                    var c = (CharacterEffect)Activator.CreateInstance(characterEffectType.Type);
+                    Plane.Selection.PushEffect(c);
+                    EffectElements.Add(new CharacterEffectElement(c, null, null));
                 }
             }
         }
 
-        private void PreviewPlane_BehaviorChanged(object sender, PropertyChangedExtendedEventArgs<bool> e)
+        private void VisualObjectsTreeView_Selected(object sender, RoutedEventArgs e)
         {
-            /*switch (e.PropertyName)
+            if (e.OriginalSource is TreeViewItem treeViewItem)
             {
-                case "Moving":
-                    if (e.NewValue) Elements.RefreshAtChange = false;
+                if (treeViewItem.Header is Element element)
+                {
+                    if ((Keyboard.Modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                    {
+                        Elements.ClearSelection();
+                        foreach (var el in Elements.SubTree(m_lastSelectedElement ?? Elements[0], element, false).TreeItems()) el.IsSelected = true;
+                    }
                     else
                     {
-                        Elements.RefreshAtChange = true;
-                        Elements.Refresh();
-                        //VisualObjectsTreeView.IsEnabled = true;
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) element.IsSelected = element.IsSelected == true ? false : true;
+                        else
+                        {
+                            Elements.ClearSelection();
+                            element.IsSelected = true;
+                        }
                     }
-                    break;
-            }*/
+                    m_lastSelectedElement = element;
+                }
+                treeViewItem.IsSelected = false;
+            }
         }
+    }
 
-        private void PropEditButton_Click(object sender, RoutedEventArgs e)
-        {
-            var c = new InsertCharacterEffect { BoundsInterval = Interval<int>.NegativeReals, RectPoint = default, VisualObject = default };
-            var w = new EffectEdit(c, this);
-            w.Show();
-            w.Closed += (sender, e) => Plane.VisualObjects.Add(c.VisualObject);
-        }
+    public struct ContextMenuCharacterEffectType
+    {
+        public ContextMenuCharacterEffectType(Type type) => Type = type;
+
+        public Type Type { get; }
+        public override string ToString() => Type.Name.Replace("CharacterEffect", string.Empty);
     }
 }

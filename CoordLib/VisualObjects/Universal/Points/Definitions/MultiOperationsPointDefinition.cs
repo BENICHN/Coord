@@ -9,6 +9,8 @@ namespace Coord
     /// </summary>
     public class MultiOperationsPointDefinition : PointDefinition
     {
+        public override string Type => "MultiOperationsPointDefinition";
+
         /// <summary>
         /// Points du plan
         /// </summary>

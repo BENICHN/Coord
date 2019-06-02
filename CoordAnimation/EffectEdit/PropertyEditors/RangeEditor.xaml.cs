@@ -74,10 +74,10 @@ namespace CoordAnimation
                 {
                     case IntervalType.Int:
                         {
-                            startSB.ContentType = ContentTypes.Integer;
-                            startSB.CoerceText = s => s.IsInt().ShowException();
-                            endSB.ContentType = ContentTypes.Integer;
-                            endSB.CoerceText = s => s.IsInt().ShowException();
+                            startSB.ContentType = ContentType.Integer;
+                            startSB.TextValidation = s => s.IsInt().ShowException();
+                            endSB.ContentType = ContentType.Integer;
+                            endSB.TextValidation = s => s.IsInt().ShowException();
                             switch (m_rangeType)
                             {
                                 case IntervalType.Double:
@@ -91,10 +91,10 @@ namespace CoordAnimation
                         break;
                     case IntervalType.Double:
                         {
-                            startSB.ContentType = ContentTypes.Double;
-                            startSB.CoerceText = s => s.IsDouble().ShowException();
-                            endSB.ContentType = ContentTypes.Double;
-                            endSB.CoerceText = s => s.IsDouble().ShowException();
+                            startSB.ContentType = ContentType.Decimal;
+                            startSB.TextValidation = s => s.IsDouble().ShowException();
+                            endSB.ContentType = ContentType.Decimal;
+                            endSB.TextValidation = s => s.IsDouble().ShowException();
                             switch (m_rangeType)
                             {
                                 case IntervalType.Int:
@@ -108,10 +108,10 @@ namespace CoordAnimation
                         break;
                     case IntervalType.Decimal:
                         {
-                            startSB.ContentType = ContentTypes.Double;
-                            startSB.CoerceText = s => s.IsDecimal().ShowException();
-                            endSB.ContentType = ContentTypes.Double;
-                            endSB.CoerceText = s => s.IsDecimal().ShowException();
+                            startSB.ContentType = ContentType.Decimal;
+                            startSB.TextValidation = s => s.IsDecimal().ShowException();
+                            endSB.ContentType = ContentType.Decimal;
+                            endSB.TextValidation = s => s.IsDecimal().ShowException();
                             switch (m_rangeType)
                             {
                                 case IntervalType.Int:
@@ -135,7 +135,6 @@ namespace CoordAnimation
         public RangeEditor() : this(IntervalType.Int, null, true) { }
         public RangeEditor(IntervalType rangeType, object range, bool showOver)
         {
-            DataContext = this;
             InitializeComponent();
 
             startSB.AllowedStrings = new[] { "-∞", "NaN" };

@@ -3,6 +3,7 @@ using BenLib.Standard;
 using BenLib.WPF;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -138,6 +139,9 @@ namespace Coord
 
         #region CharactersVisualObject
 
+        public static InCharactersVisualObjectGroup InCharactersGroup(IEnumerable<VisualObject> visualObjects, IEnumerable<Interval<int>> intervals) => new InCharactersVisualObjectGroup { Children = visualObjects as VisualObjectCollection ?? new VisualObjectCollection(visualObjects), Intervals = new ObservableRangeCollection<Interval<int>>(intervals) };
+        public static InCharactersVisualObjectGroup InCharactersGroup(IEnumerable<VisualObject> visualObjects) => new InCharactersVisualObjectGroup { Children = visualObjects as VisualObjectCollection ?? new VisualObjectCollection(visualObjects), Intervals = new ObservableRangeCollection<Interval<int>>(visualObjects.Select(vo => vo.Selection)) };
+        public static InCharactersVisualObject InCharacters(VisualObject visualObject) => new InCharactersVisualObject { VisualObject = visualObject, Interval = visualObject.Selection };
         public static InCharactersVisualObject InCharacters(VisualObject visualObject, Interval<int> interval) => new InCharactersVisualObject { VisualObject = visualObject, Interval = interval };
         public static CharactersVisualObject Characters(PointVisualObject inAnchorPoint, RectPoint rectPoint, IEnumerable<Character> characters, Interval<int> interval) => new CharactersVisualObject { InAnchorPoint = inAnchorPoint, RectPoint = rectPoint, Characters = characters.SubCollection(interval, true).ToArray() };
 

@@ -3,10 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:CoordAnimation"
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="100">
+             d:DesignHeight="100" d:DesignWidth="110" DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -14,13 +13,13 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
-            <ColumnDefinition Width="25"/>
+            <ColumnDefinition Width="35"/>
         </Grid.ColumnDefinitions>
 
-        <benlib:SwitchableTextBox Name="xprogressSB" ContentType="UnsignedDouble" Text="0" Height="25" HorizontalContentAlignment="Center" Desactivated="XprogressSB_Desactivated"/>
-        <benlib:SwitchableTextBox Name="yprogressSB" ContentType="UnsignedDouble" Text="0" Height="25" HorizontalContentAlignment="Center" Desactivated="YprogressSB_Desactivated" Grid.Row="1" Grid.Column="1"/>
+        <benlib:DoubleEditor Name="xprogressSB" Value="{Binding RectPointXProgress, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center"/>
+        <benlib:DoubleEditor Name="yprogressSB" Value="{Binding RectPointYProgress, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
 
-        <Ellipse Name="currentPoint" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{Binding Foreground}"/>
+        <Ellipse Name="currentPoint" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{Binding Foreground}" Margin="{Binding PointMargin}"/>
 
         <Border Name="border" Grid.Row="1" Background="Transparent" BorderBrush="{Binding Foreground}" BorderThickness="1" Margin="3" MouseDown="Border_MouseDown" MouseMove="Border_MouseMove" MouseUp="Border_MouseUp"/>
         <Border Grid.Row="1" Background="{Binding Foreground}" Opacity="0.5" HorizontalAlignment="Center" Width="1" Margin="{Binding Margin, ElementName=border}"/>

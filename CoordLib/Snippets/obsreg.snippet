@@ -3,7 +3,7 @@
 	<CodeSnippet Format="1.0.0">
 		<Header>
 			<Title>ObservableCollection Register</Title>
-			<Shortcut>obsregf</Shortcut>
+			<Shortcut>obsreg</Shortcut>
 			<Description></Description>
 			<Author></Author>
 			<SnippetTypes>
@@ -17,37 +17,30 @@
           <ToolTip>Type</ToolTip>
           <Default>type</Default>
         </Literal>
-				<Literal>
-					<ID>reg</ID>
-					<ToolTip>Méthode à l'ajout</ToolTip>
-					<Default>Register</Default>
-				</Literal>
-				<Literal>
-					<ID>unreg</ID>
-					<ToolTip>Méthode à la suppression</ToolTip>
-					<Default>UnRegister</Default>
-				</Literal>
 			</Declarations>
 			<Code Language="csharp">
-        <![CDATA[protected override void ClearItems()
+        <![CDATA[private void Register($type$ item) { $end$}
+        private void UnRegister($type$ item) { }
+        
+        protected override void ClearItems()
         {
-            foreach (var item in Items) $unreg$(item);
+            foreach (var item in Items) UnRegister(item);
             base.ClearItems();
         }
         protected override void InsertItem(int index, $type$ item)
         {
-            $reg$(item);
+            Register(item);
             base.InsertItem(index, item);
         }
         protected override void RemoveItem(int index)
         {
-            $unreg$(Items[index]);
+            UnRegister(Items[index]);
             base.RemoveItem(index);
         }
         protected override void SetItem(int index, $type$ item)
         {
-            $unreg$(Items[index]);
-            $reg$(item);
+            UnRegister(Items[index]);
+            Register(item);
             base.SetItem(index, item);
         }]]>
 			</Code>

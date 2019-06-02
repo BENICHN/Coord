@@ -7,8 +7,17 @@ namespace Coord
     /// <summary>
     /// Objet visuel représentant un point du plan
     /// </summary>
-    public class PointVisualObject : VisualObject
+    public class PointVisualObject : VisualObject, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Definition", DefinitionProperty);
+                yield return ("Radius", RadiusProperty);
+            }
+        }
+
         public override string Type => Definition switch
         {
             PointPointDefinition _ => "PointPoint",

@@ -7,8 +7,21 @@ namespace Coord
     /// <summary>
     /// Met progressivement à l'échelle une sous-collection de <see cref="Character"/> au point spécifié
     /// </summary>
-    public class SizeCharacterEffect : CharacterEffect
+    public class SizeCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Size", SizeProperty);
+                yield return ("RectPoint", RectPointProperty);
+                yield return ("ScaleX", ScaleXProperty);
+                yield return ("ScaleY", ScaleYProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         /// <summary>
         /// Dimensions que le <see cref="System.Windows.Media.GeometryGroup"/> formé par les <see cref="Character"/> de la sous-collection doit avoir
         /// </summary>

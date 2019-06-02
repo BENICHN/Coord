@@ -1,12 +1,23 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 
 namespace Coord
 {
     /// <summary>
     /// Détermine le milieu d'un segment défini par deux <see cref="PointVisualObject"/>
     /// </summary>
-    public class MiddlePointDefinition : PointDefinition
+    public class MiddlePointDefinition : PointDefinition, ICoordEditable
     {
+        public override string Type => "MiddlePointDefinition";
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("PointA", PointAProperty);
+                yield return ("PointB", PointBProperty);
+            }
+        }
+
         /// <summary>
         /// Première extrémité du segment
         /// </summary>

@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="CoordAnimation.SizeEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="150" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="35"/>
+        </Grid.ColumnDefinitions>
+
+        <benlib:DoubleEditor Value="{Binding SizeWidth, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center"/>
+        <benlib:DoubleEditor Value="{Binding SizeHeight, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
+        <Grid Name="grid" Grid.Row="1">
+            <Border Name="border" Margin="5"/>
+            <benlib:ArrowLine Margin="5, 0" Stroke="{Binding Foreground}" StrokeThickness="1" Y1="5" Y2="5" X2="{Binding ActualWidth, ElementName=border}" ArrowLength="7" ArrowAngle="45" ArrowEnds="Both"/>
+            <benlib:ArrowLine Margin="-5, 5" Stroke="{Binding Foreground}" StrokeThickness="1" X1="{Binding ActualWidth, ElementName=grid}" X2="{Binding ActualWidth, ElementName=grid}" Y2="{Binding ActualHeight, ElementName=border}" ArrowLength="7" ArrowAngle="45" ArrowEnds="Both"/>
+            <Line Margin="5" Stroke="{Binding Foreground}" StrokeThickness="1" Y2="{Binding ActualHeight, ElementName=border}"/>
+            <Line Margin="5, -5" Stroke="{Binding Foreground}" StrokeThickness="1" Y1="{Binding ActualHeight, ElementName=grid}" Y2="{Binding ActualHeight, ElementName=grid}" X2="{Binding ActualWidth, ElementName=border}"/>
+        </Grid>
+    </Grid>
+</UserControl>

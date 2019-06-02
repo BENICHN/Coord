@@ -4,8 +4,20 @@ using System.Windows;
 
 namespace Coord
 {
-    public class RotateCharacterEffect : CharacterEffect
+    public class RotateCharacterEffect : CharacterEffect, ICoordEditable
     {
+        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
+        {
+            get
+            {
+                yield return ("Center", CenterProperty);
+                yield return ("In", InProperty);
+                yield return ("Angle", AngleProperty);
+                yield return ("Progress", ProgressProperty);
+                yield return ("WithTransforms", WithTransformsProperty);
+            }
+        }
+
         public Point Center { get => (Point)GetValue(CenterProperty); set => SetValue(CenterProperty, value); }
         public static readonly DependencyProperty CenterProperty = CreateProperty<Point>(true, true, "Center", typeof(RotateCharacterEffect));
 

@@ -11,16 +11,8 @@ namespace Coord
     {
         public override string Type => "Cadre";
 
-        public TrackingCharacterSelection CharacterSelection { get => (TrackingCharacterSelection)GetValue(CharacterSelectionProperty); set => SetValue(CharacterSelectionProperty, value); }
-        public static readonly DependencyProperty CharacterSelectionProperty = CreateProperty<TrackingCharacterSelection>(true, true, "CharacterSelection", typeof(CadreVisualObject), (sender, e) =>
-        {
-            if (sender is CadreVisualObject owner)
-            {
-                if (e.OldValue is TrackingCharacterSelection oldValue) oldValue.SelectionChanged -= owner.ChangedHandler;
-                if (e.NewValue is TrackingCharacterSelection newValue) newValue.SelectionChanged += owner.ChangedHandler;
-                owner.Reset();
-            }
-        });
+        public CharacterSelection CharacterSelection { get => (CharacterSelection)GetValue(CharacterSelectionProperty); set => SetValue(CharacterSelectionProperty, value); }
+        public static readonly DependencyProperty CharacterSelectionProperty = CreateProperty<CharacterSelection>(true, true, "CharacterSelection", typeof(CadreVisualObject), (sender, e) => (sender as CadreVisualObject).Reset());
 
         public bool IsEnabled { get => (bool)GetValue(IsEnabledProperty); set => SetValue(IsEnabledProperty, value); }
         public static readonly DependencyProperty IsEnabledProperty = CreateProperty<bool>(true, true, "IsEnabled", typeof(CadreVisualObject));
