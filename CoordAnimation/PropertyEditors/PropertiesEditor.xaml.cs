@@ -7,6 +7,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 
 namespace CoordAnimation
 {
@@ -53,118 +55,116 @@ namespace CoordAnimation
             var type = property.PropertyType;
             if (type == typeof(string))
             {
-                var editor = new SwitchableTextBox { Text = (string)owner.GetValue(property) };
-                editor.Desactivated += (sender, e) => owner.SetValue(property, ((SwitchableTextBox)sender).Text);
+                var editor = new SwitchableTextBox();
+                editor.SetBinding(SwitchableTextBox.TextProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(int))
             {
-                var editor = new IntEditor { Value = (int)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new IntEditor();
+                editor.SetBinding(IntEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(uint))
             {
-                var editor = new UIntEditor { Value = (uint)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new UIntEditor();
+                editor.SetBinding(UIntEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(long))
             {
-                var editor = new LongEditor { Value = (long)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new LongEditor();
+                editor.SetBinding(LongEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(ulong))
             {
-                var editor = new ULongEditor { Value = (ulong)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new ULongEditor();
+                editor.SetBinding(ULongEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(double))
             {
-                var editor = new DoubleEditor { Value = (double)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new DoubleEditor();
+                editor.SetBinding(DoubleEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(decimal))
             {
-                var editor = new DecimalEditor { Value = (decimal)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new DecimalEditor();
+                editor.SetBinding(DecimalEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(float))
             {
-                var editor = new FloatEditor { Value = (float)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new FloatEditor();
+                editor.SetBinding(FloatEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(short))
             {
-                var editor = new ShortEditor { Value = (short)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new ShortEditor();
+                editor.SetBinding(ShortEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(ushort))
             {
-                var editor = new UShortEditor { Value = (ushort)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new UShortEditor();
+                editor.SetBinding(UShortEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(byte))
             {
-                var editor = new ByteEditor { Value = (byte)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new ByteEditor();
+                editor.SetBinding(ByteEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(sbyte))
             {
-                var editor = new SByteEditor { Value = (sbyte)owner.GetValue(property) };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new SByteEditor();
+                editor.SetBinding(SByteEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(bool))
             {
-                var editor = new CheckBox { IsChecked = (bool)owner.GetValue(property) };
-                editor.Checked += (sender, e) => owner.SetValue(property, true);
-                editor.Unchecked += (sender, e) => owner.SetValue(property, false);
+                var editor = new CheckBox();
+                editor.SetBinding(ToggleButton.IsCheckedProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(bool?))
             {
-                var editor = new CheckBox { IsThreeState = true, IsChecked = (bool)owner.GetValue(property) };
-                editor.Checked += (sender, e) => owner.SetValue(property, ((CheckBox)sender).IsChecked);
-                editor.Unchecked += (sender, e) => owner.SetValue(property, ((CheckBox)sender).IsChecked);
+                var editor = new CheckBox { IsThreeState = true };
+                editor.SetBinding(ToggleButton.IsCheckedProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(Point))
             {
-                var editor = new PointEditor { Point = (Point)owner.GetValue(property) };
-                editor.PointChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new PointEditor();
+                editor.SetBinding(PointEditor.PointProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(Vector))
             {
-                var editor = new VectorEditor { Vector = (Vector)owner.GetValue(property) };
-                editor.VectorChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new VectorEditor();
+                editor.SetBinding(VectorEditor.VectorProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(Size))
             {
-                var editor = new SizeEditor { Size = (Size)owner.GetValue(property), Width = 150, Height = 100 };
-                editor.SizeChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new SizeEditor { Width = 150, Height = 100 };
+                editor.SetBinding(SizeEditor.SizeProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(Rect))
             {
-                var editor = new RectEditor { Rect = (Rect)owner.GetValue(property), Width = 150, Height = 100 };
-                editor.RectChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new RectEditor { Width = 150, Height = 100 };
+                editor.SetBinding(RectEditor.RectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(RectPoint))
             {
-                var editor = new RectPointEditor { RectPoint = (RectPoint)owner.GetValue(property), Width = 150, Height = 100 };
-                editor.RectPointChanged += (sender, e) => owner.SetValue(property, e.NewValue);
+                var editor = new RectPointEditor { Width = 150, Height = 100 };
+                editor.SetBinding(RectPointEditor.RectPointProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(Progress))
@@ -175,26 +175,26 @@ namespace CoordAnimation
             }
             else if (type == typeof(Interval<int>))
             {
-                var editor = new IntervalEditor(IntervalType.Int, owner.GetValue(property));
-                editor.IntervalChanged += (sender, e) => owner.SetValue(property, ((IntervalEditor)sender).IntInterval);
+                var editor = new IntervalEditor { IntervalType = IntervalType.Int };
+                editor.SetBinding(IntervalEditor.IntIntervalProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (type == typeof(VisualObject))
             {
-                var editor = new VisualObjectSelector { Selection = App.Scene.Plane.Selection, VisualObject = (VisualObject)owner.GetValue(property) };
-                editor.VisualObjectChanged += (sender, e) => owner.SetValue(property, ((VisualObjectSelector)sender).VisualObject);
+                var editor = new VisualObjectSelector { Selection = App.Scene.Plane.Selection };
+                editor.SetBinding(VisualObjectSelector.VisualObjectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (typeof(VisualObject).IsAssignableFrom(type))
             {
-                var editor = new VisualObjectSelector { Selection = App.Scene.Plane.Selection, VisualObject = (VisualObject)owner.GetValue(property), Filter = vo => type.IsAssignableFrom(vo.GetType()), AllAtOnce = true, AllowMultiple = false };
-                editor.VisualObjectChanged += (sender, e) => owner.SetValue(property, ((VisualObjectSelector)sender).VisualObject);
+                var editor = new VisualObjectSelector { Selection = App.Scene.Plane.Selection, Filter = vo => type.IsAssignableFrom(vo.GetType()), AllAtOnce = true, AllowMultiple = false };
+                editor.SetBinding(VisualObjectSelector.VisualObjectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else if (typeof(NotifyObject).IsAssignableFrom(type))
             {
-                var editor = new PropertiesEditor { Object = (NotifyObject)owner.GetValue(property) };
-                editor.ObjectChanged += (sender, e) => owner.SetValue(property, ((PropertiesEditor)sender).Object);
+                var editor = new PropertiesEditor();
+                editor.SetBinding(ObjectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
                 return editor;
             }
             else return null;

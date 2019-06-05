@@ -397,7 +397,67 @@
         <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
         <Setter Property="SForeground" Value="White"/>
     </Style>
+    <Style x:Key="{x:Type benlib:FloatEditor}" TargetType="{x:Type benlib:FloatEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
     <Style x:Key="{x:Type benlib:DoubleEditor}" TargetType="{x:Type benlib:DoubleEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:DecimalEditor}" TargetType="{x:Type benlib:DecimalEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:IntEditor}" TargetType="{x:Type benlib:IntEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:UIntEditor}" TargetType="{x:Type benlib:UIntEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:LongEditor}" TargetType="{x:Type benlib:LongEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:ULongEditor}" TargetType="{x:Type benlib:ULongEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:ShortEditor}" TargetType="{x:Type benlib:ShortEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:UShortEditor}" TargetType="{x:Type benlib:UShortEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:ByteEditor}" TargetType="{x:Type benlib:ByteEditor}">
+        <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>
+        <Setter Property="SForeground" Value="White"/>
+    </Style>
+    <Style x:Key="{x:Type benlib:SByteEditor}" TargetType="{x:Type benlib:SByteEditor}">
         <Setter Property="ToolTipService.InitialShowDelay" Value="1000"/>
         <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         <Setter Property="SBackground" Value="{StaticResource VSBackground}"/>

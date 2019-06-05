@@ -1,9 +1,9 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using CoordSpec;
 using System;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using static Coord.VisualObjects;
 using static System.Math;
 
@@ -49,7 +50,7 @@ namespace CoordAnimation
             Plane.ContextMenu = cm;
         }
 
-        private void Selection_Changed(object sender, EventArgs e) => EffectsEditor.Object = Plane.Selection.VisualObjects.FirstOrDefault();
+        private void Selection_Changed(object sender, EventArgs e) { if (Plane.Selection.UsageCount == 0) VisualObjectsEditor.Object = Plane.Selection.VisualObjects.FirstOrDefault(); }
 
         private void Plane_OverAxesNumbersChanged(object sender, PropertyChangedExtendedEventArgs<VisualObject> e) => Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
 
@@ -87,10 +88,13 @@ namespace CoordAnimation
             Plane.VisualObjects.Add(new ELC { Center = new PointVisualObject { Definition = p.Definition, Fill = FlatBrushes.Amethyst, Radius = 15 }, Rank = 5, Stroke = new Pen(FlatBrushes.Pumpkin, 3) });
             Plane.VisualObjects.Add(d);
 
-            EffectElements.Add(new CharacterEffectElement(new InsertCharacterEffect(), new AnimationData((0, 60), null), t));
-            EffectElements.Add(new CharacterEffectElement(new TranslateCharacterEffect { Vector = new Vector(0, 5), In = true }, new AnimationData((0, 60), null), t));
-            EffectElements.Add(new CharacterEffectElement(new ScaleCharacterEffect(), new AnimationData((0, 80), null), t));
-            EffectElements.Add(new CharacterEffectElement(new SizeCharacterEffect(), new AnimationData((70, 100), null), t));
+            c.Definition.AddKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new LinearAbsoluteKeyFrame<double> { FramesCount = 120, Value = 8 });
+            c.Definition.AddKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new EasingAbsoluteKeyFrame<double> { FramesCount = 180, Value = 5, EasingFunction = new CubicEase() });
+
+            //EffectElements.Add(new CharacterEffectElement(new InsertCharacterEffect(), new AnimationData((0, 60), null), t));
+            //EffectElements.Add(new CharacterEffectElement(new TranslateCharacterEffect { Vector = new Vector(0, 5), In = true }, new AnimationData((0, 60), null), t));
+            //EffectElements.Add(new CharacterEffectElement(new ScaleCharacterEffect(), new AnimationData((0, 80), null), t));
+            //EffectElements.Add(new CharacterEffectElement(new SizeCharacterEffect(), new AnimationData((70, 100), null), t));
 
             var dp1 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Alizarin, new PlanePen(FlatBrushes.Clouds, 3));
             var dp2 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.PeterRiver, new PlanePen(FlatBrushes.Clouds, 3));
@@ -108,6 +112,7 @@ namespace CoordAnimation
                 dp5.Update(1.0 / 60);
                 Plane.RenderChanged();
             };
+            //CompositionTarget.Rendering += (sender, e) => Plane.RenderChanged();
 
             await d.Animate();
             //BenLib.Framework.ThreadingFramework.SetInterval(() => previewPlane.RenderChanged(), 1000.0 / 60);
@@ -128,7 +133,7 @@ namespace CoordAnimation
             //RefreshElements();
         }
 
-        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) => EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect;
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (Plane.Selection.UsageCount == 0) EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect; }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -168,6 +173,12 @@ namespace CoordAnimation
                 treeViewItem.IsSelected = false;
             }
         }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e) => CompositionTarget.Rendering += (sender, e) =>
+        {
+            NotifyObject.GeneralTime ++;
+            Plane.RenderChanged();
+        };
     }
 
     public struct ContextMenuCharacterEffectType

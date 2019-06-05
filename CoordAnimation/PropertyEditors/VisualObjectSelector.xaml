@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:coord="clr-namespace:Coord;assembly=CoordLib"
              xmlns:local="clr-namespace:CoordAnimation"
-             mc:Ignorable="d" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             mc:Ignorable="d" Name="this" DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
@@ -16,15 +16,15 @@
                 <DataTemplate DataType="{x:Type coord:VisualObject}">
                     <DockPanel Height="25">
                         <local:VisualObjectControl ObjectName="{Binding (local:VisualObjectElement.Name), Mode=TwoWay}" ObjectType="{Binding Type, Mode=OneTime}"/>
-                        <TextBlock Text=" | " VerticalAlignment="Center"/>
-                        <local:IntervalEditor IntervalType="Int" IntInterval="{Binding Selection, Mode=TwoWay}"/>
+                        <TextBlock Text=" | " VerticalAlignment="Center" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <local:IntervalEditor IntervalType="Int" IntInterval="{Binding Selection, Mode=TwoWay}" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </DockPanel>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:VisualObjectPart}">
                     <DockPanel Height="25">
                         <local:VisualObjectControl ObjectName="{Binding VisualObject.(local:VisualObjectElement.Name), Mode=TwoWay}" ObjectType="{Binding VisualObject.Type, Mode=OneTime}"/>
-                        <TextBlock Text=" | " VerticalAlignment="Center"/>
-                        <local:IntervalEditor IntervalType="Int" IntInterval="{Binding Interval, Mode=TwoWay}"/>
+                        <TextBlock Text=" | " VerticalAlignment="Center" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <local:IntervalEditor IntervalType="Int" IntInterval="{Binding Interval, Mode=TwoWay}" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </DockPanel>
                 </DataTemplate>
             </ItemsControl.Resources>

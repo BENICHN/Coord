@@ -67,6 +67,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -91,76 +94,76 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="CharacterAnimation\EffectElement.cs" />
-    <Compile Include="ConfigEdit\ConfigEdit.xaml.cs">
+    <Compile Include="EffectElement.cs" />
+    <Compile Include="ConfigEdit.xaml.cs">
       <DependentUpon>ConfigEdit.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertiesEditor.xaml.cs">
+    <Compile Include="PropertyEditors\PropertiesEditor.xaml.cs">
       <DependentUpon>PropertiesEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertiesSelector.xaml.cs">
+    <Compile Include="PropertyEditors\PropertiesSelector.xaml.cs">
       <DependentUpon>PropertiesSelector.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\RectEditor.xaml.cs">
+    <Compile Include="PropertyEditors\RectEditor.xaml.cs">
       <DependentUpon>RectEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\VectorEditor.xaml.cs">
+    <Compile Include="PropertyEditors\VectorEditor.xaml.cs">
       <DependentUpon>VectorEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\PointEditor.xaml.cs">
+    <Compile Include="PropertyEditors\PointEditor.xaml.cs">
       <DependentUpon>PointEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\VisualObjectSelector.xaml.cs">
+    <Compile Include="PropertyEditors\VisualObjectSelector.xaml.cs">
       <DependentUpon>VisualObjectSelector.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CharacterAnimation\VisualObjectControl.xaml.cs">
+    <Compile Include="Timeline.xaml.cs">
+      <DependentUpon>Timeline.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TimelineBackground.cs" />
+    <Compile Include="VisualObjectControl.xaml.cs">
       <DependentUpon>VisualObjectControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\SizeEditor.xaml.cs">
+    <Compile Include="PropertyEditors\SizeEditor.xaml.cs">
       <DependentUpon>SizeEditor.xaml</DependentUpon>
     </Compile>
-    <Page Include="ConfigEdit\ConfigEdit.xaml">
+    <Page Include="ConfigEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CharacterAnimation\Scene.xaml">
+    <Page Include="Scene.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <None Include="app.manifest" />
-    <Page Include="ConfigEdit\TexEdit.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="EffectEdit\PropertiesEditor.xaml">
+    <Page Include="PropertyEditors\PropertiesEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EffectEdit\PropertiesSelector.xaml">
+    <Page Include="PropertyEditors\PropertiesSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\IntervalEditor.xaml">
+    <Page Include="PropertyEditors\IntervalEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\RectEditor.xaml">
+    <Page Include="PropertyEditors\RectEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\VectorEditor.xaml">
+    <Page Include="PropertyEditors\VectorEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\PointEditor.xaml">
+    <Page Include="PropertyEditors\PointEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\RangeEditor.xaml">
+    <Page Include="PropertyEditors\RangeEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\RectPointEditor.xaml">
+    <Page Include="PropertyEditors\RectPointEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -176,20 +179,17 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CharacterAnimation\Elements.cs" />
-    <Compile Include="CharacterAnimation\Scene.xaml.cs">
+    <Compile Include="Elements.cs" />
+    <Compile Include="Scene.xaml.cs">
       <DependentUpon>Scene.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConfigEdit\TexEdit.xaml.cs">
-      <DependentUpon>TexEdit.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\IntervalEditor.xaml.cs">
+    <Compile Include="PropertyEditors\IntervalEditor.xaml.cs">
       <DependentUpon>IntervalEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\RangeEditor.xaml.cs">
+    <Compile Include="PropertyEditors\RangeEditor.xaml.cs">
       <DependentUpon>RangeEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EffectEdit\PropertyEditors\RectPointEditor.xaml.cs">
+    <Compile Include="PropertyEditors\RectPointEditor.xaml.cs">
       <DependentUpon>RectPointEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Global.xaml.cs">
@@ -199,15 +199,19 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="EffectEdit\PropertyEditors\VisualObjectSelector.xaml">
+    <Page Include="PropertyEditors\VisualObjectSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CharacterAnimation\VisualObjectControl.xaml">
+    <Page Include="Timeline.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EffectEdit\PropertyEditors\SizeEditor.xaml">
+    <Page Include="VisualObjectControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PropertyEditors\SizeEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

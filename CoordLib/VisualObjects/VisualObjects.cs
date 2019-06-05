@@ -69,9 +69,9 @@ namespace Coord
         #region CurveVisualObject
 
         public static CurveVisualObject Curve(Series series, bool closed, bool smooth, double smoothValue = 0.75) => new CurveVisualObject { Series = series, Closed = closed, Smooth = smooth, SmoothValue = smoothValue };
-        public static CurveVisualObject FunctionCurve(Func<double, double> function, bool smooth, double smoothValue = 0.75) => FunctionCurve(function, Interval<decimal>.Reals, SeriesType.Y, 0, false, smooth, smoothValue);
-        public static CurveVisualObject FunctionCurve(Func<double, double> function, Interval<decimal> interval, bool smooth, double smoothValue = 0.75) => FunctionCurve(function, interval, SeriesType.Y, 0, false, smooth, smoothValue);
-        public static CurveVisualObject FunctionCurve(Func<double, double> function, Interval<decimal> interval, SeriesType type, decimal density, bool closed, bool smooth, double smoothValue = 0.75) => Curve(new FunctionSeries { Function = function, Interval = interval, Type = type, Density = density }, closed, smooth, smoothValue);
+        public static CurveVisualObject FunctionCurve(Func<double, double> function, bool smooth, double smoothValue = 0.75) => FunctionCurve(function, Interval<double>.Reals, SeriesType.Y, 0, false, smooth, smoothValue);
+        public static CurveVisualObject FunctionCurve(Func<double, double> function, Interval<double> interval, bool smooth, double smoothValue = 0.75) => FunctionCurve(function, interval, SeriesType.Y, 0, false, smooth, smoothValue);
+        public static CurveVisualObject FunctionCurve(Func<double, double> function, Interval<double> interval, SeriesType type, double density, bool closed, bool smooth, double smoothValue = 0.75) => Curve(new FunctionSeries { Function = function, Interval = interval, Type = type, Density = density }, closed, smooth, smoothValue);
 
         #endregion
 
@@ -611,7 +611,7 @@ namespace Coord
                 return effect.Key.Progress;
             }).ToArray();
 
-            await AnimateDouble(null, value => characterEffects.ForEach((effect, i) => effect.Key.Progress = progress[i].ChangeValue(value)), from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
+            await Animating.Animate(null, value => characterEffects.ForEach((effect, i) => effect.Key.Progress = progress[i].ChangeValue(value)), from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
 
             if (destroy) characterEffects.ForEach(effect => effect.Key.Destroy());
             return visualObject;
@@ -624,7 +624,7 @@ namespace Coord
             var effect = new ColorCharacterEffect { Fill = fill, Stroke = stroke };
             visualObject.Color(interval, effect);
 
-            await AnimateDouble(null, value => effect.Progress = value, 0.0, 1.0, TimeSpan.FromSeconds(secondsDelay), default, false, false, null, FPS);
+            await Animating.Animate(null, value => effect.Progress = value, 0.0, 1.0, TimeSpan.FromSeconds(secondsDelay), default, false, false, null, FPS);
         }
 
         public static Task<T> Write<T>(this T visualObject, bool small, bool reverse, double strokeThickness = 1, double seconds = double.NaN, double lagFactor = double.NaN) where T : VisualObject => Write(visualObject, PositiveReals, small, reverse, strokeThickness, seconds, lagFactor);

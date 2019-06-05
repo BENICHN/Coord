@@ -6,7 +6,7 @@ namespace Coord
     {
         public static void DrawCharacter(this DrawingContext drawingContext, Character character, bool transform = false, bool? release = false)
         {
-            bool transformed = character.Transformed;
+            bool transformed = character.IsTransformed;
             if (transform) character.ApplyTransforms();
             drawingContext.DrawGeometry(character.Fill, character.Stroke, character.Geometry);
             if (character.IsSelected) drawingContext.DrawGeometry(null, VisualObject.SelectionStroke, character.Geometry);

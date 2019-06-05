@@ -42,6 +42,8 @@ namespace Coord
         public void SetInPoint(Point inPoint) { if (Definition is PointPointDefinition definition) definition.InPoint = inPoint; }
         public void SetInPoint(double x, double y) => SetInPoint(new Point(x, y));
 
+        public override void Move(Vector inOffset) => SetInPoint(Definition.InPoint + inOffset);
+
         public override string ToString() => Definition.InPoint.ToString();
 
         protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Fill, Stroke, Definition, Radius);

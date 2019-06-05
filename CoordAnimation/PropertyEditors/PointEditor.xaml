@@ -9,14 +9,14 @@
         <TextBlock Text="● " Visibility="{Binding Prefix, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         <TextBlock Text="("/>
         <DockPanel Name="Coordinates">
-            <benlib:DoubleEditor Name="X" Desactivated="SwitchableTextBox_Desactivated"/>
+            <benlib:DoubleEditor Name="X" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged"/>
             <TextBlock Text=" ; " VerticalAlignment="Center"/>
-            <benlib:DoubleEditor Name="Y" Desactivated="SwitchableTextBox_Desactivated"/>
+            <benlib:DoubleEditor Name="Y" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged"/>
         </DockPanel>
         <DockPanel Name="Polar" Visibility="Collapsed">
-            <benlib:DoubleEditor Name="L" Desactivated="SwitchableTextBox_Desactivated" IsUnsigned="True"/>
+            <benlib:DoubleEditor Name="L" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged" IsUnsigned="True"/>
             <TextBlock Text=" ∠ " VerticalAlignment="Center"/>
-            <benlib:DoubleEditor Name="A" Desactivated="SwitchableTextBox_Desactivated"/>
+            <benlib:DoubleEditor Name="A" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged"/>
             <TextBlock Name="AngleUnit" Text=" °" VerticalAlignment="Center"/>
         </DockPanel>
         <TextBlock Text=")"/>

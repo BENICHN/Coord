@@ -14,11 +14,11 @@ namespace Coord
         public bool Secondary { get => (bool)GetValue(SecondaryProperty); set => SetValue(SecondaryProperty, value); }
         public static readonly DependencyProperty SecondaryProperty = CreateProperty<bool>(true, true, "Secondary", typeof(GridVisualObject));
 
-        public decimal HorizontalStep { get => (decimal)GetValue(HorizontalStepProperty); set => SetValue(HorizontalStepProperty, value); }
-        public static readonly DependencyProperty HorizontalStepProperty = CreateProperty<decimal>(true, true, "HorizontalStep", typeof(GridVisualObject));
+        public double HorizontalStep { get => (double)GetValue(HorizontalStepProperty); set => SetValue(HorizontalStepProperty, value); }
+        public static readonly DependencyProperty HorizontalStepProperty = CreateProperty<double>(true, true, "HorizontalStep", typeof(GridVisualObject));
 
-        public decimal VerticalStep { get => (decimal)GetValue(VerticalStepProperty); set => SetValue(VerticalStepProperty, value); }
-        public static readonly DependencyProperty VerticalStepProperty = CreateProperty<decimal>(true, true, "VerticalStep", typeof(GridVisualObject));
+        public double VerticalStep { get => (double)GetValue(VerticalStepProperty); set => SetValue(VerticalStepProperty, value); }
+        public static readonly DependencyProperty VerticalStepProperty = CreateProperty<double>(true, true, "VerticalStep", typeof(GridVisualObject));
 
         public int SecondaryDensity { get => (int)GetValue(SecondaryDensityProperty); set => SetValue(SecondaryDensityProperty, value); }
         public static readonly DependencyProperty SecondaryDensityProperty = CreateProperty(true, true, "SecondaryDensity", typeof(GridVisualObject), 3);
@@ -37,14 +37,14 @@ namespace Coord
                 var outRange = coordinatesSystemManager.OutputRange;
                 var inRange = coordinatesSystemManager.InputRange;
 
-                decimal horizontalStep = HorizontalStep > 0M ? HorizontalStep : coordinatesSystemManager.GetHorizontalStep();
-                decimal verticalStep = VerticalStep > 0M ? VerticalStep : coordinatesSystemManager.GetVerticalStep();
+                double horizontalStep = HorizontalStep > 0 ? HorizontalStep : coordinatesSystemManager.GetHorizontalStep();
+                double verticalStep = VerticalStep > 0 ? VerticalStep : coordinatesSystemManager.GetVerticalStep();
 
-                decimal horizontalStart = coordinatesSystemManager.GetHorizontalStart(horizontalStep);
-                decimal verticalStart = coordinatesSystemManager.GetVerticalStart(verticalStep);
+                double horizontalStart = coordinatesSystemManager.GetHorizontalStart(horizontalStep);
+                double verticalStart = coordinatesSystemManager.GetVerticalStart(verticalStep);
 
-                decimal horizontalEnd = coordinatesSystemManager.GetHorizontalEnd(horizontalStep);
-                decimal verticalEnd = coordinatesSystemManager.GetVerticalEnd(verticalStep);
+                double horizontalEnd = coordinatesSystemManager.GetHorizontalEnd(horizontalStep);
+                double verticalEnd = coordinatesSystemManager.GetVerticalEnd(verticalStep);
 
                 yield return Character.Rectangle(outRange).Color(Fill);
 
@@ -52,9 +52,9 @@ namespace Coord
                 {
                     int secondaryDensity = SecondaryDensity;
                     int horizontalStepProgress = 0;
-                    decimal smallHorizontalStep = horizontalStep / secondaryDensity;
+                    double smallHorizontalStep = horizontalStep / secondaryDensity;
 
-                    for (decimal i = horizontalStart - horizontalStep + smallHorizontalStep; i < horizontalEnd; i += smallHorizontalStep)
+                    for (double i = horizontalStart - horizontalStep + smallHorizontalStep; i < horizontalEnd; i += smallHorizontalStep)
                     {
                         horizontalStepProgress++;
                         if (horizontalStepProgress == secondaryDensity)
@@ -63,14 +63,13 @@ namespace Coord
                             continue;
                         }
 
-                        double doubleI = (double)i;
-                        yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(doubleI, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(doubleI, inRange.Top))).Color(SecondaryStroke);
+                        yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Top))).Color(SecondaryStroke);
                     }
 
                     int verticalStepProgress = 0;
-                    decimal smallVerticalStep = verticalStep / secondaryDensity;
+                    double smallVerticalStep = verticalStep / secondaryDensity;
 
-                    for (decimal i = verticalStart - verticalStep + smallVerticalStep; i < verticalEnd; i += smallVerticalStep)
+                    for (double i = verticalStart - verticalStep + smallVerticalStep; i < verticalEnd; i += smallVerticalStep)
                     {
                         verticalStepProgress++;
                         if (verticalStepProgress == secondaryDensity)
@@ -79,24 +78,14 @@ namespace Coord
                             continue;
                         }
 
-                        double doubleI = (double)i;
-                        yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, doubleI)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, doubleI))).Color(SecondaryStroke);
+                        yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, i)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, i))).Color(SecondaryStroke);
                     }
                 }
 
                 if (Primary)
                 {
-                    for (decimal i = horizontalStart; i < horizontalEnd; i += horizontalStep)
-                    {
-                        double doubleI = (double)i;
-                        yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(doubleI, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(doubleI, inRange.Top))).Color(Stroke);
-                    }
-
-                    for (decimal i = verticalStart; i < verticalEnd; i += verticalStep)
-                    {
-                        double doubleI = (double)i;
-                        yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, doubleI)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, doubleI))).Color(Stroke);
-                    }
+                    for (double i = horizontalStart; i < horizontalEnd; i += horizontalStep) yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Top))).Color(Stroke);
+                    for (double i = verticalStart; i < verticalEnd; i += verticalStep) yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, i)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, i))).Color(Stroke);
                 }
             }
         }

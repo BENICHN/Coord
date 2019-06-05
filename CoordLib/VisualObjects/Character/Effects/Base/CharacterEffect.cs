@@ -42,7 +42,7 @@ namespace Coord
             {
                 bool[] tr = characters.Select(c =>
                 {
-                    bool result = c.Transformed;
+                    bool result = c.IsTransformed;
                     c.ApplyTransforms();
                     return result;
                 }).ToArray();

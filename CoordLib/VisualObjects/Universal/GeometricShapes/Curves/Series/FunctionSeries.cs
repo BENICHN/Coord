@@ -25,11 +25,11 @@ namespace Coord
         /// <summary>
         /// Nombre de points par cellule de grille
         /// </summary>
-        public decimal Density { get => (decimal)GetValue(DensityProperty); set => SetValue(DensityProperty, value); }
-        public static readonly DependencyProperty DensityProperty = CreateProperty<decimal>(true, true, "Density", typeof(FunctionSeries));
+        public double Density { get => (double)GetValue(DensityProperty); set => SetValue(DensityProperty, value); }
+        public static readonly DependencyProperty DensityProperty = CreateProperty<double>(true, true, "Density", typeof(FunctionSeries));
 
-        public Interval<decimal> Interval { get => (Interval<decimal>)GetValue(IntervalProperty); set => SetValue(IntervalProperty, value); }
-        public static readonly DependencyProperty IntervalProperty = CreateProperty<Interval<decimal>>(true, true, "Interval", typeof(FunctionSeries));
+        public Interval<double> Interval { get => (Interval<double>)GetValue(IntervalProperty); set => SetValue(IntervalProperty, value); }
+        public static readonly DependencyProperty IntervalProperty = CreateProperty<Interval<double>>(true, true, "Interval", typeof(FunctionSeries));
 
         /// <summary>
         /// Calcule les coordonnées à l'écran des points de <see cref="Function"/> de cette <see cref="Series"/>
@@ -38,13 +38,12 @@ namespace Coord
         /// <returns>Coordonnées à l'écran des points de <see cref="Function"/> de cette <see cref="Series"/></returns>
         public override Point[] GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
-            decimal step = coordinatesSystemManager.GetHorizontalStep() / (Density > 0 ? Density : 100);
+            double step = coordinatesSystemManager.GetHorizontalStep() / (Density > 0 ? Density : 100);
 
-            decimal start = coordinatesSystemManager.GetHorizontalStart(step);
-            decimal end = coordinatesSystemManager.GetHorizontalEnd(step);
-            decimal length = end - start + step;
+            double start = coordinatesSystemManager.GetHorizontalStart(step);
+            double end = coordinatesSystemManager.GetHorizontalEnd(step);
 
-            return Collections.DecimalRange(start, length, step).Select(i =>
+            return Interval<double>.CC(start, end).Numbers(step).Select(i =>
             {
                 if (Interval >= i)
                 {

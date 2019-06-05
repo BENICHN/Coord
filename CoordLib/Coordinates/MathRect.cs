@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Media;
 
 namespace Coord
@@ -6,7 +7,7 @@ namespace Coord
     /// <summary>
     /// Décrit la largeur, la hauteur et l'emplacement d'un rectangle dans un repère orthonormé standard.
     /// </summary>
-    public struct MathRect
+    public readonly struct MathRect : IEquatable<MathRect>
     {
         public MathRect(Size size)
         {
@@ -46,10 +47,10 @@ namespace Coord
             Height = height;
         }
 
-        public double X { get; set; }
-        public double Y { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
+        public double X { get; }
+        public double Y { get; }
+        public double Width { get; }
+        public double Height { get; }
 
         public double Left => X;
         public double Bottom => Y;
@@ -73,6 +74,21 @@ namespace Coord
         public bool HeightContainsRange(double rangeBeginning, double rangeEnd, bool allRange) => allRange ? Bottom <= rangeBeginning && rangeEnd <= Top : Bottom > rangeBeginning && Top < rangeEnd;
 
         public override string ToString() => $"{X};{Y};{Width};{Height}";
+        public override bool Equals(object obj) => obj is MathRect rect && Equals(rect);
+        public bool Equals(MathRect other) => X == other.X && Y == other.Y && Width == other.Width && Height == other.Height;
+
+        public override int GetHashCode()
+        {
+            int hashCode = 466501756;
+            hashCode = hashCode * -1521134295 + X.GetHashCode();
+            hashCode = hashCode * -1521134295 + Y.GetHashCode();
+            hashCode = hashCode * -1521134295 + Width.GetHashCode();
+            hashCode = hashCode * -1521134295 + Height.GetHashCode();
+            return hashCode;
+        }
+
+        public static bool operator ==(MathRect left, MathRect right) => left.Equals(right);
+        public static bool operator !=(MathRect left, MathRect right) => !(left == right);
     }
 
     public static partial class Extensions

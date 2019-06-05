@@ -49,8 +49,8 @@ namespace CoordSpec
             await m_syncpc.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }, 1, 0);
         }
 
-        public Task Step2() => Task.WhenAll(AnimateDouble(null, value => ArrowLength = value, 0, 20, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60), m_syncpf.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }, 1, 0)).AtLeast(90);
-        public Task Step3() => Task.WhenAll(AnimateDouble(null, value => ArrowLength = value, 20, 15, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60), m_syncpd.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }), m_syncpe.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }, 1, 0), m_syncpg.Animate(1.15));
+        public Task Step2() => Task.WhenAll(Animate<double>(null, value => ArrowLength = value, 0, 20, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60), m_syncpf.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }, 1, 0)).AtLeast(90);
+        public Task Step3() => Task.WhenAll(Animate<double>(null, value => ArrowLength = value, 20, 15, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60), m_syncpd.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }), m_syncpe.Animate(1, new CubicEase { EasingMode = EasingMode.EaseInOut }, 1, 0), m_syncpg.Animate(1.15));
 
         public async Task Animate()
         {

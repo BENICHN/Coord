@@ -159,5 +159,10 @@ namespace CoordAnimation
                     break;
             }
         }
+
+        private void DoubleEditor_ValueChanged(object sender, PropertyChangedExtendedEventArgs<double> e)
+        {
+            if (!(sender as DoubleEditor).IsActivated) Point = GetPointFromText();
+        }
     }
 }

@@ -29,22 +29,19 @@ namespace Coord
         private readonly CoordinatesSystemManager m_coordinatesSystemManager = new CoordinatesSystemManager();
 
         private int m_axesTextVisualIndex;
-        private VisualObject m_overAxesNumbers;
 
         private double m_restoreWidthRatio;
         private double m_restoreHeightRatio;
 
         protected readonly Dictionary<VisualObject, DrawingVisual> Visuals = new Dictionary<VisualObject, DrawingVisual>();
-        private readonly VisualObjectRenderer BackgroundVisualObject;
         protected DrawingVisual BackgroundVisual = new DrawingVisual();
         protected DrawingVisual AxesTextVisual = new DrawingVisual();
         protected DrawingVisual SelectionRectangle = new DrawingVisual();
-        private Cursor m_restoreCursor;
-        private bool m_enableSelectionRect;
-        private bool m_moving;
-        private bool m_selecting;
-        private bool m_charactersScaling;
-        private bool m_charactersTranslating;
+        private readonly VisualObjectRenderer m_backgroundVisualObject;
+        private bool m_isMoving;
+        private bool m_isSelecting;
+        private bool m_isCharactersScaling;
+        private bool m_isCharactersTranslating;
         private TranslateCharacterEffect m_charactersManipulatingTranslation;
         private ScaleCharacterEffect m_charactersManipulatingScale;
 
@@ -53,33 +50,13 @@ namespace Coord
         #region Propriétés
 
         protected override int VisualChildrenCount => VisualObjects.Count + 3;
+
         public VisualObjectCollection VisualObjects { get; } = new VisualObjectCollection();
-
         public TrackingCharacterSelection Selection { get; }
-        public CharacterSelection CurrentSelection
-        {
-            get => Selection.Current;
-            set
-            {
-                foreach (var vo in Selection.Keys.Except(value.Keys).ToArray()) vo.ClearSelection();
-                foreach (var kvp in value) kvp.Key.Selection = kvp.Value;
-            }
-        }
 
-        public VisualObject OverAxesNumbers
-        {
-            get => m_overAxesNumbers;
-            set
-            {
-                if (value == null || VisualObjects.Contains(value))
-                {
-                    var old = m_overAxesNumbers;
-                    m_overAxesNumbers = value;
-                    ComputeAxesTextVisualIndex();
-                    OverAxesNumbersChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<VisualObject>("OverAxesNumbers", old, value));
-                }
-            }
-        }
+        public VisualObject OverAxesNumbers { get => (VisualObject)GetValue(OverAxesNumbersProperty); set => SetValue(OverAxesNumbersProperty, value); }
+        public static readonly DependencyProperty OverAxesNumbersProperty = DependencyProperty.Register("OverAxesNumbers", typeof(VisualObject), typeof(Plane), new PropertyMetadata { CoerceValueCallback = (d, v) => v is VisualObject value && !(d as Plane).VisualObjects.Contains(value) ? null : v });
+
         public int AxesNumbersIndex => OverAxesNumbers == null ? VisualObjects.Count + 2 : VisualObjects.IndexOf(OverAxesNumbers) + 2;
 
         public AxesNumbers AxesNumbers { get; }
@@ -87,63 +64,77 @@ namespace Coord
         public GridVisualObject Grid { get; }
         public CadreVisualObject Cadre { get; }
 
-        public bool EnableCharacterEvents { get; set; }
-        public bool EnableSelection { get; set; }
-        public bool EnableMove { get; set; } = true;
-        public bool EnableZoom { get; set; } = true;
-        public bool EnableSelectionRect { get => m_enableSelectionRect && EnableSelection; set => m_enableSelectionRect = value; }
-        public bool ThroughSelection { get; set; }
+        public bool EnableCharacterEvents { get => (bool)GetValue(EnableCharacterEventsProperty); set => SetValue(EnableCharacterEventsProperty, value); }
+        public static readonly DependencyProperty EnableCharacterEventsProperty = DependencyProperty.Register("EnableCharacterEvents", typeof(bool), typeof(Plane));
+
+        public bool EnableSelection { get => (bool)GetValue(EnableSelectionProperty); set => SetValue(EnableSelectionProperty, value); }
+        public static readonly DependencyProperty EnableSelectionProperty = DependencyProperty.Register("EnableSelection", typeof(bool), typeof(Plane));
+
+        public bool EnableMove => MoveDirection != AxesDirection.None;
+        public AxesDirection MoveDirection { get => (AxesDirection)GetValue(MoveDirectionProperty); set => SetValue(MoveDirectionProperty, value); }
+        public static readonly DependencyProperty MoveDirectionProperty = DependencyProperty.Register("MoveDirection", typeof(AxesDirection), typeof(Plane), new PropertyMetadata(AxesDirection.Both));
+
+        public bool EnableZoom => ZoomDirection != AxesDirection.None;
+        public AxesDirection ZoomDirection { get => (AxesDirection)GetValue(ZoomDirectionProperty); set => SetValue(ZoomDirectionProperty, value); }
+        public static readonly DependencyProperty ZoomDirectionProperty = DependencyProperty.Register("ZoomDirection", typeof(AxesDirection), typeof(Plane), new PropertyMetadata(AxesDirection.Both));
+
+        public bool EnableSelectionRect { get => (bool)GetValue(EnableSelectionRectProperty); set => SetValue(EnableSelectionRectProperty, value); }
+        public static readonly DependencyProperty EnableSelectionRectProperty = DependencyProperty.Register("EnableSelectionRect", typeof(bool), typeof(Plane));
+
+        public bool ThroughSelection { get => (bool)GetValue(ThroughSelectionProperty); set => SetValue(ThroughSelectionProperty, value); }
+        public static readonly DependencyProperty ThroughSelectionProperty = DependencyProperty.Register("ThroughSelection", typeof(bool), typeof(Plane));
+
         public bool EnableCharactersManipulating { get => Cadre.IsEnabled; set => Cadre.IsEnabled = value; }
 
-        public bool Moving
+        public bool IsMoving
         {
-            get => m_moving;
+            get => m_isMoving;
             private set
             {
-                if (m_moving != value)
+                if (m_isMoving != value)
                 {
-                    m_moving = value;
-                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("Moving", !value, value));
+                    m_isMoving = value;
+                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("IsMoving", !value, value));
                 }
             }
         }
-        public bool Selecting
+        public bool IsSelecting
         {
-            get => m_selecting;
+            get => m_isSelecting;
             private set
             {
-                if (m_selecting != value)
+                if (m_isSelecting != value)
                 {
-                    m_selecting = value;
-                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("Selecting", !value, value));
+                    m_isSelecting = value;
+                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("IsSelecting", !value, value));
                 }
             }
         }
-        public bool CharactersScaling
+        public bool IsCharactersScaling
         {
-            get => m_charactersScaling;
+            get => m_isCharactersScaling;
             private set
             {
-                if (m_charactersScaling != value)
+                if (m_isCharactersScaling != value)
                 {
-                    m_charactersScaling = value;
-                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("CharactersScaling", !value, value));
+                    m_isCharactersScaling = value;
+                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("IsCharactersScaling", !value, value));
                 }
             }
         }
-        public bool CharactersTranslating
+        public bool IsCharactersTranslating
         {
-            get => m_charactersTranslating;
+            get => m_isCharactersTranslating;
             private set
             {
-                if (m_charactersTranslating != value)
+                if (m_isCharactersTranslating != value)
                 {
-                    m_charactersTranslating = value;
-                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("CharactersTranslating", !value, value));
+                    m_isCharactersTranslating = value;
+                    BehaviorChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<bool>("IsCharactersTranslating", !value, value));
                 }
             }
         }
-        public bool CharactersManipulating => CharactersTranslating || CharactersScaling;
+        public bool IsCharactersManipulating => IsCharactersTranslating || IsCharactersScaling;
 
         public ReadOnlyCoordinatesSystemManager CoordinatesSystemManager { get; private set; }
         public CoordinatesSystem CoordinatesSystem
@@ -162,15 +153,27 @@ namespace Coord
             set
             {
                 var old = m_coordinatesSystemManager.InputRange;
-                m_coordinatesSystemManager.InputRange = value;
-                InputRangeChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<MathRect>("InputRange", old, value));
-                RenderAll();
+                if (value != old)
+                {
+                    var outRange = CoordinatesSystemManager.OutputRange;
+                    if (outRange.Width / value.Width < MaxWidthRatio && outRange.Height / value.Height < MaxHeightRatio)
+                    {
+                        m_coordinatesSystemManager.InputRange = value;
+                        InputRangeChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<MathRect>("InputRange", old, value));
+                        RenderAll();
+                    }
+                }
             }
         }
 
-        public bool RenderAtChange { get; set; }
-        public bool RenderAtSelectionChange { get; set; } = true;
+        public bool RenderAtChange { get => (bool)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
+        public static readonly DependencyProperty RenderAtChangeProperty = DependencyProperty.Register("RenderAtChange", typeof(bool), typeof(Plane));
+
+        public bool RenderAtSelectionChange { get => (bool)GetValue(RenderAtSelectionChangeProperty); set => SetValue(RenderAtSelectionChangeProperty, value); }
+        public static readonly DependencyProperty RenderAtSelectionChangeProperty = DependencyProperty.Register("RenderAtSelectionChange", typeof(bool), typeof(Plane), new PropertyMetadata(true));
+
         public PointVisualObject Origin { get; } = Point(0, 0);
+
         public Rect Bounds => new Rect(0, 0, ActualWidth, ActualHeight);
 
         public Vector OutOffset { get; private set; }
@@ -180,17 +183,14 @@ namespace Coord
         public Point InMouseMagnetPosition => CoordinatesSystemManager.MagnetIn(InMousePosition);
         public Rect SelectionRect { get; private set; }
 
-        public Cursor RestoreCursor
-        {
-            get => m_restoreCursor;
-            set
-            {
-                m_restoreCursor = value;
-                if (!Moving) Cursor = value ?? Cursors.Arrow;
-            }
-        }
-        public Brush SelectionFill { get; set; } = SystemColors.HighlightBrush.EditFreezable(brush => brush.Opacity = 0.4);
-        public PlanePen SelectionStroke { get; set; } = new Pen(SystemColors.HighlightBrush, 1);
+        public Cursor RestoreCursor { get => (Cursor)GetValue(RestoreCursorProperty); set => SetValue(RestoreCursorProperty, value); }
+        public static readonly DependencyProperty RestoreCursorProperty = DependencyProperty.Register("RestoreCursor", typeof(Cursor), typeof(Plane));
+
+        public Brush SelectionRectFill { get => (Brush)GetValue(SelectionRectFillProperty); set => SetValue(SelectionRectFillProperty, value); }
+        public static readonly DependencyProperty SelectionRectFillProperty = DependencyProperty.Register("SelectionRectFill", typeof(Brush), typeof(Plane), new PropertyMetadata(SystemColors.HighlightBrush.EditFreezable(brush => brush.Opacity = 0.4)));
+
+        public Pen SelectionRectStroke { get => (Pen)GetValue(SelectionRectStrokeProperty); set => SetValue(SelectionRectStrokeProperty, value); }
+        public static readonly DependencyProperty SelectionRectStrokeProperty = DependencyProperty.Register("SelectionRectStroke", typeof(Pen), typeof(Plane), new PropertyMetadata(new Pen(SystemColors.HighlightBrush, 1)));
 
         #endregion
 
@@ -212,14 +212,14 @@ namespace Coord
             AxesNumbers = new AxesNumbers { Direction = AxesDirection.Both, Fill = Brushes.White };
             Axes = new AxesVisualObject { Direction = AxesDirection.Both, Numbers = AxesNumbers, Stroke = new Pen(Brushes.White, 2.0) };
             Grid = new GridVisualObject { Primary = true, Secondary = true, Fill = Brushes.Black, Stroke = new Pen(Brushes.DeepSkyBlue, 1.0).GetAsTypedFrozen(), SecondaryStroke = new Pen(new SolidColorBrush(Color.FromRgb(0, 53, 72)), 1.0).GetAsTypedFrozen() };
-            BackgroundVisualObject = Renderer(Grid, Axes);
+            m_backgroundVisualObject = Renderer(Grid, Axes);
 
             Selection = new TrackingCharacterSelection(this);
             Selection.Changed += (sender, e) => { if (RenderAtSelectionChange && sender is VisualObject visualObject && visualObject.RenderAtSelectionChange) Render(visualObject); }; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             Cadre = new CadreVisualObject { CharacterSelection = Selection, Stroke = new Pen(FlatBrushes.Carrot, 1) };
 
-            Visuals.Add(BackgroundVisualObject, BackgroundVisual);
+            Visuals.Add(m_backgroundVisualObject, BackgroundVisual);
             Visuals.Add(AxesNumbers, AxesTextVisual);
 
             AddVisualChild(BackgroundVisual);
@@ -313,7 +313,7 @@ namespace Coord
 
         public void Render(VisualObject visualObject)
         {
-            if (visualObject == Grid || visualObject == Axes) Render(BackgroundVisualObject, BackgroundVisual);
+            if (visualObject == Grid || visualObject == Axes) Render(m_backgroundVisualObject, BackgroundVisual);
             else if (visualObject == AxesNumbers) Render(AxesNumbers, AxesTextVisual);
             else if (Visuals.TryGetValue(visualObject, out var visual)) Render(visualObject, visual);
         }
@@ -327,7 +327,7 @@ namespace Coord
 
         public void RenderChanged()
         {
-            if (BackgroundVisualObject.IsChanged) Render(BackgroundVisualObject, BackgroundVisual);
+            if (m_backgroundVisualObject.IsChanged) Render(m_backgroundVisualObject, BackgroundVisual);
             if (AxesNumbers.IsChanged) Render(AxesNumbers, AxesTextVisual);
             foreach (var visualObject in VisualObjects.Where(vo => vo.IsChanged)) Render(visualObject);
             RenderSelectionRect();
@@ -335,7 +335,7 @@ namespace Coord
 
         public void RenderBackground()
         {
-            Render(BackgroundVisualObject, BackgroundVisual);
+            Render(m_backgroundVisualObject, BackgroundVisual);
             Render(AxesNumbers, AxesTextVisual);
         }
         public void RenderForeground()
@@ -355,7 +355,7 @@ namespace Coord
             using (var drawingContext = SelectionRectangle.RenderOpen())
             {
                 drawingContext.PushClip(new RectangleGeometry(CoordinatesSystemManager.OutputRange));
-                drawingContext.DrawRectangle(SelectionFill, SelectionStroke, SelectionRect);
+                drawingContext.DrawRectangle(SelectionRectFill, SelectionRectStroke, SelectionRect);
                 Cadre.Render(drawingContext, CoordinatesSystemManager);
                 drawingContext.Pop();
             }
@@ -375,41 +375,24 @@ namespace Coord
 
         #endregion
 
-        private bool CheckInputRange(MathRect inputRange)
+        public void ZoomOn(double percentage, Point anchorPoint, bool isInAnchorPoint)
         {
-            var outRange = CoordinatesSystemManager.OutputRange;
-            if (outRange.Width / inputRange.Width >= MaxWidthRatio || outRange.Height / inputRange.Height >= MaxHeightRatio) return false;
-
-            try
+            var direction = ZoomDirection;
+            if (direction != AxesDirection.None)
             {
-                decimal newLeft = (decimal)inputRange.Left;
-                decimal newRight = (decimal)inputRange.Right;
-                decimal newBottom = (decimal)inputRange.Bottom;
-                decimal newTop = (decimal)inputRange.Top;
+                var (inAnchorPoint, outAnchorPoint) = isInAnchorPoint ? (anchorPoint, CoordinatesSystemManager.ComputeOutCoordinates(anchorPoint)) : (CoordinatesSystemManager.ComputeInCoordinates(anchorPoint), anchorPoint);
+                double finalPercentage = 1.0 - percentage;
+                var inRange = InputRange;
 
-                return true;
+                InputRange = new MathRect(inRange.X, inRange.Y, inRange.Width * (direction == AxesDirection.Vertical ? 1 : finalPercentage), inRange.Height * (direction == AxesDirection.Horizontal ? 1 : finalPercentage));
+
+                var newInAnchorPoint = CoordinatesSystemManager.ComputeInCoordinates(outAnchorPoint);
+                var inMove = newInAnchorPoint - inAnchorPoint;
+
+                InputRange = InputRange.Move(new Vector(inMove.X, -inMove.Y));
+
+                Zoomed?.Invoke(this, EventArgsHelper.Create(percentage, inAnchorPoint));
             }
-            catch { return false; }
-        }
-
-        public void ZoomOn(double percentage, Point outAnchorPoint)
-        {
-            double finalPercentage = 1.0 - percentage;
-            var inRange = InputRange;
-            var inAnchorPoint = CoordinatesSystemManager.ComputeInCoordinates(outAnchorPoint);
-
-            var newInRange = new MathRect(inRange.X, inRange.Y, inRange.Width * finalPercentage, inRange.Height * finalPercentage);
-            if (!CheckInputRange(newInRange)) return;
-
-            m_coordinatesSystemManager.InputRange = newInRange;
-
-            var newOutAnchorPoint = CoordinatesSystemManager.ComputeOutCoordinates(inAnchorPoint);
-            var outMove = outAnchorPoint - newOutAnchorPoint;
-
-            var movedNewInRange = InputRange.Move(new Vector(outMove.X / CoordinatesSystemManager.WidthRatio, outMove.Y / CoordinatesSystemManager.HeightRatio));
-            if (CheckInputRange(movedNewInRange)) InputRange = movedNewInRange;
-
-            Zoomed?.Invoke(this, EventArgsHelper.Create(percentage, outAnchorPoint));
         }
 
         #endregion 
@@ -423,19 +406,19 @@ namespace Coord
             var position = OutMousePosition = e.GetPosition(this);
             var characters = HitTestCharacters(position);
 
-            if (EnableMove && !Moving && e.MiddleButton == MouseButtonState.Pressed) //Moving
+            if (EnableMove && !IsMoving && e.MiddleButton == MouseButtonState.Pressed) //Moving
             {
                 Cursor = Cursors.SizeAll;
                 CaptureMouse();
-                Moving = true;
+                IsMoving = true;
             }
 
-            if (EnableSelection && !Selecting && e.LeftButton == MouseButtonState.Pressed)
+            if (EnableSelection && !IsSelecting && e.LeftButton == MouseButtonState.Pressed)
             {
                 if (EnableCharactersManipulating && !Cadre.Focused.IsNaN) //CharactersScaling
                 {
                     m_charactersManipulatingScale = new ScaleCharacterEffect { Center = CoordinatesSystemManager.ComputeInCoordinates(Cadre.Focused.Opposite.GetPoint(Cadre.BaseRect)), In = true, ScaleX = 1, ScaleY = 1, Progress = 1 };
-                    CharactersScaling = true;
+                    IsCharactersScaling = true;
                     Selection.PushEffect(m_charactersManipulatingScale);
                     Cadre.Locked = true;
                 }
@@ -449,18 +432,18 @@ namespace Coord
                     if (EnableCharactersManipulating && characters.Length > 0) //CharactersTranslating
                     {
                         m_charactersManipulatingTranslation = new TranslateCharacterEffect { Vector = default, In = true, Progress = 1 };
-                        CharactersTranslating = true;
+                        IsCharactersTranslating = true;
                         Selection.PushEffect(m_charactersManipulatingTranslation);
                         Cadre.Locked = true;
                     }
                 }
 
-                if (EnableSelectionRect && Selection.AllowMultiple && !CharactersManipulating && !Selecting && characters.Length == 0) //SelectionRect
+                if (EnableSelectionRect && Selection.AllowMultiple && !IsCharactersManipulating && !IsSelecting && characters.Length == 0) //SelectionRect
                 {
                     m_outSelectionClick = position;
                     Selection.Lock();
                     CaptureMouse();
-                    Selecting = true;
+                    IsSelecting = true;
                 }
             }
 
@@ -478,14 +461,15 @@ namespace Coord
 
             if (e.AllReleased()) Cursor = characters.Length > 0 && (Selection.Filter == null || characters.GroupBy(c => c.Owner).Any(group => Selection.Filter(group.Key))) ? Cursors.Hand : RestoreCursor;
 
-            if (Moving)
+            if (IsMoving)
             {
+                var direction = MoveDirection;
                 m_outSelectionClick += OutOffset;
-                var newInRange = InputRange.Move(new Vector(InOffset.X, -InOffset.Y));
-                if (CheckInputRange(newInRange)) InputRange = newInRange;
+                var newInRange = InputRange.Move(new Vector(direction == AxesDirection.Vertical ? 0 : InOffset.X, direction == AxesDirection.Horizontal ? 0 : -InOffset.Y));
+                InputRange = newInRange;
             }
 
-            if (Selecting)
+            if (IsSelecting)
             {
                 SelectionRect = new Rect(m_outSelectionClick, position);
                 var rectContent = HitTestCharacters(SelectionRect);
@@ -496,9 +480,9 @@ namespace Coord
                 RenderSelectionRect();
             }
 
-            if (!Selecting && !Moving)
+            if (!IsSelecting && !IsMoving)
             {
-                if (CharactersScaling)
+                if (IsCharactersScaling)
                 {
                     Cadre.OutOffset += OutOffset;
                     var scale = m_charactersManipulatingScale;
@@ -508,13 +492,16 @@ namespace Coord
                     if (Cadre.ReverseY) scale.ScaleY *= -1;
                     RenderChanged();
                 }
-                else if (CharactersTranslating)
+                else if (IsCharactersTranslating)
                 {
                     Cadre.OutOffset += OutOffset;
                     m_charactersManipulatingTranslation.Vector = CoordinatesSystemManager.ComputeInCoordinates(Cadre.OutOffset);
                     RenderChanged();
                 }
-                else Cursor = Cadre.Contains(position) switch
+                else
+                {
+                    if (e.LeftButton == MouseButtonState.Pressed) foreach (var vo in Selection.VisualObjects) vo.Move(InOffset);
+                    Cursor = Cadre.Contains(position) switch
                     {
                         (0, 0) => Cursors.SizeNWSE, //TopLeft
                         (0.5, 0) => Cursors.SizeNS, //Top
@@ -526,6 +513,7 @@ namespace Coord
                         (0, 0.5) => Cursors.SizeWE, //Left
                         _ => Cursor
                     };
+                }
             }
 
             if (EnableCharacterEvents) PreviewCharacterMouseMove?.Invoke(this, EventArgsHelper.Create(e, characters));
@@ -534,20 +522,20 @@ namespace Coord
         protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
         {
             var position = OutMousePosition = e.GetPosition(this);
-            bool moveEnd = Moving && e.MiddleButton == MouseButtonState.Released;
-            bool selectionEnd = Selecting && e.LeftButton == MouseButtonState.Released;
-            bool charactersManipulatingEnd = CharactersManipulating && e.LeftButton == MouseButtonState.Released;
+            bool moveEnd = IsMoving && e.MiddleButton == MouseButtonState.Released;
+            bool selectionEnd = IsSelecting && e.LeftButton == MouseButtonState.Released;
+            bool charactersManipulatingEnd = IsCharactersManipulating && e.LeftButton == MouseButtonState.Released;
 
             if (moveEnd || selectionEnd || charactersManipulatingEnd)
             {
                 if (moveEnd)
                 {
-                    Moving = false;
+                    IsMoving = false;
                     Cursor = RestoreCursor;
                 }
                 if (selectionEnd)
                 {
-                    Selecting = false;
+                    IsSelecting = false;
                     SelectionRect = Rect.Empty;
                     m_previousRectContent = null;
                     Selection.UnLock();
@@ -557,7 +545,7 @@ namespace Coord
                 {
                     m_charactersManipulatingScale = null;
                     m_charactersManipulatingTranslation = null;
-                    CharactersTranslating = CharactersScaling = false;
+                    IsCharactersTranslating = IsCharactersScaling = false;
                     Cadre.Reset();
                     RenderSelectionRect();
                 }
@@ -581,8 +569,7 @@ namespace Coord
                     _ => 0.05,
                 };
 
-                if (e.Delta > 0) ZoomOn(percentage, position);
-                else if (e.Delta < 0) ZoomOn(-percentage, position);
+                ZoomOn(e.Delta > 0 ? percentage : -percentage, position, false);
             }
         }
 
@@ -604,6 +591,17 @@ namespace Coord
 
         #endregion
 
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property == OverAxesNumbersProperty)
+            {
+                ComputeAxesTextVisualIndex();
+                OverAxesNumbersChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<VisualObject>("OverAxesNumbers", (VisualObject)e.OldValue, (VisualObject)e.NewValue));
+            }
+            else if (e.Property == RestoreCursorProperty) { if (!IsMoving) Cursor = (e.NewValue as Cursor) ?? Cursors.Arrow; }
+            base.OnPropertyChanged(e);
+        }
+
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             double widthRatio = CoordinatesSystemManager.WidthRatio;
@@ -623,7 +621,7 @@ namespace Coord
 
             var inRange = InputRange;
             var newInRange = new MathRect(inRange.X, inRange.Y - diffHeightIn, inRange.Width + diffWidthIn, inRange.Height + diffHeightIn);
-            if (CheckInputRange(newInRange)) InputRange = newInRange;
+            InputRange = newInRange;
         }
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -633,7 +631,7 @@ namespace Coord
                 OverAxesNumbers = null;
                 foreach (var visual in Visuals.Values) RemoveVisualChild(visual);
                 Visuals.Clear();
-                Visuals.Add(BackgroundVisualObject, BackgroundVisual);
+                Visuals.Add(m_backgroundVisualObject, BackgroundVisual);
                 Visuals.Add(AxesNumbers, AxesTextVisual);
             }
             else

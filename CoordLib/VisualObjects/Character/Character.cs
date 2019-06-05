@@ -21,11 +21,12 @@ namespace Coord
             Fill = fill;
             Stroke = stroke;
         }
-        private Character(VisualObject owner, VisualObject creator, int index, Geometry geometry, Brush fill, PlanePen stroke, Matrix matrix, bool transformed)
+        private Character(VisualObject owner, VisualObject creator, int index, bool isSelectable, Geometry geometry, Brush fill, PlanePen stroke, Matrix matrix, bool transformed)
         {
             Owner = owner;
             Creator = creator;
             Index = index;
+            IsSelectable = isSelectable;
             Geometry = geometry;
             Fill = fill;
             Stroke = stroke;
@@ -37,9 +38,9 @@ namespace Coord
         /// Crée un une copie des valeurs de l'instance actuelle de <see cref="Character"/>
         /// </summary>
         /// <returns>Copie des valeurs de l'instance actuelle</returns>
-        public Character Clone() => new Character(Owner, Creator, Index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), Matrix, Transformed);
-        public Character Clone(VisualObject owner, int index) => new Character(owner, Creator ?? Owner, index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), Matrix, Transformed);
-        public Character Attach(VisualObject owner, int index) => new Character(owner, Creator ?? owner, index, Geometry, Fill, Stroke, Matrix, Transformed);
+        public Character Clone() => new Character(Owner, Creator, Index, IsSelectable, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), Matrix, IsTransformed);
+        public Character Clone(VisualObject owner, int index) => new Character(owner, Creator ?? Owner, index, IsSelectable, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), Matrix, IsTransformed);
+        public Character Attach(VisualObject owner, int index) => new Character(owner, Creator ?? owner, index, IsSelectable, Geometry, Fill, Stroke, Matrix, IsTransformed);
 
         /// <summary>
         /// Remplissage de <see cref="Geometry"/>
@@ -59,7 +60,7 @@ namespace Coord
         /// <summary>
         /// Indique si <see cref="Geometry"/> est actuellement transformée par <see cref="Matrix"/>
         /// </summary>
-        public bool Transformed { get; private set; }
+        public bool IsTransformed { get; private set; }
 
         /// <summary>
         /// Géométrie à dessiner
@@ -70,6 +71,8 @@ namespace Coord
         public VisualObject Creator { get; set; }
 
         public int Index { get; }
+
+        public bool IsSelectable { get; set; } = true;
 
         public bool IsSelected
         {
@@ -138,7 +141,7 @@ namespace Coord
         public void ApplyTransforms()
         {
             Geometry.Transform = new MatrixTransform(Matrix);
-            Transformed = true;
+            IsTransformed = true;
         }
 
         /// <summary>
@@ -147,7 +150,7 @@ namespace Coord
         public void ReleaseTransforms()
         {
             Geometry.Transform = null;
-            Transformed = false;
+            IsTransformed = false;
         }
 
         public override string ToString() => ToString(false);
@@ -202,7 +205,7 @@ namespace Coord
             foreach (var character in characters)
             {
                 bool fill = character.Fill != null && character.Fill.Opacity > 0 && character.Fill != Brushes.Transparent;
-                bool transformed = character.Transformed;
+                bool transformed = character.IsTransformed;
                 if (!transformed) character.ApplyTransforms();
                 var result = rectangle.FillContainsWithDetail(character.Geometry);
                 if (result != IntersectionDetail.Empty && result != IntersectionDetail.NotCalculated && (fill || result != IntersectionDetail.FullyInside)) yield return character;
@@ -216,12 +219,14 @@ namespace Coord
             {
                 bool fill = character.Fill != null && character.Fill.Opacity > 0 && character.Fill != Brushes.Transparent;
                 bool stroke = !character.Stroke.IsNull() && character.Stroke.Thickness > 0 && character.Stroke.Brush != null && character.Stroke.Brush.Opacity > 0 && character.Stroke.Brush != Brushes.Transparent;
-                bool transformed = character.Transformed;
+                bool transformed = character.IsTransformed;
                 if (!transformed) character.ApplyTransforms();
                 if (fill && character.Geometry.FillContains(point) || stroke && character.Geometry.StrokeContains(character.Stroke, point)) yield return character;
                 if (!transformed) character.ReleaseTransforms();
             }
         }
+
+        public static Interval<int> ToSelection(this IEnumerable<Character> characters) => characters.Union(c => Interval<int>.Single(c.Index));
 
         /// <summary>
         /// Clone tous les <see cref="Character"/> d'une collection puis retourne le résultat
@@ -340,6 +345,15 @@ namespace Coord
         public static IEnumerable<Character> ToCharacters(this Geometry geometry, Brush fill, PlanePen stroke) => Character.FromGeometry(geometry, fill, stroke);
 
         public static IEnumerable<Character> ToCharacters(this Canvas canvas) => Character.FromCanvas(canvas);
+
+        public static IEnumerable<Character> PreventSelection(this IEnumerable<Character> characters)
+        {
+            foreach (var character in characters)
+            {
+                character.IsSelectable = false;
+                yield return character;
+            }
+        }
 
         public static IEnumerable<Character> Color(this IEnumerable<Character> characters, Brush fill, PlanePen stroke) => characters.Select(character => character.Color(fill, stroke));
         public static IEnumerable<Character> Color(this IEnumerable<Character> characters, Brush fill) => characters.Select(character => character.Color(fill));

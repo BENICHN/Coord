@@ -83,7 +83,7 @@ namespace CoordAnimation
                     if (interval is Interval<int> intInterval) SetValue(IntIntervalProperty, intInterval);
                     break;
                 case IntervalType.Double:
-                    if (interval is Interval<double> doubleInterval) SetValue(DoubleIntervalProperty, doubleInterval);
+                    if (interval is Interval<double> doubleIinterval) SetValue(DoubleIntervalProperty, interval);
                     break;
                 case IntervalType.Decimal:
                     if (interval is Interval<decimal> decimalInterval) SetValue(DecimalIntervalProperty, decimalInterval);
@@ -121,13 +121,13 @@ namespace CoordAnimation
             switch (IntervalType)
             {
                 case IntervalType.Int:
-                    foreach (var intRange in IntInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, intRange);
+                    if (!IntInterval.IsNullOrEmpty()) foreach (var intRange in IntInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, intRange);
                     break;
                 case IntervalType.Double:
-                    foreach (var doubleRange in DoubleInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, doubleRange);
+                    if (!DoubleInterval.IsNullOrEmpty()) foreach (var doubleRange in DoubleInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, doubleRange);
                     break;
                 case IntervalType.Decimal:
-                    foreach (var decimalRange in DecimalInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, decimalRange);
+                    if (!DecimalInterval.IsNullOrEmpty()) foreach (var decimalRange in DecimalInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, decimalRange);
                     break;
             }
 

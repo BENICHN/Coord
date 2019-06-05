@@ -1,4 +1,5 @@
-﻿using BenLib.WPF;
+﻿using BenLib.Standard;
+using BenLib.WPF;
 using Coord;
 using System;
 using System.Linq;
@@ -53,7 +54,7 @@ namespace CoordAnimation
 
         private void Plane_PreviewCharacterMouseDown(object sender, EventArgs<MouseButtonEventArgs, Character[]> e)
         {
-            if (e.Param1.LeftButton == MouseButtonState.Pressed && !plane.Moving && !plane.Selecting)
+            if (e.Param1.LeftButton == MouseButtonState.Pressed && !plane.IsMoving && !plane.IsSelecting)
             {
                 switch (Current)
                 {
@@ -117,17 +118,7 @@ namespace CoordAnimation
 
         private void Plane_PreviewCharacterMouseMove(object sender, EventArgs<MouseEventArgs, Character[]> e)
         {
-            if (CurrentCurrent != null)
-            {
-                switch (CurrentCurrent.Type)
-                {
-                    case "PointPoint":
-                        (CurrentCurrent as PointVisualObject).SetInPoint(plane.InMouseMagnetPosition);
-                        break;
-                }
-                plane.RenderChanged();
-            }
-            else if (Moving)
+            if (Moving)
             {
                 var selectedPoints = plane.Selection.VisualObjects.Where(vo => vo.Type == "PointPoint").OfType<PointVisualObject>().ToArray();
                 foreach (var pointVisualObject in selectedPoints) { if (m_basePoint == null && e.Param2.Any(hr => hr.Owner == pointVisualObject)) m_basePoint = pointVisualObject; }
@@ -150,9 +141,9 @@ namespace CoordAnimation
                         break;
                     case InTexConfiguration inTexConfiguration:
                         {
-                            var texEdit = new TexEdit(true);
-                            if (texEdit.ShowDialog() == true) plane.VisualObjects.Add(InTex(texEdit.Text.Text, texEdit.Text.Scale, inTexConfiguration.Point, RectPoint.BottomLeft).Color(FlatBrushes.Clouds));
-                            else inTexConfiguration.Point.DestroyIfCreated();
+                            var tex = InTex("", 1, inTexConfiguration.Point, RectPoint.BottomLeft).Color(FlatBrushes.Clouds);
+                            tex.Selection = Interval<int>.PositiveReals;
+                            plane.VisualObjects.Add(tex);
                             End();
                         }
                         break;

@@ -2,6 +2,7 @@
 using Coord;
 using System;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,7 +13,7 @@ namespace CoordAnimation
     /// <summary>
     /// Logique d'interaction pour VisualObjectSelector.xaml
     /// </summary>
-    public partial class VisualObjectSelector : UserControl
+    public partial class VisualObjectSelector : UserControl, INotifyPropertyChanged
     {
         private bool m_allAtOnce;
         private bool m_allowMultiple;
@@ -36,41 +37,49 @@ namespace CoordAnimation
         public bool AllAtOnce { get => (bool)GetValue(AllAtOnceProperty); set => SetValue(AllAtOnceProperty, value); }
         public static readonly DependencyProperty AllAtOnceProperty = DependencyProperty.Register("AllAtOnce", typeof(bool), typeof(VisualObjectSelector), new PropertyMetadata(false));
 
+        public bool IsSelectionVisible => !AllAtOnce;
+
         public Predicate<VisualObject> Filter { get => (Predicate<VisualObject>)GetValue(FilterProperty); set => SetValue(FilterProperty, value); }
         public static readonly DependencyProperty FilterProperty = DependencyProperty.Register("Filter", typeof(Predicate<VisualObject>), typeof(VisualObjectSelector));
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property == IsSelectingProperty)
+            if (e.Property == SelectionProperty)
+            {
+                if (e.OldValue is TrackingCharacterSelection oldValue) oldValue.Changed -= OnSelectionChanged;
+                if (e.NewValue is TrackingCharacterSelection newValue) newValue.Changed += OnSelectionChanged;
+            }
+            else if (e.Property == IsSelectingProperty)
             {
                 if ((bool)e.NewValue)
                 {
+                    Selection.UsageCount++;
                     VisualObjects = Selection.VisualObjects;
-                    m_filter = Selection.Filter;
-                    Selection.Filter = Filter;
                     m_allowMultiple = Selection.AllowMultiple;
                     Selection.AllowMultiple = AllowMultiple;
                     m_allAtOnce = Selection.AllAtOnce;
                     Selection.AllAtOnce = AllAtOnce;
+                    m_filter = Selection.Filter;
+                    Selection.Filter = Filter;
                 }
                 else
                 {
+                    Selection.UsageCount--;
                     Selection.Filter = m_filter;
                     Selection.AllowMultiple = m_allowMultiple;
                     Selection.AllAtOnce = m_allAtOnce;
 
                     m_filter = null;
 
-                    if (Selection.Count == 1)
+                    VisualObject = Selection.Count switch
                     {
-                        var vo = Selection.VisualObjects.First();
-                        VisualObject = vo.Selection >= Interval<int>.PositiveReals ? vo : InCharacters(vo);
-                    }
-                    else
-                    {
-                        var vo = InCharactersGroup(Selection.VisualObjects);
-                        VisualObject = vo;
-                    }
+                        0 => null,
+                        1 => VisualObject = Selection.VisualObjects[0].Selection >= Interval<int>.PositiveReals ? Selection.VisualObjects[0] : InCharacters(Selection.VisualObjects[0]),
+                        _ => InCharactersGroup(Selection.VisualObjects)
+                    };
                 }
             }
             else if (e.Property == VisualObjectProperty)
@@ -86,10 +95,16 @@ namespace CoordAnimation
                 VisualObjectChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<VisualObject>("VisualObject", e.OldValue as VisualObject, e.NewValue as VisualObject));
             }
             else if (e.Property == AllowMultipleProperty && IsSelecting) Selection.AllowMultiple = (bool)e.NewValue;
-            else if (e.Property == AllAtOnceProperty && IsSelecting) Selection.AllAtOnce = (bool)e.NewValue;
+            else if (e.Property == AllAtOnceProperty && IsSelecting)
+            {
+                Selection.AllAtOnce = (bool)e.NewValue;
+                NotifyPropertyChanged("IsSelectionVisible");
+            }
             else if (e.Property == FilterProperty && IsSelecting) Selection.Filter = (Predicate<VisualObject>)e.NewValue;
             base.OnPropertyChanged(e);
         }
+
+        private void OnSelectionChanged(object sender, EventArgs e) { if (IsSelecting && !AllowMultiple && AllAtOnce && Selection.Count > 0) IsSelecting = false; }
 
         public event PropertyChangedExtendedEventHandler<VisualObject> VisualObjectChanged;
 

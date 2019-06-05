@@ -191,7 +191,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="VisualObjects\Universal\GeometricShapes\Text\Character\Effects\Base\" />
-    <Folder Include="VisualObjects\Universal\Points\Base\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

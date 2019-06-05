@@ -22,7 +22,7 @@ namespace CoordSpec
         public const double PointsRadius = 6;
         public const double StrokeThickness = 4;
         private static double SpeedF(double x) => x * (4 - x) * (x - 5) / 10;
-        private static double AccF(double x) => -2 - 3 * x * (x - 6) / 10;
+        private double AccF(double x) => (SpeedF(x + Length) - SpeedF(x)) / Length;
 
         private readonly SynchronizedProgress m_syncpa = new SynchronizedProgress(0);
         private readonly SynchronizedProgress m_syncpb = new SynchronizedProgress(1);
@@ -37,11 +37,11 @@ namespace CoordSpec
         public double Length { get => (double)GetValue(LengthProperty); set => SetValue(LengthProperty, value); }
         public static readonly DependencyProperty LengthProperty = CreateProperty<double>(true, true, "Length", typeof(Deriv), 1);
 
-        public decimal SpeedEnd { get => (decimal)GetValue(SpeedEndProperty); set => SetValue(SpeedEndProperty, value); }
-        public static readonly DependencyProperty SpeedEndProperty = CreateProperty<decimal>(true, true, "SpeedEnd", typeof(Deriv));
+        public double SpeedEnd { get => (double)GetValue(SpeedEndProperty); set => SetValue(SpeedEndProperty, value); }
+        public static readonly DependencyProperty SpeedEndProperty = CreateProperty<double>(true, true, "SpeedEnd", typeof(Deriv));
 
-        public decimal AccEnd { get => (decimal)GetValue(AccEndProperty); set => SetValue(AccEndProperty, value); }
-        public static readonly DependencyProperty AccEndProperty = CreateProperty<decimal>(true, true, "AccEnd", typeof(Deriv));
+        public double AccEnd { get => (double)GetValue(AccEndProperty); set => SetValue(AccEndProperty, value); }
+        public static readonly DependencyProperty AccEndProperty = CreateProperty<double>(true, true, "AccEnd", typeof(Deriv));
 
         public TextVisualObject AccL { get; }
         public TextVisualObject SpeedL { get; }
@@ -77,6 +77,7 @@ namespace CoordSpec
                     break;
                 case "Length":
                     Asymptote.Length = Length;
+                    AccC.NotifyChanged();
                     break;
                 case "SpeedEnd":
                     (SpeedC.Series as FunctionSeries).Interval = (0, SpeedEnd);
@@ -88,17 +89,17 @@ namespace CoordSpec
             base.OnPropertyChanged(e);
         }
 
-        public Task Step1() => Task.WhenAll(m_syncpf.Animate(1.15), AnimateDouble(null, value => SpeedEnd = (decimal)value, 0, FuncEnd, TimeSpan.FromSeconds(1.5), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60));
+        public Task Step1() => Task.WhenAll(m_syncpf.Animate(1.15), Animate<double>(null, value => SpeedEnd = value, 0, FuncEnd, TimeSpan.FromSeconds(1.5), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60));
         public async Task Step2()
         {
             await m_syncpd.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0).AtMost(30);
             await Task.WhenAll(
                 m_syncpa.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }),
                 m_syncpb.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0),
-                AnimateDouble(null, value => Length = value, 1, 0.00001, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseOut }, 60)).AtMost(30);
+                Animate<double>(null, value => Length = value, 1, 0.00001, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseOut }, 60)).AtMost(30);
             await m_syncpc.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0);
         }
-        public Task Step3() => Task.WhenAll(m_syncpe.Animate(1.15), AnimateDouble(null, value => AccEnd = (decimal)(X = value), 0, FuncEnd, TimeSpan.FromSeconds(3), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60));
+        public Task Step3() => Task.WhenAll(m_syncpe.Animate(1.15), Animate<double>(null, value => AccEnd = X = value, 0, FuncEnd, TimeSpan.FromSeconds(3), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60));
 
         public async Task Animate()
         {

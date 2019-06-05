@@ -86,7 +86,7 @@ namespace CoordSpec
 
             async Task Animate()
             {
-                await AnimateDouble(null, value => xzfgyufdzu.Progress = value, 0, 1, TimeSpan.FromSeconds(0.7), new RepeatBehavior(4), true, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60);
+                await Animate<double>(null, value => xzfgyufdzu.Progress = value, 0, 1, TimeSpan.FromSeconds(0.7), new RepeatBehavior(4), true, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60);
                 elc.Stroke = new PlanePen(FlatBrushes.Alizarin, 3);
                 elc.PointsFill = FlatBrushes.SunFlower;
                 elc.PointsStroke = new PlanePen(FlatBrushes.SunFlower.EditFreezable(brush => brush.Opacity = 0.6), 0);

@@ -211,7 +211,7 @@ namespace Coord
         /// Calcule la largeur unitaire de l'axe horizontal dans le plan
         /// </summary>
         /// <returns>Longueur unitaire de l'axe horizontal dans le plan</returns>
-        public decimal GetHorizontalStep()
+        public double GetHorizontalStep()
         {
             bool horizontalStepEnd = false;
             double horizontalStep = 1.0;
@@ -266,14 +266,14 @@ namespace Coord
                 }
             }
 
-            return (decimal)horizontalStep;
+            return horizontalStep;
         }
 
         /// <summary>
         /// Calcule la longueur unitaire de l'axe vertical dans le plan
         /// </summary>
         /// <returns>Longueur unitaire de l'axe vertical dans le plan</returns>
-        public decimal GetVerticalStep()
+        public double GetVerticalStep()
         {
             bool verticalStepEnd = false;
             double verticalStep = 1.0;
@@ -328,7 +328,7 @@ namespace Coord
                 }
             }
 
-            return (decimal)verticalStep;
+            return verticalStep;
         }
 
         /// <summary>
@@ -336,11 +336,11 @@ namespace Coord
         /// </summary>
         /// <param name="step">Longueur unitaire de l'axe horizontal dans le plan</param>
         /// <returns>Plus grand multiple de la largeur unitaire inférieur à l'abscisse tout à gauche de la zone du plan</returns>
-        public decimal GetHorizontalStart(decimal step)
+        public double GetHorizontalStart(double step)
         {
-            decimal inLeft = (decimal)InputRange.Left;
-            decimal start = inLeft - inLeft % step;
-            if (inLeft < 0M) start -= step;
+            double inLeft = InputRange.Left;
+            double start = inLeft - inLeft % step;
+            if (inLeft < 0) start -= step;
             return start;
         }
 
@@ -349,10 +349,10 @@ namespace Coord
         /// </summary>
         /// <param name="step">Longueur unitaire de l'axe horizontal dans le plan</param>
         /// <returns>Plus petit multiple de la largeur unitaire supérieur à l'abscisse tout à droite de la zone du plan</returns>
-        public decimal GetHorizontalEnd(decimal step)
+        public double GetHorizontalEnd(double step)
         {
-            decimal inRight = (decimal)InputRange.Right;
-            decimal end = inRight + step - inRight % step;
+            double inRight = InputRange.Right;
+            double end = inRight + step - inRight % step;
             return end;
         }
 
@@ -361,11 +361,11 @@ namespace Coord
         /// </summary>
         /// <param name="step">Longueur unitaire de l'axe vertical dans le plan</param>
         /// <returns>Plus grand multiple de la hauteur unitaire inférieur à l'ordonnée tout en bas de la zone du plan</returns>
-        public decimal GetVerticalStart(decimal step)
+        public double GetVerticalStart(double step)
         {
-            decimal inBottom = (decimal)InputRange.Bottom;
-            decimal start = inBottom - inBottom % step;
-            if (inBottom < 0M) start -= step;
+            double inBottom = InputRange.Bottom;
+            double start = inBottom - inBottom % step;
+            if (inBottom < 0) start -= step;
             return start;
         }
 
@@ -374,25 +374,27 @@ namespace Coord
         /// </summary>
         /// <param name="step">Longueur unitaire de l'axe vertical dans le plan</param>
         /// <returns>Plus petit multiple de la hauteur unitaire supérieur à l'ordonnée tout en haut de la zone du plan</returns>
-        public decimal GetVerticalEnd(decimal step)
+        public double GetVerticalEnd(double step)
         {
-            decimal inTop = (decimal)InputRange.Top;
-            decimal end = inTop + step - inTop % step;
+            double inTop = InputRange.Top;
+            double end = inTop + step - inTop % step;
             return end;
         }
 
-        public IEnumerable<decimal> GetHorizontalSteps(decimal step)
+        public IEnumerable<double> GetHorizontalSteps(double step = 0)
         {
-            decimal start = GetHorizontalStart(step);
-            decimal end = GetHorizontalEnd(step);
-            for (decimal i = start; i <= end; i += step) yield return i;
+            if (step == 0) step = GetHorizontalStep();
+            double start = GetHorizontalStart(step);
+            double end = GetHorizontalEnd(step);
+            for (double i = start; i <= end; i += step) yield return Math.Round(i, 3);
         }
 
-        public IEnumerable<decimal> GetVerticalSteps(decimal step)
+        public IEnumerable<double> GetVerticalSteps(double step = 0)
         {
-            decimal start = GetVerticalStart(step);
-            decimal end = GetVerticalEnd(step);
-            for (decimal i = start; i <= end; i += step) yield return i;
+            if (step == 0) step = GetVerticalStep();
+            double start = GetVerticalStart(step);
+            double end = GetVerticalEnd(step);
+            for (double i = start; i <= end; i += step) yield return Math.Round(i, 3);
         }
 
         public Point MagnetOut(Point outPoint, double tolerance = 4)
@@ -425,10 +427,10 @@ namespace Coord
 
         public Point MagnetIn(Point outPoint, double stepProportionTolerance = 0.05)
         {
-            decimal stepX = GetHorizontalStep();
-            decimal stepY = GetVerticalStep();
-            double toleranceX = stepProportionTolerance * (double)stepX;
-            double toleranceY = stepProportionTolerance * (double)stepY;
+            double stepX = GetHorizontalStep();
+            double stepY = GetVerticalStep();
+            double toleranceX = stepProportionTolerance * stepX;
+            double toleranceY = stepProportionTolerance * stepY;
             double x = double.NaN;
             double y = double.NaN;
 

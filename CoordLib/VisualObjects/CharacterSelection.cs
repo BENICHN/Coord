@@ -35,7 +35,7 @@ namespace Coord
         public CharacterSelection(IEnumerable<(VisualObject visualObject, Interval<int> selection)> selection) : this(selection.Where(t => !t.selection.IsEmpty).ToDictionary(s => s.visualObject, s => s.selection)) { }
 
         public CharacterSelection(params Character[] selection) : this(selection as IEnumerable<Character>) { }
-        public CharacterSelection(IEnumerable<Character> selection) : this(selection.GroupBy(c => c.Owner).ToDictionary(group => group.Key, group => group.Union(c => Single(c.Index)))) { }
+        public CharacterSelection(IEnumerable<Character> selection) : this(selection.GroupBy(c => c.Owner).ToDictionary(group => group.Key, group => group.ToSelection())) { }
 
         public CharacterSelection(IEnumerable<VisualObject> selection) : this(selection.Where(vo => !vo.Selection.IsEmpty).ToDictionary(v => v, v => v.Selection)) { }
         public CharacterSelection(params VisualObject[] selection) : this(selection as IEnumerable<VisualObject>) { }
@@ -60,7 +60,17 @@ namespace Coord
 
         public Plane Plane { get; }
         public new ObservableCollection<VisualObject> VisualObjects { get; } = new ObservableCollection<VisualObject>();
-        public CharacterSelection Current => new CharacterSelection(Selection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+        public CharacterSelection Current
+        {
+            get => new CharacterSelection(Selection.ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+            set
+            {
+                foreach (var vo in Selection.Keys.Except(value.Keys).ToArray()) vo.ClearSelection();
+                foreach (var kvp in value) kvp.Key.Selection = kvp.Value;
+            }
+        }
+
+        public int UsageCount { get; set; }
 
         public bool AllowMultiple { get => (bool)GetValue(AllowMultipleProperty); set => SetValue(AllowMultipleProperty, value); }
         public static readonly DependencyProperty AllowMultipleProperty = CreateProperty(true, true, "AllowMultiple", typeof(TrackingCharacterSelection), true);

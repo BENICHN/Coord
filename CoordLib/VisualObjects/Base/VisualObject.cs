@@ -60,10 +60,10 @@ namespace Coord
                 if (!diff.IsEmpty)
                 {
                     owner.NotifySelectionChanged(oldValue, newValue);
-	                if (!owner.Cache.Characters.IsNullOrEmpty()) { foreach (var character in owner.Cache.Characters.SubCollection(diff, true)) character.NotifyIsSelectedChanged(); }
+                    if (!owner.Cache.Characters.IsNullOrEmpty()) { foreach (var character in owner.Cache.Characters.SubCollection(diff, true)) character.NotifyIsSelectedChanged(); }
                 }
             }
-        }, (d, v) => d is VisualObject visualObject ? visualObject.CoerceSelection == null ? v : visualObject.CoerceSelection(visualObject, v as Interval<int>) : v);
+        }, (d, v) => d is VisualObject visualObject && v is Interval<int> selection ? ((visualObject.CoerceSelection == null ? selection : visualObject.CoerceSelection(visualObject, selection)) & (visualObject.Cache.Characters?.Where(c => c.IsSelectable)?.ToSelection() ?? Reals)) : EmptySet);
 
         public VisualObject() => SetValue(EffectsProperty, new CharacterEffectDictionary());
 
@@ -111,6 +111,8 @@ namespace Coord
             }
             return Cache.Characters.CloneCharacters().ToArray();
         }
+
+        public virtual void Move(Vector inOffset) { }
 
         public override string ToString() => Type;
     }
