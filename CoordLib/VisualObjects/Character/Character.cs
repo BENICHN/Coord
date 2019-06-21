@@ -30,15 +30,16 @@ namespace Coord
             Stroke = stroke;
         }
 
-        private Character(VisualObject owner, VisualObject creator, int index, bool isSelectable, Geometry geometry, Brush fill, Pen stroke, Matrix transform, bool isTransformed, object data)
+        private Character(VisualObject owner, VisualObject creator, int index, Geometry geometry, Brush fill, Pen stroke, Brush selectionFill, Pen selectionStroke, Matrix transform, bool isTransformed, object data)
         {
             Owner = owner;
             Creator = creator;
             Index = index;
-            IsSelectable = isSelectable;
             Geometry = geometry;
             Fill = fill;
             Stroke = stroke;
+            SelectionFill = selectionFill;
+            SelectionStroke = selectionStroke;
             Transform = transform;
             IsTransformed = isTransformed;
             Data = data;
@@ -48,18 +49,13 @@ namespace Coord
         /// Crée un une copie des valeurs de l'instance actuelle de <see cref="Character"/>
         /// </summary>
         /// <returns>Copie des valeurs de l'instance actuelle</returns>
-        public Character Clone() => new Character(Owner, Creator, Index, IsSelectable, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), Transform, IsTransformed, Data);
-        public Character Clone(VisualObject owner, int index) => new Character(owner, Creator ?? Owner, index, IsSelectable, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), Transform, IsTransformed, Data);
+        public Character Clone() => new Character(Owner, Creator, Index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), SelectionFill?.CloneCurrentValue(), SelectionStroke?.CloneCurrentValue(), Transform, IsTransformed, Data);
+        public Character Clone(VisualObject owner, int index) => new Character(owner, Creator ?? Owner, index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), SelectionFill?.CloneCurrentValue(), SelectionStroke?.CloneCurrentValue(), Transform, IsTransformed, Data);
         public Character Attach(VisualObject owner, int index)
         {
             Owner = owner;
             Creator ??= owner;
             Index = index;
-            return this;
-        }
-        public Character PreventSelection()
-        {
-            IsSelectable = false;
             return this;
         }
         public Character WithData(object data)
@@ -77,6 +73,39 @@ namespace Coord
             Data = operation((T)Data);
             return this;
         }
+        public Character Color(Brush fill, Pen stroke)
+        {
+            Fill = fill;
+            Stroke = stroke;
+            return this;
+        }
+        public Character Color(Brush fill)
+        {
+            Fill = fill;
+            return this;
+        }
+        public Character Color(Pen stroke)
+        {
+            Stroke = stroke;
+            return this;
+        }
+        public Character ColorSelection(Brush fill, Pen stroke)
+        {
+            SelectionFill = fill;
+            SelectionStroke = stroke;
+            return this;
+        }
+        public Character ColorSelection(Brush fill)
+        {
+            SelectionFill = fill;
+            return this;
+        }
+        public Character ColorSelection(Pen stroke)
+        {
+            SelectionStroke = stroke;
+            return this;
+        }
+        public Character HideSelection() => ColorSelection(null, null);
 
         /// <summary>
         /// Remplissage de <see cref="Geometry"/>
@@ -109,16 +138,8 @@ namespace Coord
         public VisualObject Creator { get; private set; }
         public int Index { get; private set; }
 
-        private bool m_isSelectable = true;
-        public bool IsSelectable
-        {
-            get => m_isSelectable;
-            set
-            {
-                m_isSelectable = value;
-                if (!value) IsSelected = false;
-            }
-        }
+        public Brush SelectionFill { get; set; } = null;
+        public Pen SelectionStroke { get; set; } = VisualObject.SelectionStroke;
 
         public bool IsSelected
         {
@@ -202,8 +223,13 @@ namespace Coord
                 bool stroke = character.Stroke != null && character.Stroke.Thickness > 0 && character.Stroke.Brush != null && character.Stroke.Brush.Opacity > 0;
                 bool transformed = character.IsTransformed;
                 if (!transformed) character.ApplyTransforms();
-                var result = rectangle.FillContainsWithDetail(character.Geometry);
-                if (result != IntersectionDetail.Empty && result != IntersectionDetail.NotCalculated && result != IntersectionDetail.FullyInside) yield return character;
+                IntersectionDetail intersectionDetail;
+                if ((fill, stroke) switch
+                {
+                    (false, false) => false,
+                    (false, true) => (intersectionDetail = character.Geometry.StrokeContainsWithDetail(character.Stroke, rectangle)) == IntersectionDetail.FullyInside || intersectionDetail == IntersectionDetail.Intersects,
+                    _ => (intersectionDetail = character.Geometry.FillContainsWithDetail(rectangle)) == IntersectionDetail.FullyInside || intersectionDetail == IntersectionDetail.Intersects,
+                }) yield return character;
                 if (!transformed) character.ReleaseTransforms();
             }
         }
@@ -350,38 +376,15 @@ namespace Coord
 
         public static IEnumerable<Character> ToCharacters(this Canvas canvas) => Character.FromCanvas(canvas);
 
-        public static IEnumerable<Character> PreventSelection(this IEnumerable<Character> characters)
-        {
-            foreach (var character in characters)
-            {
-                character.IsSelectable = false;
-                yield return character;
-            }
-        }
-
         public static IEnumerable<Character> Color(this IEnumerable<Character> characters, Brush fill, Pen stroke) => characters.Select(character => character.Color(fill, stroke));
         public static IEnumerable<Character> Color(this IEnumerable<Character> characters, Brush fill) => characters.Select(character => character.Color(fill));
         public static IEnumerable<Character> Color(this IEnumerable<Character> characters, Pen stroke) => characters.Select(character => character.Color(stroke));
 
-        public static Character Color(this Character character, Brush fill, Pen stroke)
-        {
-            if (character != null)
-            {
-                character.Fill = fill;
-                character.Stroke = stroke;
-            }
-            return character;
-        }
-        public static Character Color(this Character character, Brush fill)
-        {
-            if (character != null) character.Fill = fill;
-            return character;
-        }
-        public static Character Color(this Character character, Pen stroke)
-        {
-            if (character != null) character.Stroke = stroke;
-            return character;
-        }
+        public static IEnumerable<Character> ColorSelection(this IEnumerable<Character> characters, Brush fill, Pen stroke) => characters.Select(character => character.ColorSelection(fill, stroke));
+        public static IEnumerable<Character> ColorSelection(this IEnumerable<Character> characters, Brush fill) => characters.Select(character => character.ColorSelection(fill));
+        public static IEnumerable<Character> ColorSelection(this IEnumerable<Character> characters, Pen stroke) => characters.Select(character => character.ColorSelection(stroke));
+        public static IEnumerable<Character> HideSelection(this IEnumerable<Character> characters) => characters.Select(character => character.HideSelection());
+
     }
 
     public class PositionCharactersEqualityComparer : EqualityComparer<Character>

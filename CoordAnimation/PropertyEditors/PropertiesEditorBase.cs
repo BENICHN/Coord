@@ -246,7 +246,7 @@ namespace CoordAnimation
                 editor.SetBinding(VisualObjectSelector.VisualObjectProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<VisualObject>(editor, owner, property) : editor;
             }
-            else if (typeof(DependencyObject).IsAssignableFrom(type))
+            else if (typeof(DependencyObject).IsAssignableFrom(type) || type.IsInterface && App.DependencyObjectTypes.Contains(type))
             {
                 var editor = new PropertiesEditor { IsAnimatable = isAnimatable, Type = type };
                 editor.SetBinding(PropertiesEditor.ObjectProperty, binding);

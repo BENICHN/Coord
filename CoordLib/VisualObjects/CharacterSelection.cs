@@ -153,8 +153,8 @@ namespace Coord
         public void Select(IEnumerable<Character> characters, bool allAtOnce)
         {
             Plane.RenderAtSelectionChange = false;
-            if (allAtOnce || AllAtOnce) foreach (var group in characters.Where(c => c.IsSelectable).GroupBy(c => c.Owner)) group.Key.Selection = PositiveReals;
-            else foreach (var character in characters.Where(c => c.IsSelectable)) character.IsSelected = true;
+            if (allAtOnce || AllAtOnce) foreach (var group in characters/*.Where(c => c.IsSelectable)*/.GroupBy(c => c.Owner)) group.Key.Selection = PositiveReals;
+            else foreach (var character in characters/*.Where(c => c.IsSelectable)*/) character.IsSelected = true;
             Plane.RenderAtSelectionChange = true;
             Plane.RenderChanged();
         }

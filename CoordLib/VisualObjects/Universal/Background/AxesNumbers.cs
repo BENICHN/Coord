@@ -35,7 +35,7 @@ namespace Coord
         public const double NumbersOffset = 5.0;
         public const double MaxAxisTextWidth = 2.5;
 
-        private static string FormatAxisNumber(double number) => number.ToString(Math.Abs(number) >= 10000 ? "G4" : string.Empty).Replace(new[] { "+0", "+" }, string.Empty);
+        public static string FormatAxisNumber(double number) => number.ToString(Math.Abs(number) >= 10000 ? "G4" : string.Empty).Replace(new[] { "+0", "+" }, string.Empty);
 
         protected override IEnumerable<Character> GetCharactersCore(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {

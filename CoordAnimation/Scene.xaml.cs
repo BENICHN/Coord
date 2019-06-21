@@ -39,9 +39,9 @@ namespace CoordAnimation
         {
             InitializeComponent();
 
-            Elements.Add(new VisualObjectElement(null, Plane.Grid));
-            Elements.Add(new VisualObjectElement(null, Plane.Axes));
-            Elements.Add(new VisualObjectElement(null, Plane.AxesNumbers));
+            Elements.Add(Plane.Grid);
+            Elements.Add(Plane.Axes);
+            Elements.Add(Plane.AxesNumbers);
 
             Plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
             Plane.OverAxesNumbersChanged += Plane_OverAxesNumbersChanged;
@@ -63,7 +63,7 @@ namespace CoordAnimation
                 {
                     int index = Plane.VisualObjects.IndexOf(visualObject);
                     index += index > Plane.AxesNumbersIndex ? 3 : 2;
-                    Elements.Insert(index, new VisualObjectElement(null, visualObject));
+                    Elements.Insert(index, visualObject);
                 }
             }
             Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);

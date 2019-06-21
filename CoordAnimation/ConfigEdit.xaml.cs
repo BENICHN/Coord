@@ -34,7 +34,7 @@ namespace CoordAnimation
             string name = (sender as Button).Name;
             var configuration = name switch
             {
-                //"InTex" => new InTexConfiguration(),
+                "InTex" => new InTexConfiguration(),
                 "Line" => new PointPointLineConfiguration(),
                 "MidPoint" => new MiddlePointConfiguration(),
                 "Circle" => new CenterPointCircleConfiguration(),
@@ -231,17 +231,31 @@ namespace CoordAnimation
         }
     }
 
+    public class InTexConfiguration : Configuration
+    {
+        public InTexConfiguration() => VisualObject = new TextVisualObject { Fill = FlatBrushes.Clouds, In = true, LaTex = true };
+
+        protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
+        {
+            get
+            {
+                var visualObject = (TextVisualObject)VisualObject;
+
+                yield return (visualObject, TextVisualObjectBase.InAnchorPointProperty);
+            }
+        }
+    }
+
     public class PointPointLineConfiguration : Configuration
     {
-        public PointPointLineConfiguration() => VisualObject = new LineVisualObject { Stroke = new Pen(FlatBrushes.SunFlower, 3) };
+        public PointPointLineConfiguration() => VisualObject = new LineVisualObject { Stroke = new Pen(FlatBrushes.SunFlower, 3), Definition = new PointPointLineDefinition() };
 
         protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
         {
             get
             {
                 var visualObject = (LineVisualObject)VisualObject;
-                var definition = new PointPointLineDefinition();
-                visualObject.Definition = definition;
+                var definition = (PointPointLineDefinition)visualObject.Definition;
 
                 yield return (definition, PointPointLineDefinition.PointAProperty);
                 yield return (definition, PointPointLineDefinition.PointBProperty);
@@ -251,15 +265,14 @@ namespace CoordAnimation
 
     public class MiddlePointConfiguration : Configuration
     {
-        public MiddlePointConfiguration() => VisualObject = new PointVisualObject { Radius = 5, Fill = FlatBrushes.Alizarin };
+        public MiddlePointConfiguration() => VisualObject = new PointVisualObject { Radius = 5, Fill = FlatBrushes.Alizarin, Definition = new MiddlePointDefinition() };
 
         protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
         {
             get
             {
                 var visualObject = (PointVisualObject)VisualObject;
-                var definition = new MiddlePointDefinition();
-                visualObject.Definition = definition;
+                var definition = (MiddlePointDefinition)visualObject.Definition;
 
                 yield return (definition, MiddlePointDefinition.PointAProperty);
                 yield return (definition, MiddlePointDefinition.PointBProperty);
@@ -269,15 +282,14 @@ namespace CoordAnimation
 
     public class CenterPointCircleConfiguration : Configuration
     {
-        public CenterPointCircleConfiguration() => VisualObject = new CircleVisualObject { Stroke = new Pen(FlatBrushes.Carrot, 3) };
+        public CenterPointCircleConfiguration() => VisualObject = new CircleVisualObject { Stroke = new Pen(FlatBrushes.Carrot, 3), Definition = new CenterPointCircleDefinition() };
 
         protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
         {
             get
             {
                 var visualObject = (CircleVisualObject)VisualObject;
-                var definition = new CenterPointCircleDefinition();
-                visualObject.Definition = definition;
+                var definition = (CenterPointCircleDefinition)visualObject.Definition;
 
                 yield return (definition, CenterPointCircleDefinition.CenterProperty);
                 yield return (definition, CenterPointCircleDefinition.PointProperty);

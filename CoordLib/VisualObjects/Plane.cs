@@ -24,7 +24,6 @@ namespace Coord
     {
         #region Champs
 
-
         private Point m_previousPoint;
         private Point m_outSelectionClick;
         private Character[] m_previousRectContent;
@@ -160,12 +159,6 @@ namespace Coord
         public Character[] LastHitTest { get; private set; } = Array.Empty<Character>();
         public Character LastHitTestTop { get; private set; }
 
-        public double MaxWidthRatio { get => (double)GetValue(MaxWidthRatioProperty); set => SetValue(MaxWidthRatioProperty, value); }
-        public static readonly DependencyProperty MaxWidthRatioProperty = DependencyProperty.Register("MaxWidthRatio", typeof(double), typeof(Plane), new PropertyMetadata(200000.0));
-
-        public double MaxHeightRatio { get => (double)GetValue(MaxHeightRatioProperty); set => SetValue(MaxHeightRatioProperty, value); }
-        public static readonly DependencyProperty MaxHeightRatioProperty = DependencyProperty.Register("MaxHeightRatio", typeof(double), typeof(Plane), new PropertyMetadata(200000.0));
-
         public Cursor RestoreCursor { get => (Cursor)GetValue(RestoreCursorProperty); set => SetValue(RestoreCursorProperty, value); }
         public static readonly DependencyProperty RestoreCursorProperty = DependencyProperty.Register("RestoreCursor", typeof(Cursor), typeof(Plane));
 
@@ -192,7 +185,7 @@ namespace Coord
             m_backgroundVisualObject = Renderer(Grid, Axes);
 
             Selection = new TrackingCharacterSelection(this);
-            Selection.Changed += (sender, e) => { if (RenderAtSelectionChange && e.OriginalSource.RenderAtSelectionChange) Render(e.OriginalSource); };
+            Selection.Changed += (sender, e) => { if (e.OriginalSource.RenderAtSelectionChange ?? RenderAtSelectionChange) Render(e.OriginalSource); };
 
             Cadre = new CadreVisualObject { CharacterSelection = Selection, Stroke = new Pen(FlatBrushes.Carrot, 1) };
 
@@ -208,12 +201,6 @@ namespace Coord
             AxesNumbers.Changed += (sender, e) => OnBackgroundChanged();
 
             ComputeAxesTextVisualIndex();
-
-            CoordinatesSystemManager.m_coerceInputRange = value =>
-            {
-                var outRange = CoordinatesSystemManager.OutputRange;
-                return new MathRect(value.BottomLeft, new Size(outRange.Width / Math.Min(outRange.Width / value.Width, MaxWidthRatio), outRange.Height / Math.Min(outRange.Height / value.Height, MaxHeightRatio)));
-            };
             CoordinatesSystemManager.Changed += (sender, e) =>
             {
                 ReadOnlyCoordinatesSystemManager = ((CoordinatesSystemManager)sender).AsReadOnly();
@@ -407,8 +394,6 @@ namespace Coord
             Focus();
             CaptureMouse();
 
-            if (e.OnlyPressed(MouseButton.Left)) m_clickHitTest = characters;
-
             if (EnableMove && !IsMoving && e.MiddleButton == MouseButtonState.Pressed) //Moving
             {
                 Cursor = Cursors.SizeAll;
@@ -448,7 +433,11 @@ namespace Coord
                 }
             }
 
-            if (LastHitTestTop is Character character) character.Owner.OnMouseDown(InMousePosition, character);
+            if (e.OnlyPressed(MouseButton.Left))
+            {
+                m_clickHitTest = characters;
+                if (LastHitTestTop is Character character) character.Owner.OnMouseDown(InMousePosition, character);
+            }
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
@@ -468,7 +457,7 @@ namespace Coord
                 TotalInOffset += InOffset;
                 TotalOutOffset += OutOffset;
             }
-            if (e.AllReleased()) Cursor = EnableSelection && lastCharacter != null && lastCharacter.IsSelectable && lastCharacter.Owner.IsSelectable && (Selection.Filter?.Invoke(lastCharacter.Owner) ?? true) ? Cursors.Hand : RestoreCursor;
+            if (e.AllReleased()) Cursor = EnableSelection && lastCharacter != null /*&& lastCharacter.IsSelectable*/ && lastCharacter.Owner.IsSelectable && (Selection.Filter?.Invoke(lastCharacter.Owner) ?? true) ? Cursors.Hand : RestoreCursor;
 
             if (IsMoving)
             {
@@ -594,17 +583,16 @@ namespace Coord
 
         #region RenderAtChange
 
-        protected void OnBackgroundChanged() { if (RenderAtChange && Grid.RenderAtChange && Axes.RenderAtChange && AxesNumbers.RenderAtChange) RenderBackground(); }
+        protected void OnBackgroundChanged() { if (CanRenderAtChange(Grid) && CanRenderAtChange(Axes) && CanRenderAtChange(AxesNumbers)) RenderBackground(); }
         protected void OnForegroundChanged()
         {
-            if (RenderAtChange)
-            {
-                foreach (var visualObject in VisualObjects.Where(vo => vo.RenderAtChange)) Render(visualObject);
-                RenderSelectionRect();
-            }
+            foreach (var visualObject in VisualObjects.Where(vo => CanRenderAtChange(vo))) Render(visualObject);
+            RenderSelectionRect();
         }
-        protected void OnVisualObjectChanged(VisualObject visualObject) { if (RenderAtChange && visualObject.RenderAtChange) Render(visualObject); }
+        protected void OnVisualObjectChanged(VisualObject visualObject) { if (CanRenderAtChange(visualObject)) Render(visualObject); }
         private void OnVisualObjectChanged(object sender, EventArgs e) => OnVisualObjectChanged(sender as VisualObject);
+
+        private bool CanRenderAtChange(VisualObject visualObject) => visualObject.RenderAtChange ?? RenderAtChange;
 
         #endregion
 

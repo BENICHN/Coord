@@ -106,6 +106,7 @@ namespace CoordAnimation
         };
 
         protected Element(VisualObjectElement ownerElement) => OwnerElement = ownerElement;
+        public static implicit operator Element(VisualObject visualObject) => (VisualObjectElement)visualObject;
 
         public virtual void SetIsEnabled(bool value) => SetValue(IsEnabledProperty, value);
         public abstract void SetIsSelected(bool? value, bool? fromOwner);
@@ -167,18 +168,19 @@ namespace CoordAnimation
         ITree<Element> ITreeNode<Element>.Children => Children;
         protected IEnumerable<Element> GetChildren(IDictionary<VisualObject, Character[]> cache = null)
         {
-            cache ??= VisualObject.Cache.Characters?.GroupBy(c => c.Creator)?.ToDictionary(group => group.Key, group => group.ToArray());
+            var visualObject = VisualObject;
+            var mode = visualObject.ChildrenRenderingMode;
+            cache ??= visualObject.Cache.Characters?.GroupBy(c => c.Creator)?.ToDictionary(group => group.Key, group => group.ToArray());
+            if (mode != VisualObjectChildrenRenderingMode.Discard && visualObject.Children != null) foreach (var vo in visualObject.Children) yield return new VisualObjectElement(this, vo, mode == VisualObjectChildrenRenderingMode.Independent, cache);
             if (cache != null)
             {
-                if (VisualObject is VisualObjectGroupBase groupBase) foreach (var vo in groupBase.Children) yield return new VisualObjectElement(this, vo, cache);
-                if (cache.TryGetValue(VisualObject, out var characters))
+                if (cache.TryGetValue(visualObject, out var characters))
                 {
                     foreach (var c in characters) yield return new CharacterElement(this, c);
-                    cache.Remove(VisualObject);
+                    cache.Remove(visualObject);
                 }
-                if (IsIndependent) foreach (var kvp in cache) yield return new VisualObjectElement(this, kvp.Key, new Dictionary<VisualObject, Character[]> { { kvp.Key, kvp.Value } });
+                if (IsIndependent) foreach (var kvp in cache) yield return new VisualObjectElement(this, kvp.Key, false, new Dictionary<VisualObject, Character[]> { { kvp.Key, kvp.Value } });
             }
-            else if (VisualObject is VisualObjectGroupBase groupBase) foreach (var vo in groupBase.Children) yield return new VisualObjectElement(this, vo);
         }
 
         public void ReplaceChildren(ICollection<Element> elements)
@@ -256,9 +258,10 @@ namespace CoordAnimation
             base.SetIsEnabled(value);
         }
 
-        public VisualObjectElement(VisualObjectElement ownerElement, VisualObject visualObject, IDictionary<VisualObject, Character[]> cache = null) : base(ownerElement)
+        public static implicit operator VisualObjectElement(VisualObject visualObject) => new VisualObjectElement(null, visualObject, true, null);
+        private VisualObjectElement(VisualObjectElement ownerElement, VisualObject visualObject, bool isIndependent, IDictionary<VisualObject, Character[]> cache) : base(ownerElement)
         {
-            IsIndependent = cache == null;
+            IsIndependent = isIndependent;
             VisualObject = visualObject;
             if (GetName(visualObject) == null) SetName(visualObject, GetElementName(visualObject.Type));
             Children = new ElementTree(GetChildren(cache));

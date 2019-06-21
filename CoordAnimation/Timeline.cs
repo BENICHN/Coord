@@ -1,4 +1,5 @@
 ﻿using BenLib.Framework;
+using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using System;
@@ -51,7 +52,7 @@ namespace CoordAnimation
         protected override Freezable CreateInstanceCore() => new TimelineHeader();
         public override string Type => "TimelineHeader";
 
-        public TimelineHeader() => IsSelectable = false;
+        static TimelineHeader() => OverrideDefaultValue<TimelineHeader, bool>(IsSelectableProperty, false);
 
         protected override IEnumerable<Character> GetCharactersCore(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
@@ -59,13 +60,13 @@ namespace CoordAnimation
             foreach (double i in coordinatesSystemManager.GetHorizontalSteps().Where(i => Math.Truncate(i) == i))
             {
                 double oi = coordinatesSystemManager.ComputeOutOrthonormalXCoordinate(i);
-                yield return Character.Text(new Point(oi, HeaderHeight / 2), i.ToString(), new Typeface("Segoe UI"), 1, TextAlignment.Center).Color(Brushes.White);
-                yield return Character.Line(new Point(oi, 0), new Point(oi, HeaderHeight)).Color(new Pen(Brushes.White, 1));
+                yield return Character.Text(new Point(oi, 0), AxesNumbers.FormatAxisNumber(i).ToString(), new Typeface("Segoe UI"), HeaderHeight / 3, TextAlignment.Center).Color(Brushes.White);
+                yield return Character.Line(new Point(oi, HeaderHeight / 3 + HeaderHeight / 6), new Point(oi, HeaderHeight)).Color(new Pen(Brushes.White, 1));
             }
         }
 
-        protected override void OnMouseDown(Point inPosition, Character hitTest) => PropertiesAnimation.GeneralTime = (long)inPosition.X;
-        protected override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest) => PropertiesAnimation.GeneralTime = (long)inPosition.X;
+        protected override void OnMouseDown(Point inPosition, Character hitTest) => PropertiesAnimation.GeneralTime = inPosition.X.TrimToLong().Trim(0, long.MaxValue);
+        protected override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest) => PropertiesAnimation.GeneralTime = inPosition.X.TrimToLong().Trim(0, long.MaxValue);
     }
 
     public class TimelineLimits : VisualObject
@@ -94,6 +95,9 @@ namespace CoordAnimation
         public override string Type => "TimelineCursor";
         protected override Freezable CreateInstanceCore() => new TimelineCursor();
 
+        public Point InCurrentPoint { get => (Point)GetValue(InCurrentPointProperty); set => SetValue(InCurrentPointProperty, value); }
+        public static readonly DependencyProperty InCurrentPointProperty = CreateProperty<TimelineCursor, Point>(true, true, true, "InCurrentPoint", new Point(double.NaN, double.NaN));
+
         public long Time { get => (long)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
         public static readonly DependencyProperty TimeProperty = CreateProperty<TimelineCursor, long>(true, true, true, "Time");
 
@@ -105,7 +109,7 @@ namespace CoordAnimation
             if (clickHitTest.Data.Equals(1))
             {
                 if (totalInOffset == inOffset) m_baseValue = PropertiesAnimation.GeneralTime;
-                PropertiesAnimation.GeneralTime = (long)(m_baseValue + totalInOffset.X);
+                PropertiesAnimation.GeneralTime = (m_baseValue + totalInOffset.X).TrimToLong().Trim(0, long.MaxValue);
             }
         }
 
@@ -125,7 +129,8 @@ namespace CoordAnimation
                 var c = Cursor.Clone().WithData(1);
                 c.Transform.Translate(ot, HeaderHeight);
                 yield return c;
-                yield return Character.Line(new Point(ot, HeaderHeight), new Point(ot, coordinatesSystemManager.OutputRange.Bottom)).Color(new Pen(FlatBrushes.BelizeHole, 1)).WithData(0).PreventSelection();
+                yield return Character.Line(new Point(ot, HeaderHeight), new Point(ot, coordinatesSystemManager.OutputRange.Bottom)).Color(new Pen(FlatBrushes.BelizeHole, 1)).WithData(0).HideSelection();
+                yield return Character.Ellipse(TimelineCurveSeries<object>.ArrangeProgress(new[] { coordinatesSystemManager.ComputeOutCoordinates(InCurrentPoint) }, coordinatesSystemManager).First(), 5, 5).Color(Brushes.Black, new Pen(Brushes.White, 1));
             }
         }
     }
@@ -139,7 +144,9 @@ namespace CoordAnimation
         public AbsoluteKeyFrameCollection<T> KeyFrames { get => (AbsoluteKeyFrameCollection<T>)GetValue(KeyFramesProperty); set => SetValue(KeyFramesProperty, value); }
         public static readonly DependencyProperty KeyFramesProperty = CreateProperty<TimelineCurveSeries<T>, AbsoluteKeyFrameCollection<T>>(true, true, true, "KeyFrames");
 
-        public override IEnumerable<Point> GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
+        public override IEnumerable<Point> GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => ArrangeProgress(base.GetOutPoints(coordinatesSystemManager), coordinatesSystemManager);
+
+        public static IEnumerable<Point> ArrangeProgress(IEnumerable<Point> source, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var offset = coordinatesSystemManager.ComputeOutCoordinates(new Vector(0, -coordinatesSystemManager.InputRange.Bottom));
             double o0 = coordinatesSystemManager.ComputeOutOrthonormalYCoordinate(0);
@@ -147,10 +154,12 @@ namespace CoordAnimation
             double top = HeaderHeight + Space;
             double bottom = coordinatesSystemManager.OutputRange.Bottom - Space;
             double cd = (top - bottom) / (o1 - o0);
-            return base.GetOutPoints(coordinatesSystemManager).Select(p => new Point(p.X, cd * (p.Y - o0) + bottom + 8) + offset);
+            return source.Select(p => new Point(p.X, cd * (p.Y - o0) + bottom + 8) + offset);
         }
 
-        public TimelineCurveSeries() => base.Function = x => KeyFrames.ProgressAt(KeyFrames.IndexOfKeyFrameAt((long)Math.Ceiling(x)), x, true);
+        public TimelineCurveSeries() => base.Function = x => ProgressAt(x, KeyFrames);
+
+        public static double ProgressAt(double x, IAbsoluteKeyFrameCollection keyFrames) => keyFrames.ProgressAt(keyFrames.IndexOfKeyFrameAt((long)Math.Ceiling(x)), x, true);
     }
 
     public class TimelineKeyFrames<T> : VisualObjectRendererBase
@@ -224,24 +233,25 @@ namespace CoordAnimation
         protected override Freezable CreateInstanceCore() => new TimelineKeyFrame<T>();
 
         private long m_baseFramescount;
-        private int m_focus = -1;
         private Matrix m_cpMatrixInvert;
 
         public AbsoluteKeyFrame<T> KeyFrame { get => (AbsoluteKeyFrame<T>)GetValue(KeyFrameProperty); set => SetValue(KeyFrameProperty, value); }
-        public static readonly DependencyProperty KeyFrameProperty = CreateProperty<TimelineKeyFrame<T>, AbsoluteKeyFrame<T>>(true, true, true, "KeyFrame");
+        public static readonly DependencyProperty KeyFrameProperty = CreateProperty<TimelineKeyFrame<T>, AbsoluteKeyFrame<T>>(false, false, true, "KeyFrame");
 
         public AbsoluteKeyFrame<T> NextKeyFrame { get => (AbsoluteKeyFrame<T>)GetValue(NextKeyFrameProperty); set => SetValue(NextKeyFrameProperty, value); }
-        public static readonly DependencyProperty NextKeyFrameProperty = CreateProperty<TimelineKeyFrame<T>, AbsoluteKeyFrame<T>>(true, true, true, "NextKeyFrame");
+        public static readonly DependencyProperty NextKeyFrameProperty = CreateProperty<TimelineKeyFrame<T>, AbsoluteKeyFrame<T>>(false, false, true, "NextKeyFrame");
+
+        public int Focus { get; private set; } = -1;
 
         protected override void OnMouseEnter(Point inPosition, Character hitTest)
         {
-            m_focus = (int)hitTest.Data;
+            Focus = (int)hitTest.Data;
             base.OnMouseEnter(inPosition, hitTest);
         }
 
         protected override void OnMouseLeave(Point inPosition, Character hitTest)
         {
-            m_focus = -1;
+            Focus = -1;
             base.OnMouseLeave(inPosition, hitTest);
         }
 
@@ -283,15 +293,15 @@ namespace CoordAnimation
                     {
                         var p0 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(new Point(0, 0))) + v;
                         var p1 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(cp1)) + v;
-                        yield return Character.Line(p0, p1).Color(new Pen(FlatBrushes.SunFlower, 1)).WithData(-1).PreventSelection();
-                        yield return Character.Ellipse(p1, 5, 5).Color(m_focus == 1 ? FlatBrushes.Carrot : FlatBrushes.SunFlower).WithData(1).PreventSelection();
+                        yield return Character.Line(p0, p1).Color(new Pen(FlatBrushes.SunFlower, 1)).WithData(-1).HideSelection();
+                        yield return Character.Ellipse(p1, 5, 5).Color(Focus == 1 ? FlatBrushes.Carrot : FlatBrushes.SunFlower).WithData(1).HideSelection();
                     }
                     if (cp2.X != 1 || cp2.Y != 1)
                     {
                         var p2 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(cp2)) + v;
                         var p3 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(new Point(1, 1))) + v;
-                        yield return Character.Line(p2, p3).Color(new Pen(FlatBrushes.SunFlower, 1)).WithData(-1).PreventSelection();
-                        yield return Character.Ellipse(p2, 5, 5).Color(m_focus == 2 ? FlatBrushes.Carrot : FlatBrushes.SunFlower).WithData(2).PreventSelection();
+                        yield return Character.Line(p2, p3).Color(new Pen(FlatBrushes.SunFlower, 1)).WithData(-1).HideSelection();
+                        yield return Character.Ellipse(p2, 5, 5).Color(Focus == 2 ? FlatBrushes.Carrot : FlatBrushes.SunFlower).WithData(2).HideSelection();
                     }
 
                     m_cpMatrixInvert = m;

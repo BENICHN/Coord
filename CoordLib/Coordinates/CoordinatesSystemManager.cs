@@ -17,13 +17,29 @@ namespace Coord
         public double MinCellSize { get => (double)GetValue(MinCellSizeProperty); set => SetValue(MinCellSizeProperty, value); }
         public static readonly DependencyProperty MinCellSizeProperty = CreateProperty<CoordinatesSystemManager, double>(true, true, true, "MinCellSize", 100);
 
-        internal Func<MathRect, MathRect> m_coerceInputRange;
+        public double MaxWidthRatio { get => (double)GetValue(MaxWidthRatioProperty); set => SetValue(MaxWidthRatioProperty, value); }
+        public static readonly DependencyProperty MaxWidthRatioProperty = DependencyProperty.Register("MaxWidthRatio", typeof(double), typeof(CoordinatesSystemManager), new PropertyMetadata(200000.0));
+
+        public double MaxHeightRatio { get => (double)GetValue(MaxHeightRatioProperty); set => SetValue(MaxHeightRatioProperty, value); }
+        public static readonly DependencyProperty MaxHeightRatioProperty = DependencyProperty.Register("MaxHeightRatio", typeof(double), typeof(CoordinatesSystemManager), new PropertyMetadata(200000.0));
 
         /// <summary>
         /// Zone du plan
         /// </summary>
         public MathRect InputRange { get => (MathRect)GetValue(InputRangeProperty); set => SetValue(InputRangeProperty, value); }
-        public static readonly DependencyProperty InputRangeProperty = CreateProperty<CoordinatesSystemManager, MathRect>(true, true, true, "InputRange", default, null, (d, v) => (d as CoordinatesSystemManager).m_coerceInputRange((MathRect)v));
+        public static readonly DependencyProperty InputRangeProperty = CreateProperty<CoordinatesSystemManager, MathRect>(true, true, true, "InputRange", default, null, (d, v) =>
+        {
+            var owner = (CoordinatesSystemManager)d;
+            var value = (MathRect)v;
+
+            var outRange = owner.OutputRange;
+            var limits = owner.InputRangeLimits;
+            double x = Math.Max(double.IsNaN(limits.X) ? double.NegativeInfinity : limits.X, value.X);
+            double y = Math.Max(double.IsNaN(limits.Y) ? double.NegativeInfinity : limits.Y, value.Y);
+            double width = Math.Min((double.IsNaN(limits.Right) ? double.PositiveInfinity : limits.Right) - x, outRange.Width / Math.Min(outRange.Width / value.Width, owner.MaxWidthRatio));
+            double height = Math.Min((double.IsNaN(limits.Top) ? double.PositiveInfinity : limits.Top) - y, outRange.Height / Math.Min(outRange.Height / value.Height, owner.MaxHeightRatio));
+            return new MathRect(x, y, width, height);
+        });
 
         /// <summary>
         /// Zone de l'écran
@@ -46,6 +62,9 @@ namespace Coord
         /// </summary>
         public CoordinatesSystem CoordinatesSystem { get => (CoordinatesSystem)GetValue(CoordinatesSystemProperty); set => SetValue(CoordinatesSystemProperty, value); }
         public static readonly DependencyProperty CoordinatesSystemProperty = CreateProperty<CoordinatesSystemManager, CoordinatesSystem>(true, true, true, "CoordinatesSystem");
+
+        public MathRect InputRangeLimits { get => (MathRect)GetValue(InputRangeLimitsProperty); set => SetValue(InputRangeLimitsProperty, value); }
+        public static readonly DependencyProperty InputRangeLimitsProperty = DependencyProperty.Register("InputRangeLimits", typeof(MathRect), typeof(CoordinatesSystemManager), new PropertyMetadata(new MathRect(double.NaN, double.NaN, double.NaN, double.NaN)));
 
         public ReadOnlyCoordinatesSystemManager AsReadOnly() => new ReadOnlyCoordinatesSystemManager(MaxCellSize, MinCellSize, InputRange, OutputRange, CoordinatesSystem);
     }
@@ -389,7 +408,7 @@ namespace Coord
             if (step == 0) step = GetHorizontalStep();
             double start = GetHorizontalStart(step);
             double end = GetHorizontalEnd(step);
-            for (double i = start; i <= end; i += step) yield return Math.Round(i, 3);
+            for (double s = 0; end - start - s >= 0; s += step) yield return Math.Round(start + s, 3); //Contre le manque de précision du double
         }
 
         public IEnumerable<double> GetVerticalSteps(double step = 0)
@@ -397,7 +416,7 @@ namespace Coord
             if (step == 0) step = GetVerticalStep();
             double start = GetVerticalStart(step);
             double end = GetVerticalEnd(step);
-            for (double i = start; i <= end; i += step) yield return Math.Round(i, 3);
+            for (double s = 0; end - start - s >= 0; s += step) yield return Math.Round(start + s, 3); //Contre le manque de précision du double
         }
 
         public Point MagnetOut(Point outPoint, double tolerance = 4)

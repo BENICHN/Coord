@@ -25,11 +25,11 @@ namespace Coord
         public bool IsSelectable { get => (bool)GetValue(IsSelectableProperty); set => SetValue(IsSelectableProperty, value); }
         public static readonly DependencyProperty IsSelectableProperty = CreateProperty<VisualObject, bool>(true, true, false, "IsSelectable", true);
 
-        public bool RenderAtChange { get => (bool)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
-        public static readonly DependencyProperty RenderAtChangeProperty = CreateProperty<VisualObject, bool>(false, false, false, "RenderAtChange", true);
+        public bool? RenderAtChange { get => (bool?)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
+        public static readonly DependencyProperty RenderAtChangeProperty = CreateProperty<VisualObject, bool?>(false, false, false, "RenderAtChange", (bool?)null);
 
-        public bool RenderAtSelectionChange { get => (bool)GetValue(RenderAtSelectionChangeProperty); set => SetValue(RenderAtSelectionChangeProperty, value); }
-        public static readonly DependencyProperty RenderAtSelectionChangeProperty = CreateProperty<VisualObject, bool>(false, false, false, "RenderAtSelectionChange", true);
+        public bool? RenderAtSelectionChange { get => (bool?)GetValue(RenderAtSelectionChangeProperty); set => SetValue(RenderAtSelectionChangeProperty, value); }
+        public static readonly DependencyProperty RenderAtSelectionChangeProperty = CreateProperty<VisualObject, bool?>(false, false, false, "RenderAtSelectionChange", (bool?)null);
 
         public Brush Fill { get => (Brush)GetValue(FillProperty); set => SetValue(FillProperty, value); }
         public static readonly DependencyProperty FillProperty = CreateProperty<VisualObject, Brush>(true, true, true, "Fill");
@@ -61,7 +61,7 @@ namespace Coord
         public Interval<int> Selection { get => (Interval<int>)GetValue(SelectionProperty); set => SetValue(SelectionProperty, value); }
         public static readonly DependencyProperty SelectionProperty = CreateProperty<VisualObject, Interval<int>>(false, false, false, "Selection", EmptySet, null, (d, v) => ((VisualObject)d).CoerceSelection((Interval<int>)v));
 
-        private Interval<int> CoerceSelection(Interval<int> selection) => IsSelectable ? selection / (Cache.Characters?.Where(c => !c.IsSelectable)?.ToSelection() ?? EmptySet) : EmptySet;
+        private Interval<int> CoerceSelection(Interval<int> selection) => IsSelectable ? selection /*/ (Cache.Characters?.Where(c => !c.IsSelectable)?.ToSelection() ?? EmptySet)*/ : EmptySet;
 
         public VisualObject() => SetValue(EffectsProperty, new CharacterEffectDictionary());
 
@@ -117,7 +117,12 @@ namespace Coord
             }
         }
 
-        public void ClearCache() => Cache = default;
+        public void ClearCache()
+        {
+            if (Children is VisualObjectCollection children) foreach (var visualObject in children) visualObject.ClearCache();
+            Cache = default;
+        }
+
         public void ClearSelection()
         {
             if (Children is VisualObjectCollection children) foreach (var visualObject in children) visualObject.ClearSelection();

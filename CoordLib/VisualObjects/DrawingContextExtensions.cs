@@ -9,7 +9,7 @@ namespace Coord
             bool transformed = character.IsTransformed;
             if (transform) character.ApplyTransforms();
             drawingContext.DrawGeometry(character.Fill, character.Stroke, character.Geometry);
-            if (character.IsSelected) drawingContext.DrawGeometry(null, VisualObject.SelectionStroke, character.Geometry);
+            if (character.IsSelected) drawingContext.DrawGeometry(character.SelectionFill, character.SelectionStroke, character.Geometry);
             if (release == true || release == null && transformed) character.ReleaseTransforms();
         }
     }
