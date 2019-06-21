@@ -8,11 +8,13 @@ namespace Coord
     /// </summary>
     public class PerpendicularBisectorLineDefinition : LineDefinition
     {
+        protected override Freezable CreateInstanceCore() => new PerpendicularBisectorLineDefinition();
+
         /// <summary>
         /// Segment du plan
         /// </summary>
         public SegmentVisualObject Segment { get => (SegmentVisualObject)GetValue(SegmentProperty); set => SetValue(SegmentProperty, value); }
-        public static readonly DependencyProperty SegmentProperty = CreateProperty<SegmentVisualObject>(true, true, "Segment", typeof(PerpendicularBisectorLineDefinition));
+        public static readonly DependencyProperty SegmentProperty = CreateProperty<PerpendicularBisectorLineDefinition, SegmentVisualObject>(true, true, true, "Segment");
 
         protected override void OnChanged()
         {

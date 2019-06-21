@@ -5,14 +5,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CoordAnimation"
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
-             mc:Ignorable="d" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             mc:Ignorable="d" Name="this">
     <Grid>
         <benlib:SwitchableTextBox Name="overSB" Activated="OverSB_Activated" Visibility="Collapsed"/>
         <DockPanel Name="ends" LastChildFill="False">
             <TextBlock Name="startBracket" VerticalAlignment="Center"/>
-            <benlib:SwitchableTextBox Name="startSB" Desactivated="StartSB_Desactivated" VerticalAlignment="Center" Height="{Binding ActualHeight}" PreviewKeyDown="StartSB_PreviewKeyDown" CancelWhenEmpty="True"/>
+            <benlib:SwitchableTextBox Name="startSB" Desactivated="StartSB_Desactivated" VerticalAlignment="Center" Height="{Binding ActualHeight, ElementName=this}" PreviewKeyDown="StartSB_PreviewKeyDown" CancelWhenEmpty="True"/>
             <TextBlock Text=";" VerticalAlignment="Center"/>
-            <benlib:SwitchableTextBox Name="endSB" Desactivated="EndSB_Desactivated" VerticalAlignment="Center" Height="{Binding ActualHeight}" PreviewKeyDown="EndSB_PreviewKeyDown" CancelWhenEmpty="True"/>
+            <benlib:SwitchableTextBox Name="endSB" Desactivated="EndSB_Desactivated" VerticalAlignment="Center" Height="{Binding ActualHeight, ElementName=this}" PreviewKeyDown="EndSB_PreviewKeyDown" CancelWhenEmpty="True"/>
             <TextBlock Name="endBracket" VerticalAlignment="Center"/>
         </DockPanel>
     </Grid>

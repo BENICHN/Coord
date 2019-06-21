@@ -9,6 +9,8 @@ namespace Coord
     /// </summary>
     public class CircleVisualObject : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new CircleVisualObject();
+
         public override string Type => Definition switch
         {
             CenterRadiusCircleDefinition _ => "CenterRadiusCircle",
@@ -20,10 +22,8 @@ namespace Coord
         /// Détermine les propriétés fondamentales de ce <see cref="CircleVisualObject"/>
         /// </summary>
         public CircleDefinition Definition { get => (CircleDefinition)GetValue(DefinitionProperty); set => SetValue(DefinitionProperty, value); }
-        public static readonly DependencyProperty DefinitionProperty = CreateProperty<CircleDefinition>(true, true, "Definition", typeof(CircleVisualObject));
+        public static readonly DependencyProperty DefinitionProperty = CreateProperty<CircleVisualObject, CircleDefinition>(true, true, true, "Definition");
 
-        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(Definition.Center, Definition.Radius, Fill, Stroke, coordinatesSystemManager);
-
-        public static Character[] GetCharacters(Point center, double radius, Brush fill, PlanePen stroke, ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new[] { Character.Ellipse(coordinatesSystemManager.ComputeOutCoordinates(center), radius * coordinatesSystemManager.WidthRatio, radius * coordinatesSystemManager.HeightRatio).Color(fill, stroke) };
+        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new[] { Character.Ellipse(coordinatesSystemManager.ComputeOutCoordinates(Definition.Center), Definition.Radius * coordinatesSystemManager.WidthRatio, Definition.Radius * coordinatesSystemManager.HeightRatio).Color(Fill, Stroke) };
     }
 }

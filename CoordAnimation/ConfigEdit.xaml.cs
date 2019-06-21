@@ -1,11 +1,16 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using System;
-using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using static Coord.VisualObjects;
 
 namespace CoordAnimation
@@ -15,235 +20,268 @@ namespace CoordAnimation
     /// </summary>
     public partial class ConfigEdit : UserControl
     {
-        public object Current { get; private set; }
-        public VisualObject CurrentCurrent { get; private set; }
-        public bool Moving { get; private set; }
-        private PointVisualObject m_basePoint;
-
-        private void ConfigurePlane()
-        {
-            plane.InputRange = new MathRect(0, 0, 24, 10);
-            plane.Grid.Primary = true;
-            plane.Grid.Secondary = true;
-            plane.Axes.Direction = AxesDirection.Both;
-            plane.AxesNumbers.Direction = AxesDirection.Both;
-            plane.RenderAtChange = false;
-        }
+        private bool m_createPoint;
+        private readonly List<PointVisualObject> m_createdPoints = new List<PointVisualObject>();
+        private Configuration m_current;
+        private PointVisualObject m_currentPoint;
 
         public ConfigEdit() => InitializeComponent();
 
-        private void Window_Loaded(object sender, RoutedEventArgs e) => ConfigurePlane();//var point = Point(12, 5).Style(FlatBrushes.Alizarin);//var line = Line(new LinearEquation(1, 0)).Style(new PlanePen(FlatBrushes.Alizarin, 3));//var perpend = PerpendicularLine(point, line).Style(new PlanePen(FlatBrushes.PeterRiver, 3));//var text = InTex("a=b", 3, Point(12, 6), RectPoint.Center).Color(FlatBrushes.Clouds);//var circle = Circle(point, 2).Style(new PlanePen(FlatBrushes.Carrot, 3));//var inter = Intersection(text, perpend, 5).Style(FlatBrushes.Wisteria, new PlanePen(FlatBrushes.MidnightBlue, 2));//plane.VisualObjects.Add(text);//plane.VisualObjects.Add(circle);//plane.VisualObjects.Add(point);//plane.VisualObjects.Add(line);//plane.VisualObjects.Add(perpend);//plane.VisualObjects.Add(inter);//plane.VisualObjects.Add(Polygon(inter.GetIntersectionPoints()).Style(new PlanePen(FlatBrushes.PeterRiver.EditFreezable(brush => brush.Opacity = 0.3), 10)));//plane.VisualObjects.Add(ParallelLine(inter.GetIntersectionPoint(0), line).Style(new PlanePen(FlatBrushes.GreenSea, 3)));//plane.VisualObjects.Add(Circle(inter.GetIntersectionPoint(1), inter.GetIntersectionPoint(2)).Style(new PlanePen(FlatBrushes.Nephritis, 3)));//plane.VisualObjects.Add(Vector(point, point, inter.GetIntersectionPoint(0)).Style(FlatBrushes.Amethyst, new PlanePen(FlatBrushes.Amethyst, 3)));
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => plane.VisualObjects.Clear();
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            Current = (sender as Button).Name switch
+            Cancel();
+
+            string name = (sender as Button).Name;
+            var configuration = name switch
             {
-                "Point" => new PointPointConfiguration(),
-                "InTex" => new InTexConfiguration(),
+                //"InTex" => new InTexConfiguration(),
                 "Line" => new PointPointLineConfiguration(),
                 "MidPoint" => new MiddlePointConfiguration(),
-                "Manipulation" => new ManipulationConfiguration(),
-                _ => (object)null
+                "Circle" => new CenterPointCircleConfiguration(),
+                _ => (Configuration)null
             };
-            if (!(Current is ManipulationConfiguration)) plane.RestoreCursor = Cursors.Cross;
-            plane.EnableSelectionRect = Current is ManipulationConfiguration;
-            plane.EnableCharactersManipulating = Current is ManipulationConfiguration;
+
+            plane.RestoreCursor = Cursors.Cross;
+            if (name == "Point")
+            {
+                plane.EnableSelection = false;
+                m_createPoint = true;
+            }
+            else
+            {
+                m_current = configuration;
+                configuration.Disposed += Configuration_Disposed;
+                plane.VisualObjects.Add(configuration.VisualObject);
+                await configuration.Run();
+            }
         }
 
-        private void Plane_PreviewCharacterMouseDown(object sender, EventArgs<MouseButtonEventArgs, Character[]> e)
+        public void Cancel()
         {
-            if (e.Param1.LeftButton == MouseButtonState.Pressed && !plane.IsMoving && !plane.IsSelecting)
+            if (m_current is Configuration current && !current.IsDisposed)
             {
-                switch (Current)
-                {
-                    case PointPointConfiguration pointPointConfiguration:
-                        {
-                            if (!pointPointConfiguration.Placed)
-                            {
-                                CurrentCurrent = pointPointConfiguration.VisualObject = Point(plane.InMouseMagnetPosition).Style(FlatBrushes.Alizarin);
-                                plane.VisualObjects.Add(pointPointConfiguration.VisualObject);
-                            }
-                        }
-                        break;
-                    case InTexConfiguration inTexConfiguration:
-                        {
-                            if (inTexConfiguration.Point == null) CurrentCurrent = inTexConfiguration.Point = CreatePoint();
-                        }
-                        break;
-                    case PointPointLineConfiguration pointPointLineConfiguration:
-                        {
-                            if (pointPointLineConfiguration.Point1 == null) CurrentCurrent = pointPointLineConfiguration.Point1 = CreatePoint();
-                            else if (pointPointLineConfiguration.Point1.Fixed && pointPointLineConfiguration.Point2 == null)
-                            {
-                                CurrentCurrent = pointPointLineConfiguration.Point2 = CreatePoint();
-                                pointPointLineConfiguration.Line.Definition = new PointPointLineDefinition { PointA = pointPointLineConfiguration.Point1, PointB = pointPointLineConfiguration.Point2 };
-                            }
-                        }
-                        break;
-                    case MiddlePointConfiguration middlePointConfiguration:
-                        {
-                            if (middlePointConfiguration.Point1 == null) CurrentCurrent = middlePointConfiguration.Point1 = CreatePoint();
-                            else if (middlePointConfiguration.Point1.Fixed && middlePointConfiguration.Point2 == null)
-                            {
-                                CurrentCurrent = middlePointConfiguration.Point2 = CreatePoint();
-                                middlePointConfiguration.MidPoint = MiddlePoint(middlePointConfiguration.Point1, middlePointConfiguration.Point2).Extend(5).Style(FlatBrushes.Pomegranate);
-                                plane.VisualObjects.Add(middlePointConfiguration.MidPoint);
-                            }
-                        }
-                        break;
-                    case ManipulationConfiguration manipulationConfiguration:
-                        break;
-                    default:
-                        if (e.Param2.Length > 0) Moving = true;
-                        break;
-                }
+                foreach (var point in m_createdPoints) point.Destroy();
+                current.Cancel();
             }
+            else m_createPoint = false;
+        }
 
-            CreatedPoint CreatePoint(bool addToPlane = true)
+        private void Configuration_Disposed(object sender, EventArgs<bool> e)
+        {
+            m_createdPoints.Clear();
+            m_current = null;
+            plane.RestoreCursor = null;
+        }
+
+        private void Plane_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OnlyPressed(MouseButton.Left) && !plane.IsMoving && !plane.IsSelecting && (m_createPoint || m_current?.CurrentType == typeof(PointVisualObject) && !(plane.LastHitTestTop?.Owner is PointVisualObject)))
             {
-                var clickedPoint = e.Param2.FirstOrDefault(hr => hr.Owner is PointVisualObject)?.Owner;
-                if (clickedPoint is PointVisualObject pointVisualObject) return new CreatedPoint(pointVisualObject, false);
-                else
-                {
-                    var result = Point(plane.InMouseMagnetPosition).Style(FlatBrushes.Alizarin);
-                    if (addToPlane) plane.VisualObjects.Add(result);
-                    return new CreatedPoint(result, true);
-                }
+                var result = Point(plane.InMouseMagnetPosition).Style(FlatBrushes.Alizarin);
+                plane.VisualObjects.Add(result);
+                result.Selection = Interval<int>.PositiveReals;
+                m_currentPoint = result;
+                m_createdPoints.Add(result);
             }
 
             plane.RenderChanged();
         }
 
-        private void Plane_PreviewCharacterMouseMove(object sender, EventArgs<MouseEventArgs, Character[]> e)
+        private void Plane_MouseMove(object sender, MouseEventArgs e)
         {
-            if (Moving)
+            if (m_currentPoint != null)
             {
-                var selectedPoints = plane.Selection.VisualObjects.Where(vo => vo.Type == "PointPoint").OfType<PointVisualObject>().ToArray();
-                foreach (var pointVisualObject in selectedPoints) { if (m_basePoint == null && e.Param2.Any(hr => hr.Owner == pointVisualObject)) m_basePoint = pointVisualObject; }
-                var offset = m_basePoint == null ? plane.InOffset : (Vector)(plane.InMouseMagnetPosition - (Vector)m_basePoint.Definition.InPoint);
-                foreach (var pointVisualObject in selectedPoints) pointVisualObject.SetInPoint(pointVisualObject.Definition.InPoint + offset);
+                m_currentPoint.SetInPoint(plane.InMouseMagnetPosition);
                 plane.RenderChanged();
             }
         }
 
-        private void Plane_PreviewCharacterMouseUp(object sender, EventArgs<MouseButtonEventArgs, Character[]> e)
+        private void Plane_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (e.Param1.LeftButton == MouseButtonState.Released)
+            if (e.LeftButton == MouseButtonState.Released)
             {
-                switch (Current)
+                m_currentPoint = null;
+                if (m_createPoint)
                 {
-                    case PointPointConfiguration pointPointConfiguration:
-                        {
-                            if (pointPointConfiguration.Placed) End();
-                        }
-                        break;
-                    case InTexConfiguration inTexConfiguration:
-                        {
-                            var tex = InTex("", 1, inTexConfiguration.Point, RectPoint.BottomLeft).Color(FlatBrushes.Clouds);
-                            tex.Selection = Interval<int>.PositiveReals;
-                            plane.VisualObjects.Add(tex);
-                            End();
-                        }
-                        break;
-                    case PointPointLineConfiguration pointPointLineConfiguration:
-                        {
-                            if (!pointPointLineConfiguration.Point1.Fixed)
-                            {
-                                pointPointLineConfiguration.Point1.Fixed = true;
-                                pointPointLineConfiguration.Line = Line(pointPointLineConfiguration.Point1, (PointVisualObject)(CurrentCurrent = Point(plane.InMouseMagnetPosition))).Style(new PlanePen(FlatBrushes.SunFlower, 3));
-                                plane.VisualObjects.Add(pointPointLineConfiguration.Line);
-                            }
-                            else End();
-                        }
-                        break;
-                    case MiddlePointConfiguration middlePointConfiguration:
-                        {
-                            if (!middlePointConfiguration.Point1.Fixed)
-                            {
-                                middlePointConfiguration.Point1.Fixed = true;
-                                CurrentCurrent = null;
-                            }
-                            else End();
-                        }
-                        break;
-                    case ManipulationConfiguration _:
-                        break;
-                    default:
-                        m_basePoint = null;
-                        End();
-                        break;
-                }
-
-                void End()
-                {
-                    Moving = false;
-                    Current = null;
-                    CurrentCurrent = null;
+                    m_createPoint = false;
+                    m_createdPoints.Clear();
+                    plane.EnableSelection = true;
                     plane.RestoreCursor = null;
-                    plane.EnableSelectionRect = true;
                 }
             }
 
             plane.RenderChanged();
         }
 
-        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void UserControl_KeyDown(object sender, KeyEventArgs e)
         {
+            switch (e.Key)
+            {
+                case Key.Escape:
+                    Cancel();
+                    break;
+            }
+        }
+    }
 
+    internal class ConfigurationEnumerator : IEnumerator<(DependencyObject Owner, DependencyProperty Property)>
+    {
+        private TaskCompletionSource<bool> m_taskCompletionSource;
+        private readonly TrackingCharacterSelection m_selection;
+        private readonly IEnumerator<(DependencyObject Owner, DependencyProperty Property)> m_enumerator;
+
+        public ConfigurationEnumerator(IEnumerator<(DependencyObject, DependencyProperty)> enumerator, TrackingCharacterSelection selection)
+        {
+            m_enumerator = enumerator;
+            m_selection = selection;
+            selection.ObjectPointed += OnObjectPointed;
         }
 
-        private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
+        public (DependencyObject Owner, DependencyProperty Property) Current => m_enumerator.Current;
+        object IEnumerator.Current => Current;
 
+        public void Dispose()
+        {
+            m_enumerator.Dispose();
+            m_selection.DisablePointing();
+            m_selection.ObjectPointed -= OnObjectPointed;
+        }
+
+        public Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+            if (MoveNext())
+            {
+                m_taskCompletionSource = tcs;
+                cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+            }
+            else tcs.TrySetResult(false);
+            return tcs.Task;
+        }
+
+        public bool MoveNext()
+        {
+            m_selection.DisablePointing();
+            return m_enumerator.MoveNext() && m_selection.EnablePointing(Current.Property.PropertyType);
+        }
+
+        private void OnObjectPointed(object sender, EventArgs<VisualObject> e)
+        {
+            var (owner, property) = Current;
+            owner.SetValue(property, e.Param1);
+            m_taskCompletionSource?.TrySetResult(true);
+            m_taskCompletionSource = null;
+        }
+
+        public void Reset()
+        {
+            m_enumerator.Reset();
+            m_selection.DisablePointing();
         }
     }
 
-    public class PointPointConfiguration
+    public abstract class Configuration : IDisposable
     {
-        public bool Placed => VisualObject != null;
-        public PointVisualObject VisualObject { get; set; }
-    }
+        private readonly CancellationTokenSource m_cancellationTokenSource = new CancellationTokenSource();
+        private readonly ConfigurationEnumerator m_enumerator;
+        public VisualObject VisualObject { get; protected set; }
 
-    public class InTexConfiguration
-    {
-        public CreatedPoint Point { get; set; }
-    }
+        public Type CurrentType => m_enumerator.Current.Property.PropertyType;
 
-    public class PointPointLineConfiguration
-    {
-        public CreatedPoint Point1 { get; set; }
-        public CreatedPoint Point2 { get; set; }
-        public LineVisualObject Line { get; set; }
-    }
+        public event EventHandler<EventArgs<bool>> Disposed;
+        public bool IsDisposed { get; private set; }
+        protected abstract IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame { get; }
 
-    public class MiddlePointConfiguration
-    {
-        public CreatedPoint Point1 { get; set; }
-        public CreatedPoint Point2 { get; set; }
-        public PointVisualObject MidPoint { get; set; }
-    }
+        public Configuration() => m_enumerator = new ConfigurationEnumerator(Trame.GetEnumerator(), App.Scene.Plane.Selection);
 
-    public class ManipulationConfiguration
-    {
-
-    }
-
-    public class CreatedPoint
-    {
-        public CreatedPoint(PointVisualObject pointVisualObject, bool created)
+        public async Task Run()
         {
-            PointVisualObject = pointVisualObject;
-            Created = created;
+            try
+            {
+                if (!IsDisposed)
+                {
+                    var cancellationToken = m_cancellationTokenSource.Token;
+                    while (await m_enumerator.MoveNextAsync(cancellationToken)) ;
+                    Dispose(false);
+                }
+            }
+            catch (OperationCanceledException) { Dispose(true); }
         }
 
-        public PointVisualObject PointVisualObject { get; set; }
-        public bool Created { get; set; }
-        public bool Fixed { get; set; }
+        public void Cancel()
+        {
+            if (!IsDisposed)
+            {
+                VisualObject?.Destroy();
+                m_cancellationTokenSource.Cancel();
+                Dispose(true);
+            }
+        }
 
-        public void DestroyIfCreated() { if (Created) PointVisualObject.Destroy(); }
+        void IDisposable.Dispose() => Dispose(true);
+        private void Dispose(bool isCancelled)
+        {
+            if (!IsDisposed)
+            {
+                m_enumerator.Dispose();
+                IsDisposed = true;
+                Disposed?.Invoke(this, EventArgsHelper.Create(isCancelled));
+                Disposed = null;
+            }
+        }
+    }
 
-        public static implicit operator PointVisualObject(CreatedPoint createdPoint) => createdPoint.PointVisualObject;
+    public class PointPointLineConfiguration : Configuration
+    {
+        public PointPointLineConfiguration() => VisualObject = new LineVisualObject { Stroke = new Pen(FlatBrushes.SunFlower, 3) };
+
+        protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
+        {
+            get
+            {
+                var visualObject = (LineVisualObject)VisualObject;
+                var definition = new PointPointLineDefinition();
+                visualObject.Definition = definition;
+
+                yield return (definition, PointPointLineDefinition.PointAProperty);
+                yield return (definition, PointPointLineDefinition.PointBProperty);
+            }
+        }
+    }
+
+    public class MiddlePointConfiguration : Configuration
+    {
+        public MiddlePointConfiguration() => VisualObject = new PointVisualObject { Radius = 5, Fill = FlatBrushes.Alizarin };
+
+        protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
+        {
+            get
+            {
+                var visualObject = (PointVisualObject)VisualObject;
+                var definition = new MiddlePointDefinition();
+                visualObject.Definition = definition;
+
+                yield return (definition, MiddlePointDefinition.PointAProperty);
+                yield return (definition, MiddlePointDefinition.PointBProperty);
+            }
+        }
+    }
+
+    public class CenterPointCircleConfiguration : Configuration
+    {
+        public CenterPointCircleConfiguration() => VisualObject = new CircleVisualObject { Stroke = new Pen(FlatBrushes.Carrot, 3) };
+
+        protected override IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame
+        {
+            get
+            {
+                var visualObject = (CircleVisualObject)VisualObject;
+                var definition = new CenterPointCircleDefinition();
+                visualObject.Definition = definition;
+
+                yield return (definition, CenterPointCircleDefinition.CenterProperty);
+                yield return (definition, CenterPointCircleDefinition.PointProperty);
+            }
+        }
     }
 }

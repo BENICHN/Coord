@@ -8,24 +8,26 @@ namespace Coord
 {
     public class AsymptoteVisualObject : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new AsymptoteVisualObject();
+
         public override string Type => "Asymptote";
 
         public Func<double, double> Function { get => (Func<double, double>)GetValue(FunctionProperty); set => SetValue(FunctionProperty, value); }
-        public static readonly DependencyProperty FunctionProperty = CreateProperty<Func<double, double>>(true, true, "Function", typeof(AsymptoteVisualObject));
+        public static readonly DependencyProperty FunctionProperty = CreateProperty<AsymptoteVisualObject, Func<double, double>>(true, true, true, "Function");
 
         public double X { get => (double)GetValue(XProperty); set => SetValue(XProperty, value); }
-        public static readonly DependencyProperty XProperty = CreateProperty<double>(true, true, "X", typeof(AsymptoteVisualObject));
+        public static readonly DependencyProperty XProperty = CreateProperty<AsymptoteVisualObject, double>(true, true, true, "X");
 
         public double Length { get => (double)GetValue(LengthProperty); set => SetValue(LengthProperty, value); }
-        public static readonly DependencyProperty LengthProperty = CreateProperty<double>(true, true, "Length", typeof(AsymptoteVisualObject));
+        public static readonly DependencyProperty LengthProperty = CreateProperty<AsymptoteVisualObject, double>(true, true, true, "Length");
 
-        public PlanePen DiffStroke { get => (PlanePen)GetValue(DiffStrokeProperty); set => SetValue(DiffStrokeProperty, value); }
-        public static readonly DependencyProperty DiffStrokeProperty = CreateProperty<PlanePen>(true, true, "DiffStroke", typeof(AsymptoteVisualObject));
+        public Pen DiffStroke { get => (Pen)GetValue(DiffStrokeProperty); set => SetValue(DiffStrokeProperty, value); }
+        public static readonly DependencyProperty DiffStrokeProperty = CreateProperty<AsymptoteVisualObject, Pen>(true, true, true, "DiffStroke");
 
         public PointVisualObject Template { get => (PointVisualObject)GetValue(TemplateProperty); set => SetValue(TemplateProperty, value); }
-        public static readonly DependencyProperty TemplateProperty = CreateProperty<PointVisualObject>(true, true, "Template", typeof(AsymptoteVisualObject));
+        public static readonly DependencyProperty TemplateProperty = CreateProperty<AsymptoteVisualObject, PointVisualObject>(true, true, true, "Template");
 
-        public static Character[] GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, PlanePen stroke, PlanePen diffStroke, (Brush fill, PlanePen stroke, double radius) points, Func<double, double> function, double x, double length)
+        public static Character[] GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, Pen stroke, Pen diffStroke, (Brush fill, Pen stroke, double radius) points, Func<double, double> function, double x, double length)
         {
             var point1i = new Point(x, function(x));
             var point1 = coordinatesSystemManager.ComputeOutCoordinates(point1i);

@@ -7,29 +7,21 @@ namespace Coord
     /// <summary>
     /// Détermine l'intersection de deux droites du plan
     /// </summary>
-    public class LineIntersectionPointDefinition : PointDefinition, ICoordEditable
+    public class LineIntersectionPointDefinition : PointDefinition
     {
-        public override string Type => "LineIntersectionPointDefinition";
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("LineA", LineAProperty);
-                yield return ("LineB", LineBProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new LineIntersectionPointDefinition();
 
         /// <summary>
         /// Première droite
         /// </summary>
         public LineVisualObject LineA { get => (LineVisualObject)GetValue(LineAProperty); set => SetValue(LineAProperty, value); }
-        public static readonly DependencyProperty LineAProperty = CreateProperty<LineVisualObject>(true, true, "LineA", typeof(LineIntersectionPointDefinition));
+        public static readonly DependencyProperty LineAProperty = CreateProperty<LineIntersectionPointDefinition, LineVisualObject>(true, true, true, "LineA");
 
         /// <summary>
         /// Seconde droite
         /// </summary>
         public LineVisualObject LineB { get => (LineVisualObject)GetValue(LineBProperty); set => SetValue(LineBProperty, value); }
-        public static readonly DependencyProperty LineBProperty = CreateProperty<LineVisualObject>(true, true, "LineB", typeof(LineIntersectionPointDefinition));
+        public static readonly DependencyProperty LineBProperty = CreateProperty<LineIntersectionPointDefinition, LineVisualObject>(true, true, true, "LineB");
 
         protected override void OnChanged()
         {

@@ -11,6 +11,8 @@ namespace Coord
     /// </summary>
     public class LineVisualObject : LineVisualObjectBase
     {
+        protected override Freezable CreateInstanceCore() => new LineVisualObject();
+
         public override string Type => Definition switch
         {
             EquationLineDefinition _ => "EquationLine",
@@ -26,7 +28,7 @@ namespace Coord
         /// Détermine les propriétés fondamentales de ce <see cref="LineVisualObject"/>
         /// </summary>
         public LineDefinition Definition { get => (LineDefinition)GetValue(DefinitionProperty); set => SetValue(DefinitionProperty, value); }
-        public static readonly DependencyProperty DefinitionProperty = CreateProperty<LineDefinition>(true, true, "Definition", typeof(LineVisualObject));
+        public static readonly DependencyProperty DefinitionProperty = CreateProperty<LineVisualObject, LineDefinition>(true, true, true, "Definition");
 
         /// <summary>
         /// Équation de droite qui décrit ce <see cref="LineVisualObjectBase"/>

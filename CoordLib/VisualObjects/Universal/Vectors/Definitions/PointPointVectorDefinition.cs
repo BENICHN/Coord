@@ -7,17 +7,19 @@ namespace Coord
     /// </summary>
     public class PointPointVectorDefinition : VectorDefinition
     {
+        protected override Freezable CreateInstanceCore() => new PointPointVectorDefinition();
+
         /// <summary>
         /// Origine dans le plan
         /// </summary>
         public PointVisualObject PointA { get => (PointVisualObject)GetValue(PointAProperty); set => SetValue(PointAProperty, value); }
-        public static readonly DependencyProperty PointAProperty = CreateProperty<PointVisualObject>(true, true, "PointA", typeof(PointPointVectorDefinition));
+        public static readonly DependencyProperty PointAProperty = CreateProperty<PointPointVectorDefinition, PointVisualObject>(true, true, true, "PointA");
 
         /// <summary>
         /// Extrémité dans le plan
         /// </summary>
         public PointVisualObject PointB { get => (PointVisualObject)GetValue(PointBProperty); set => SetValue(PointBProperty, value); }
-        public static readonly DependencyProperty PointBProperty = CreateProperty<PointVisualObject>(true, true, "PointB", typeof(PointPointVectorDefinition));
+        public static readonly DependencyProperty PointBProperty = CreateProperty<PointPointVectorDefinition, PointVisualObject>(true, true, true, "PointB");
 
         protected override void OnChanged()
         {

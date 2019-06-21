@@ -20,13 +20,13 @@ namespace Coord
         /// Coin supérieur gauche
         /// </summary>
         public PointVisualObject InAnchorPoint { get => (PointVisualObject)GetValue(InAnchorPointProperty); set => SetValue(InAnchorPointProperty, value); }
-        public static readonly DependencyProperty InAnchorPointProperty = CreateProperty<PointVisualObject>(true, true, "InAnchorPoint", typeof(TextVisualObjectBase));
+        public static readonly DependencyProperty InAnchorPointProperty = CreateProperty<TextVisualObjectBase, PointVisualObject>(true, true, true, "InAnchorPoint");
 
         public bool In { get => (bool)GetValue(InProperty); set => SetValue(InProperty, value); }
-        public static readonly DependencyProperty InProperty = CreateProperty<bool>(true, true, "In", typeof(TextVisualObjectBase));
+        public static readonly DependencyProperty InProperty = CreateProperty<TextVisualObjectBase, bool>(true, true, true, "In");
 
         public RectPoint RectPoint { get => (RectPoint)GetValue(RectPointProperty); set => SetValue(RectPointProperty, value); }
-        public static readonly DependencyProperty RectPointProperty = CreateProperty<RectPoint>(true, true, "RectPoint", typeof(TextVisualObjectBase));
+        public static readonly DependencyProperty RectPointProperty = CreateProperty<TextVisualObjectBase, RectPoint>(true, true, true, "RectPoint");
 
         /// <summary>
         /// Obtient le nombre de <see cref="Character"/> qui composent ce <see cref="TextVisualObjectBase"/>

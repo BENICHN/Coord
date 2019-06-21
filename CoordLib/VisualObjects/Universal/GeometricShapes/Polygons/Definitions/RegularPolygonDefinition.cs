@@ -8,17 +8,19 @@ namespace Coord
     /// </summary>
     public class RegularPolygonDefinition : PolygonDefinition
     {
+        protected override Freezable CreateInstanceCore() => new RegularPolygonDefinition();
+
         /// <summary>
         /// Longueur dans le plan des côtés du polygone
         /// </summary>
         public double SideLength { get => (double)GetValue(SideLengthProperty); set => SetValue(SideLengthProperty, value); }
-        public static readonly DependencyProperty SideLengthProperty = CreateProperty<double>(true, true, "SideLength", typeof(RegularPolygonDefinition));
+        public static readonly DependencyProperty SideLengthProperty = CreateProperty<RegularPolygonDefinition, double>(true, true, true, "SideLength");
 
         /// <summary>
         /// Nombre de côtés du polygone
         /// </summary>
         public int SideCount { get => (int)GetValue(SideCountProperty); set => SetValue(SideCountProperty, value); }
-        public static readonly DependencyProperty SideCountProperty = CreateProperty<int>(true, true, "SideCount", typeof(RegularPolygonDefinition));
+        public static readonly DependencyProperty SideCountProperty = CreateProperty<RegularPolygonDefinition, int>(true, true, true, "SideCount");
 
         protected override void OnChanged()
         {

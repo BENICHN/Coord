@@ -1,10 +1,14 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using System.Windows.Media.Animation;
 
 namespace Coord
 {
+    internal class ProgressValueInterpolationHelper : ValueInterpolationHelper<Progress> { protected override Progress InterpolateCore(Progress start, Progress end, double progress) => new Progress(Num.Interpolate(start.Value, end.Value, progress), progress == 1 ? end.Mode : start.Mode, progress == 1 ? end.LagEasingFunction : start.LagEasingFunction, Num.Interpolate(start.LagFactor, end.LagFactor, progress)); }
+
     public readonly struct Progress
     {
+        static Progress() => ValueInterpolationHelper<Progress>.Default = new ProgressValueInterpolationHelper();
         public Progress(double value) : this() => Value = value;
         public Progress(double value, ProgressMode mode, double lagFactor = 2) : this(value)
         {

@@ -10,8 +10,10 @@ namespace Coord
     /// <summary>
     /// Définit un <see cref="TextVisualObjectBase"/> à partir d'une chaîne de caractères au format LaTex ou non
     /// </summary>
-    public class TextVisualObject : TextVisualObjectBase, ICoordEditable
+    public class TextVisualObject : TextVisualObjectBase
     {
+        protected override Freezable CreateInstanceCore() => new TextVisualObject();
+
         public override string Type => (In, LaTex) switch
         {
             (true, true) => "InTex",
@@ -20,45 +22,31 @@ namespace Coord
             (false, false) => "OutText"
         };
 
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Text", TextProperty);
-                yield return ("Scale", ScaleProperty);
-                yield return ("LaTex", LaTexProperty);
-                yield return ("Typeface", TypefaceProperty);
-                yield return ("InAnchorPoint", InAnchorPointProperty);
-                yield return ("In", InProperty);
-                yield return ("RectPoint", RectPointProperty);
-            }
-        }
-
         private readonly TexFormulaParser m_texFormulaParser = new TexFormulaParser();
 
         /// <summary>
         /// Chaîne de caractères à dessiner
         /// </summary>
         public string Text { get => (string)GetValue(TextProperty); set => SetValue(TextProperty, value); }
-        public static readonly DependencyProperty TextProperty = CreateProperty<string>(true, true, "Text", typeof(TextVisualObject));
+        public static readonly DependencyProperty TextProperty = CreateProperty<TextVisualObject, string>(true, true, true, "Text");
 
         /// <summary>
         /// Taille du texte
         /// </summary>
         public double Scale { get => (double)GetValue(ScaleProperty); set => SetValue(ScaleProperty, value); }
-        public static readonly DependencyProperty ScaleProperty = CreateProperty<double>(true, true, "Scale", typeof(TextVisualObject));
+        public static readonly DependencyProperty ScaleProperty = CreateProperty<TextVisualObject, double>(true, true, true, "Scale");
 
         /// <summary>
         /// Indique si <see cref="Text"/> est à interpréter comme une chaîne au format LaTex
         /// </summary>
         public bool LaTex { get => (bool)GetValue(LaTexProperty); set => SetValue(LaTexProperty, value); }
-        public static readonly DependencyProperty LaTexProperty = CreateProperty<bool>(true, true, "LaTex", typeof(TextVisualObject));
+        public static readonly DependencyProperty LaTexProperty = CreateProperty<TextVisualObject, bool>(true, true, true, "LaTex");
 
         /// <summary>
         /// Dans le cas où <see cref="LaTex"/> est <see langword="false"/>, décrit le style du texte
         /// </summary>
         public Typeface Typeface { get => (Typeface)GetValue(TypefaceProperty); set => SetValue(TypefaceProperty, value); }
-        public static readonly DependencyProperty TypefaceProperty = CreateProperty(true, true, "Typeface", typeof(TextVisualObject), new Typeface("Calibri"));
+        public static readonly DependencyProperty TypefaceProperty = CreateProperty<TextVisualObject, Typeface>(true, true, true, "Typeface", new Typeface("Calibri"));
 
         /// <summary>
         /// Appelle <see cref="GetOutGeometry(string)"/> en passant <see cref="Text"/> comme paramètre puis retourne le résultat

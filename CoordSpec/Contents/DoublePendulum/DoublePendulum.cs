@@ -1,7 +1,5 @@
 ﻿using BenLib.Standard;
 using Coord;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using static Coord.VisualObjects;
 using static System.Math;
@@ -10,6 +8,8 @@ namespace CoordSpec
 {
     public class DoublePendulum : VisualObjectGroupBase
     {
+        protected override Freezable CreateInstanceCore() => new DoublePendulum();
+
         public override string Type => "DoublePendulum";
 
         public PointVisualObject Point1 { get; }
@@ -18,25 +18,25 @@ namespace CoordSpec
         public SegmentVisualObject Segment2 { get; }
 
         public double Angle1 { get => (double)GetValue(Angle1Property); set => SetValue(Angle1Property, value); }
-        public static readonly DependencyProperty Angle1Property = CreateProperty<double>(false, false, "Angle1", typeof(DoublePendulum));
+        public static readonly DependencyProperty Angle1Property = CreateProperty<DoublePendulum, double>(false, false, true, "Angle1");
 
         public double Angle2 { get => (double)GetValue(Angle2Property); set => SetValue(Angle2Property, value); }
-        public static readonly DependencyProperty Angle2Property = CreateProperty<double>(false, false, "Angle2", typeof(DoublePendulum));
+        public static readonly DependencyProperty Angle2Property = CreateProperty<DoublePendulum, double>(false, false, true, "Angle2");
 
         public double Length1 { get => (double)GetValue(Length1Property); set => SetValue(Length1Property, value); }
-        public static readonly DependencyProperty Length1Property = CreateProperty<double>(false, false, "Length1", typeof(DoublePendulum));
+        public static readonly DependencyProperty Length1Property = CreateProperty<DoublePendulum, double>(false, false, true, "Length1");
 
         public double Length2 { get => (double)GetValue(Length2Property); set => SetValue(Length2Property, value); }
-        public static readonly DependencyProperty Length2Property = CreateProperty<double>(false, false, "Length2", typeof(DoublePendulum));
+        public static readonly DependencyProperty Length2Property = CreateProperty<DoublePendulum, double>(false, false, true, "Length2");
 
         public double Mass1 { get => (double)GetValue(Mass1Property); set => SetValue(Mass1Property, value); }
-        public static readonly DependencyProperty Mass1Property = CreateProperty<double>(false, false, "Mass1", typeof(DoublePendulum));
+        public static readonly DependencyProperty Mass1Property = CreateProperty<DoublePendulum, double>(false, false, true, "Mass1");
 
         public double Mass2 { get => (double)GetValue(Mass2Property); set => SetValue(Mass2Property, value); }
-        public static readonly DependencyProperty Mass2Property = CreateProperty<double>(false, false, "Mass2", typeof(DoublePendulum));
+        public static readonly DependencyProperty Mass2Property = CreateProperty<DoublePendulum, double>(false, false, true, "Mass2");
 
         public (double theta1, double z1, double theta2, double z2) State { get => ((double theta1, double z1, double theta2, double z2))GetValue(StateProperty); set => SetValue(StateProperty, value); }
-        public static readonly DependencyProperty StateProperty = CreateProperty<(double theta1, double z1, double theta2, double z2)>(false, false, "State", typeof(DoublePendulum));
+        public static readonly DependencyProperty StateProperty = CreateProperty<DoublePendulum, (double theta1, double z1, double theta2, double z2)>(false, false, false, "State");
 
         private const double g = 9.81;
 
@@ -55,7 +55,6 @@ namespace CoordSpec
             var (theta1, z1, theta2, z2) = State;
             double c = Cos(theta1 - theta2);
             double s = Sin(theta1 - theta2);
-
 
             State = (
                 theta1 + dt * z1,

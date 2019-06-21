@@ -1,4 +1,5 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace CoordAnimation
 {
     public class CharacterEffectElement
     {
-        public static Brush IsSelectedBackground { get; } = BenLib.WPF.Misc.BrushFromHex(0xFF007ACC);
+        public static Brush IsSelectedBackground { get; } = Imaging.BrushFromHex(0xFF007ACC);
         public static Brush IsSelectedForeground { get; } = Brushes.White;
         public static Brush IsMouseOverBackground { get; } = Brushes.Transparent;
         public static Brush IsMouseOverForeground { get; } = Brushes.White;

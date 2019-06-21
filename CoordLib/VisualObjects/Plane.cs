@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static Coord.VisualObjects;
@@ -18,15 +19,16 @@ namespace Coord
     /// <summary>
     /// Plan pouvant contenir des objets visuels utilisant un système de coordonnées.
     /// </summary>
+    [ContentProperty("VisualObjects")]
     public class Plane : FrameworkElement
     {
         #region Champs
 
+
         private Point m_previousPoint;
         private Point m_outSelectionClick;
         private Character[] m_previousRectContent;
-
-        private readonly CoordinatesSystemManager m_coordinatesSystemManager = new CoordinatesSystemManager();
+        private Character[] m_clickHitTest;
 
         private int m_axesTextVisualIndex;
 
@@ -37,7 +39,7 @@ namespace Coord
         protected DrawingVisual BackgroundVisual = new DrawingVisual();
         protected DrawingVisual AxesTextVisual = new DrawingVisual();
         protected DrawingVisual SelectionRectangle = new DrawingVisual();
-        private readonly VisualObjectRenderer m_backgroundVisualObject;
+        private readonly VisualObject m_backgroundVisualObject;
         private bool m_isMoving;
         private bool m_isSelecting;
         private bool m_isCharactersScaling;
@@ -63,9 +65,6 @@ namespace Coord
         public AxesVisualObject Axes { get; }
         public GridVisualObject Grid { get; }
         public CadreVisualObject Cadre { get; }
-
-        public bool EnableCharacterEvents { get => (bool)GetValue(EnableCharacterEventsProperty); set => SetValue(EnableCharacterEventsProperty, value); }
-        public static readonly DependencyProperty EnableCharacterEventsProperty = DependencyProperty.Register("EnableCharacterEvents", typeof(bool), typeof(Plane));
 
         public bool EnableSelection { get => (bool)GetValue(EnableSelectionProperty); set => SetValue(EnableSelectionProperty, value); }
         public static readonly DependencyProperty EnableSelectionProperty = DependencyProperty.Register("EnableSelection", typeof(bool), typeof(Plane));
@@ -136,35 +135,8 @@ namespace Coord
         }
         public bool IsCharactersManipulating => IsCharactersTranslating || IsCharactersScaling;
 
-        public ReadOnlyCoordinatesSystemManager CoordinatesSystemManager { get; private set; }
-        public CoordinatesSystem CoordinatesSystem
-        {
-            get => m_coordinatesSystemManager.CoordinatesSystem;
-            set
-            {
-                m_coordinatesSystemManager.CoordinatesSystem = value;
-                m_coordinatesSystemManager.CoordinatesSystem.Changed += (sender, e) => OnForegroundChanged();
-                OnForegroundChanged();
-            }
-        }
-        public MathRect InputRange
-        {
-            get => m_coordinatesSystemManager.InputRange;
-            set
-            {
-                var old = m_coordinatesSystemManager.InputRange;
-                if (value != old)
-                {
-                    var outRange = CoordinatesSystemManager.OutputRange;
-                    if (outRange.Width / value.Width < MaxWidthRatio && outRange.Height / value.Height < MaxHeightRatio)
-                    {
-                        m_coordinatesSystemManager.InputRange = value;
-                        InputRangeChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<MathRect>("InputRange", old, value));
-                        RenderAll();
-                    }
-                }
-            }
-        }
+        public CoordinatesSystemManager CoordinatesSystemManager { get; } = new CoordinatesSystemManager();
+        public ReadOnlyCoordinatesSystemManager ReadOnlyCoordinatesSystemManager { get; private set; }
 
         public bool RenderAtChange { get => (bool)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
         public static readonly DependencyProperty RenderAtChangeProperty = DependencyProperty.Register("RenderAtChange", typeof(bool), typeof(Plane));
@@ -176,12 +148,23 @@ namespace Coord
 
         public Rect Bounds => new Rect(0, 0, ActualWidth, ActualHeight);
 
+        public Vector TotalOutOffset { get; private set; }
+        public Vector TotalInOffset { get; private set; }
         public Vector OutOffset { get; private set; }
         public Vector InOffset { get; private set; }
         public Point OutMousePosition { get; private set; }
-        public Point InMousePosition => CoordinatesSystemManager.ComputeInCoordinates(OutMousePosition);
-        public Point InMouseMagnetPosition => CoordinatesSystemManager.MagnetIn(InMousePosition);
+        public Point InMousePosition { get; private set; }
+        public Point InMouseMagnetPosition => ReadOnlyCoordinatesSystemManager.MagnetIn(InMousePosition);
         public Rect SelectionRect { get; private set; }
+
+        public Character[] LastHitTest { get; private set; } = Array.Empty<Character>();
+        public Character LastHitTestTop { get; private set; }
+
+        public double MaxWidthRatio { get => (double)GetValue(MaxWidthRatioProperty); set => SetValue(MaxWidthRatioProperty, value); }
+        public static readonly DependencyProperty MaxWidthRatioProperty = DependencyProperty.Register("MaxWidthRatio", typeof(double), typeof(Plane), new PropertyMetadata(200000.0));
+
+        public double MaxHeightRatio { get => (double)GetValue(MaxHeightRatioProperty); set => SetValue(MaxHeightRatioProperty, value); }
+        public static readonly DependencyProperty MaxHeightRatioProperty = DependencyProperty.Register("MaxHeightRatio", typeof(double), typeof(Plane), new PropertyMetadata(200000.0));
 
         public Cursor RestoreCursor { get => (Cursor)GetValue(RestoreCursorProperty); set => SetValue(RestoreCursorProperty, value); }
         public static readonly DependencyProperty RestoreCursorProperty = DependencyProperty.Register("RestoreCursor", typeof(Cursor), typeof(Plane));
@@ -194,19 +177,13 @@ namespace Coord
 
         #endregion
 
-        public const double MaxWidthRatio = 200000;
-        public const double MaxHeightRatio = 200000;
-
-        public event EventHandler<EventArgs<MouseButtonEventArgs, Character[]>> PreviewCharacterMouseDown;
-        public event EventHandler<EventArgs<MouseButtonEventArgs, Character[]>> PreviewCharacterMouseUp;
-        public event EventHandler<EventArgs<MouseEventArgs, Character[]>> PreviewCharacterMouseMove;
-        public event PropertyChangedExtendedEventHandler<MathRect> InputRangeChanged;
         public event PropertyChangedExtendedEventHandler<VisualObject> OverAxesNumbersChanged;
         public event PropertyChangedExtendedEventHandler<bool> BehaviorChanged;
         public event EventHandler<EventArgs<double, Point>> Zoomed;
 
         public Plane()
         {
+            Focusable = true;
             VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
 
             AxesNumbers = new AxesNumbers { Direction = AxesDirection.Both, Fill = Brushes.White };
@@ -215,7 +192,7 @@ namespace Coord
             m_backgroundVisualObject = Renderer(Grid, Axes);
 
             Selection = new TrackingCharacterSelection(this);
-            Selection.Changed += (sender, e) => { if (RenderAtSelectionChange && sender is VisualObject visualObject && visualObject.RenderAtSelectionChange) Render(visualObject); }; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            Selection.Changed += (sender, e) => { if (RenderAtSelectionChange && e.OriginalSource.RenderAtSelectionChange) Render(e.OriginalSource); };
 
             Cadre = new CadreVisualObject { CharacterSelection = Selection, Stroke = new Pen(FlatBrushes.Carrot, 1) };
 
@@ -232,7 +209,16 @@ namespace Coord
 
             ComputeAxesTextVisualIndex();
 
-            m_coordinatesSystemManager.Changed += (sender, e) => CoordinatesSystemManager = m_coordinatesSystemManager.AsReadOnly();
+            CoordinatesSystemManager.m_coerceInputRange = value =>
+            {
+                var outRange = CoordinatesSystemManager.OutputRange;
+                return new MathRect(value.BottomLeft, new Size(outRange.Width / Math.Min(outRange.Width / value.Width, MaxWidthRatio), outRange.Height / Math.Min(outRange.Height / value.Height, MaxHeightRatio)));
+            };
+            CoordinatesSystemManager.Changed += (sender, e) =>
+            {
+                ReadOnlyCoordinatesSystemManager = ((CoordinatesSystemManager)sender).AsReadOnly();
+                RenderAll();
+            };
         }
 
         #region Méthodes
@@ -311,6 +297,11 @@ namespace Coord
 
         #region Render
 
+        public void RenderdWithoutCache(VisualObject visualObject)
+        {
+            visualObject.ClearCache();
+            Render(visualObject);
+        }
         public void Render(VisualObject visualObject)
         {
             if (visualObject == Grid || visualObject == Axes) Render(m_backgroundVisualObject, BackgroundVisual);
@@ -320,8 +311,8 @@ namespace Coord
         public void Render(VisualObject visualObject, DrawingVisual visual)
         {
             using var drawingContext = visual.RenderOpen();
-            drawingContext.PushClip(new RectangleGeometry(CoordinatesSystemManager.OutputRange));
-            visualObject.Render(drawingContext, CoordinatesSystemManager);
+            drawingContext.PushClip(new RectangleGeometry(ReadOnlyCoordinatesSystemManager.OutputRange));
+            visualObject.Render(drawingContext, ReadOnlyCoordinatesSystemManager);
             drawingContext.Pop();
         }
 
@@ -343,6 +334,15 @@ namespace Coord
             foreach (var visualObject in VisualObjects) Render(visualObject);
             RenderSelectionRect();
         }
+        public void RenderForegroundWithoutCache()
+        {
+            foreach (var visualObject in VisualObjects)
+            {
+                visualObject.ClearCache();
+                Render(visualObject);
+            }
+            RenderSelectionRect();
+        }
 
         public void RenderAll()
         {
@@ -354,9 +354,9 @@ namespace Coord
         {
             using (var drawingContext = SelectionRectangle.RenderOpen())
             {
-                drawingContext.PushClip(new RectangleGeometry(CoordinatesSystemManager.OutputRange));
+                drawingContext.PushClip(new RectangleGeometry(ReadOnlyCoordinatesSystemManager.OutputRange));
                 drawingContext.DrawRectangle(SelectionRectFill, SelectionRectStroke, SelectionRect);
-                Cadre.Render(drawingContext, CoordinatesSystemManager);
+                Cadre.Render(drawingContext, ReadOnlyCoordinatesSystemManager);
                 drawingContext.Pop();
             }
             Debug.WriteLine($"SelectionRect rendered");
@@ -380,16 +380,16 @@ namespace Coord
             var direction = ZoomDirection;
             if (direction != AxesDirection.None)
             {
-                var (inAnchorPoint, outAnchorPoint) = isInAnchorPoint ? (anchorPoint, CoordinatesSystemManager.ComputeOutCoordinates(anchorPoint)) : (CoordinatesSystemManager.ComputeInCoordinates(anchorPoint), anchorPoint);
+                var (inAnchorPoint, outAnchorPoint) = isInAnchorPoint ? (anchorPoint, ReadOnlyCoordinatesSystemManager.ComputeOutCoordinates(anchorPoint)) : (ReadOnlyCoordinatesSystemManager.ComputeInCoordinates(anchorPoint), anchorPoint);
                 double finalPercentage = 1.0 - percentage;
-                var inRange = InputRange;
+                var inRange = CoordinatesSystemManager.InputRange;
 
-                InputRange = new MathRect(inRange.X, inRange.Y, inRange.Width * (direction == AxesDirection.Vertical ? 1 : finalPercentage), inRange.Height * (direction == AxesDirection.Horizontal ? 1 : finalPercentage));
+                CoordinatesSystemManager.InputRange = new MathRect(inRange.X, inRange.Y, inRange.Width * (direction == AxesDirection.Vertical ? 1 : finalPercentage), inRange.Height * (direction == AxesDirection.Horizontal ? 1 : finalPercentage));
 
-                var newInAnchorPoint = CoordinatesSystemManager.ComputeInCoordinates(outAnchorPoint);
+                var newInAnchorPoint = ReadOnlyCoordinatesSystemManager.ComputeInCoordinates(outAnchorPoint);
                 var inMove = newInAnchorPoint - inAnchorPoint;
 
-                InputRange = InputRange.Move(new Vector(inMove.X, -inMove.Y));
+                CoordinatesSystemManager.InputRange = CoordinatesSystemManager.InputRange.Move(new Vector(inMove.X, -inMove.Y));
 
                 Zoomed?.Invoke(this, EventArgsHelper.Create(percentage, inAnchorPoint));
             }
@@ -401,15 +401,17 @@ namespace Coord
 
         #region Mouse
 
-        protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
+        protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            var position = OutMousePosition = e.GetPosition(this);
-            var characters = HitTestCharacters(position);
+            var characters = LastHitTest;
+            Focus();
+            CaptureMouse();
+
+            if (e.OnlyPressed(MouseButton.Left)) m_clickHitTest = characters;
 
             if (EnableMove && !IsMoving && e.MiddleButton == MouseButtonState.Pressed) //Moving
             {
                 Cursor = Cursors.SizeAll;
-                CaptureMouse();
                 IsMoving = true;
             }
 
@@ -417,7 +419,7 @@ namespace Coord
             {
                 if (EnableCharactersManipulating && !Cadre.Focused.IsNaN) //CharactersScaling
                 {
-                    m_charactersManipulatingScale = new ScaleCharacterEffect { Center = CoordinatesSystemManager.ComputeInCoordinates(Cadre.Focused.Opposite.GetPoint(Cadre.BaseRect)), In = true, ScaleX = 1, ScaleY = 1, Progress = 1 };
+                    m_charactersManipulatingScale = new ScaleCharacterEffect { Center = ReadOnlyCoordinatesSystemManager.ComputeInCoordinates(Cadre.Focused.Opposite.GetPoint(Cadre.BaseRect)), In = true, ScaleX = 1, ScaleY = 1, Progress = 1 };
                     IsCharactersScaling = true;
                     Selection.PushEffect(m_charactersManipulatingScale);
                     Cadre.Locked = true;
@@ -440,33 +442,40 @@ namespace Coord
 
                 if (EnableSelectionRect && Selection.AllowMultiple && !IsCharactersManipulating && !IsSelecting && characters.Length == 0) //SelectionRect
                 {
-                    m_outSelectionClick = position;
+                    m_outSelectionClick = OutMousePosition;
                     Selection.Lock();
-                    CaptureMouse();
                     IsSelecting = true;
                 }
             }
 
-            if (EnableCharacterEvents) PreviewCharacterMouseDown?.Invoke(this, EventArgsHelper.Create(e, characters));
+            if (LastHitTestTop is Character character) character.Owner.OnMouseDown(InMousePosition, character);
         }
 
-        protected override void OnPreviewMouseMove(MouseEventArgs e)
+        protected override void OnMouseMove(MouseEventArgs e)
         {
             var position = OutMousePosition = e.GetPosition(this);
-            var characters = HitTestCharacters(position);
+            var inPosition = InMousePosition = ReadOnlyCoordinatesSystemManager.ComputeInCoordinates(position);
+            var lastLastCharacter = LastHitTestTop;
+            LastHitTest = HitTestCharacters(position);
+            var lastCharacter = LastHitTestTop = LastHitTest.LastOrDefault();
 
             OutOffset = position - m_previousPoint;
-            InOffset = new Vector(OutOffset.X / CoordinatesSystemManager.WidthRatio, -OutOffset.Y / CoordinatesSystemManager.HeightRatio);
+            InOffset = new Vector(OutOffset.X / ReadOnlyCoordinatesSystemManager.WidthRatio, -OutOffset.Y / ReadOnlyCoordinatesSystemManager.HeightRatio);
             m_previousPoint = position;
 
-            if (e.AllReleased()) Cursor = characters.Length > 0 && (Selection.Filter == null || characters.GroupBy(c => c.Owner).Any(group => Selection.Filter(group.Key))) ? Cursors.Hand : RestoreCursor;
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                TotalInOffset += InOffset;
+                TotalOutOffset += OutOffset;
+            }
+            if (e.AllReleased()) Cursor = EnableSelection && lastCharacter != null && lastCharacter.IsSelectable && lastCharacter.Owner.IsSelectable && (Selection.Filter?.Invoke(lastCharacter.Owner) ?? true) ? Cursors.Hand : RestoreCursor;
 
             if (IsMoving)
             {
                 var direction = MoveDirection;
                 m_outSelectionClick += OutOffset;
-                var newInRange = InputRange.Move(new Vector(direction == AxesDirection.Vertical ? 0 : InOffset.X, direction == AxesDirection.Horizontal ? 0 : -InOffset.Y));
-                InputRange = newInRange;
+                var newInRange = CoordinatesSystemManager.InputRange.Move(new Vector(direction == AxesDirection.Vertical ? 0 : InOffset.X, direction == AxesDirection.Horizontal ? 0 : -InOffset.Y));
+                CoordinatesSystemManager.InputRange = newInRange;
             }
 
             if (IsSelecting)
@@ -495,12 +504,16 @@ namespace Coord
                 else if (IsCharactersTranslating)
                 {
                     Cadre.OutOffset += OutOffset;
-                    m_charactersManipulatingTranslation.Vector = CoordinatesSystemManager.ComputeInCoordinates(Cadre.OutOffset);
+                    m_charactersManipulatingTranslation.Vector = ReadOnlyCoordinatesSystemManager.ComputeInCoordinates(Cadre.OutOffset);
                     RenderChanged();
                 }
                 else
                 {
-                    if (e.LeftButton == MouseButtonState.Pressed) foreach (var vo in Selection.VisualObjects) vo.Move(InOffset);
+                    if (e.LeftButton == MouseButtonState.Pressed && !m_clickHitTest.IsNullOrEmpty())
+                    {
+                        var c = m_clickHitTest.Last();
+                        c.Owner.Move(inPosition, TotalInOffset, InOffset, c);
+                    }
                     Cursor = Cadre.Contains(position) switch
                     {
                         (0, 0) => Cursors.SizeNWSE, //TopLeft
@@ -516,12 +529,18 @@ namespace Coord
                 }
             }
 
-            if (EnableCharacterEvents) PreviewCharacterMouseMove?.Invoke(this, EventArgsHelper.Create(e, characters));
+            if (lastCharacter != lastLastCharacter && (lastCharacter == null ^ lastLastCharacter == null || lastCharacter.Index != lastLastCharacter.Index || lastCharacter.Owner != lastLastCharacter.Owner))
+            {
+                if (lastCharacter != null) lastCharacter.Owner.OnMouseEnter(inPosition, lastCharacter);
+                if (lastLastCharacter != null) lastLastCharacter.Owner.OnMouseLeave(inPosition, lastLastCharacter);
+            }
         }
 
-        protected override void OnPreviewMouseUp(MouseButtonEventArgs e)
+        protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            var position = OutMousePosition = e.GetPosition(this);
+            var lastCharacter = LastHitTestTop;
+            ReleaseMouseCapture();
+
             bool moveEnd = IsMoving && e.MiddleButton == MouseButtonState.Released;
             bool selectionEnd = IsSelecting && e.LeftButton == MouseButtonState.Released;
             bool charactersManipulatingEnd = IsCharactersManipulating && e.LeftButton == MouseButtonState.Released;
@@ -549,18 +568,16 @@ namespace Coord
                     Cadre.Reset();
                     RenderSelectionRect();
                 }
-
-                ReleaseMouseCapture();
             }
 
-            if (EnableCharacterEvents) PreviewCharacterMouseUp?.Invoke(this, EventArgsHelper.Create(e, HitTestCharacters(position)));
+            TotalInOffset = TotalOutOffset = default;
+            if (lastCharacter != null) lastCharacter.Owner.OnMouseUp(InMousePosition, lastCharacter);
         }
 
         protected override void OnMouseWheel(MouseWheelEventArgs e)
         {
             if (EnableZoom)
             {
-                var position = OutMousePosition = e.GetPosition(this);
                 double percentage = Keyboard.Modifiers switch
                 {
                     ModifierKeys.Alt => 0.15,
@@ -569,7 +586,7 @@ namespace Coord
                     _ => 0.05,
                 };
 
-                ZoomOn(e.Delta > 0 ? percentage : -percentage, position, false);
+                ZoomOn(e.Delta > 0 ? percentage : -percentage, OutMousePosition, false);
             }
         }
 
@@ -604,10 +621,10 @@ namespace Coord
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            double widthRatio = CoordinatesSystemManager.WidthRatio;
+            double widthRatio = ReadOnlyCoordinatesSystemManager.WidthRatio;
             if (double.IsNaN(widthRatio)) widthRatio = m_restoreWidthRatio;
 
-            double heightRatio = CoordinatesSystemManager.HeightRatio;
+            double heightRatio = ReadOnlyCoordinatesSystemManager.HeightRatio;
             if (double.IsNaN(heightRatio)) heightRatio = m_restoreHeightRatio;
 
             if (sizeInfo.NewSize.Width == 0.0) m_restoreWidthRatio = widthRatio;
@@ -617,11 +634,11 @@ namespace Coord
             double diffHeightIn = (sizeInfo.NewSize.Height - sizeInfo.PreviousSize.Height) / heightRatio;
 
             var bounds = Bounds;
-            m_coordinatesSystemManager.OutputRange = bounds;
+            CoordinatesSystemManager.OutputRange = bounds;
 
-            var inRange = InputRange;
+            var inRange = CoordinatesSystemManager.InputRange;
             var newInRange = new MathRect(inRange.X, inRange.Y - diffHeightIn, inRange.Width + diffWidthIn, inRange.Height + diffHeightIn);
-            InputRange = newInRange;
+            CoordinatesSystemManager.InputRange = newInRange;
         }
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

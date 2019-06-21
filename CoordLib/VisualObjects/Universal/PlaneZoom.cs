@@ -5,42 +5,38 @@ using System.Windows.Media;
 
 namespace Coord
 {
-    public class PlaneZoom : VisualObjectGroupBase
+    public class PlaneZoom : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new PlaneZoom();
+
         public override string Type => "PlaneZoom";
 
         private CoordinatesSystemManager m_coordinatesSystemManager;
 
         public MathRect InputRange { get => (MathRect)GetValue(InputRangeProperty); set => SetValue(InputRangeProperty, value); }
-        public static readonly DependencyProperty InputRangeProperty = CreateProperty<MathRect>(true, true, "InputRange", typeof(PlaneZoom), (sender, e) => { if (sender is PlaneZoom owner) owner.m_coordinatesSystemManager = new CoordinatesSystemManager { InputRange = owner.InputRange, OutputRange = owner.OutputRange }; });
+        public static readonly DependencyProperty InputRangeProperty = CreateProperty<PlaneZoom, MathRect>(true, true, true, "InputRange", (sender, e) => { if (sender is PlaneZoom owner) owner.m_coordinatesSystemManager = new CoordinatesSystemManager { InputRange = owner.InputRange, OutputRange = owner.OutputRange }; });
 
         public Rect OutputRange { get => (Rect)GetValue(OutputRangeProperty); set => SetValue(OutputRangeProperty, value); }
-        public static readonly DependencyProperty OutputRangeProperty = CreateProperty<Rect>(true, true, "OutputRange", typeof(PlaneZoom), (sender, e) => { if (sender is PlaneZoom owner) owner.m_coordinatesSystemManager = new CoordinatesSystemManager { InputRange = owner.InputRange, OutputRange = owner.OutputRange }; });
+        public static readonly DependencyProperty OutputRangeProperty = CreateProperty<PlaneZoom, Rect>(true, true, true, "OutputRange", (sender, e) => { if (sender is PlaneZoom owner) owner.m_coordinatesSystemManager = new CoordinatesSystemManager { InputRange = owner.InputRange, OutputRange = owner.OutputRange }; });
 
         public Geometry Clip { get => (Geometry)GetValue(ClipProperty); set => SetValue(ClipProperty, value); }
-        public static readonly DependencyProperty ClipProperty = CreateProperty<Geometry>(true, true, "Clip", typeof(PlaneZoom));
+        public static readonly DependencyProperty ClipProperty = CreateProperty<PlaneZoom, Geometry>(true, true, true, "Clip");
 
-        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
+        protected override IEnumerable<Character> GetCharactersCore(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
-            return GetCharactersCore().ToArray();
-            IEnumerable<Character> GetCharactersCore()
-            {
-                var outRange = coordinatesSystemManager.OutputRange;
-                var inRange = coordinatesSystemManager.InputRange;
-                var outputRange = OutputRange;
-                var inputRange = InputRange;
+            var outputRange = OutputRange;
+            var inputRange = InputRange;
 
-                var clip = Clip?.CloneCurrentValue() ?? new RectangleGeometry(outputRange);
+            var clip = Clip?.CloneCurrentValue() ?? new RectangleGeometry(outputRange);
 
-                var baseClip = clip.CloneCurrentValue().ToCharacter(Fill, Stroke);
-                baseClip.Matrix *= outputRange.To(coordinatesSystemManager.ComputeOutCoordinates(inputRange));
-                yield return baseClip;
+            var baseClip = clip.CloneCurrentValue().ToCharacter(Fill, Stroke);
+            baseClip.Transform *= outputRange.To(coordinatesSystemManager.ComputeOutCoordinates(inputRange));
+            yield return baseClip;
 
-                m_coordinatesSystemManager.CoordinatesSystem = coordinatesSystemManager.CoordinatesSystem;
-                foreach (var character in Children.SelectMany(visualObject => visualObject.GetTransformedCharacters(coordinatesSystemManager))) yield return character;
+            m_coordinatesSystemManager.CoordinatesSystem = coordinatesSystemManager.CoordinatesSystem;
+            foreach (var character in GetChildrenTransformedCharacters(coordinatesSystemManager)) yield return character;
 
-                yield return clip.ToCharacter(Fill, Stroke);
-            }
+            yield return clip.ToCharacter(Fill, Stroke);
         }
 
         protected override void RenderCore(DrawingContext drawingContext, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)

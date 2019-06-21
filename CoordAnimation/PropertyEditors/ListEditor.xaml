@@ -1,0 +1,27 @@
+﻿<local:PropertiesEditorBase x:Class="CoordAnimation.ListEditor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:CoordAnimation" x:Name="this">
+    <local:PropertiesEditorBase.Columns>
+        <DataGridTemplateColumn>
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Index}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTemplateColumn Width="*">
+            <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate DataType="{x:Type local:ListElement}">
+                    <ContentPresenter Content="{Binding Editor, Mode=OneTime}"/>
+                </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+    </local:PropertiesEditorBase.Columns>
+    <Grid>
+        <ContentControl Content="{Binding Editors, ElementName=this, Mode=OneTime}"/>
+        <Button Name="instanceButton" Content="Nouveau" Click="InstanceButton_Click"/>
+    </Grid>
+</local:PropertiesEditorBase>

@@ -44,7 +44,7 @@ namespace CoordSpec
                 Radius = 1,
                 Length = 4,
                 Fill = null,
-                Stroke = new PlanePen(FlatBrushes.Alizarin, 3)
+                Stroke = new Pen(FlatBrushes.Alizarin, 3)
             };
             plane.VisualObjects.Add(balance);
 

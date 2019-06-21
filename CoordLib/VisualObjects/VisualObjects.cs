@@ -129,11 +129,14 @@ namespace Coord
 
         #region VisualObjectGroup
 
-        public static VisualObjectGroup Group(IEnumerable<VisualObject> children) => new VisualObjectGroup { Children = children as VisualObjectCollection ?? new VisualObjectCollection(children) };
-        public static VisualObjectGroup Group(params VisualObject[] children) => Group(children as IEnumerable<VisualObject>);
+        public static VisualObjectContainer Container(VisualObjectChildrenRenderingMode childrenRenderingMode, IEnumerable<VisualObject> children) => new VisualObjectContainer { ChildrenRenderingMode = childrenRenderingMode, Children = children as VisualObjectCollection ?? new VisualObjectCollection(children) };
+        public static VisualObjectContainer Container(VisualObjectChildrenRenderingMode childrenRenderingMode, params VisualObject[] children) => Container(childrenRenderingMode, (IEnumerable<VisualObject>)children);
 
-        public static VisualObjectRenderer Renderer(IEnumerable<VisualObject> children) => new VisualObjectRenderer { Children = children as VisualObjectCollection ?? new VisualObjectCollection(children) };
-        public static VisualObjectRenderer Renderer(params VisualObject[] children) => Renderer(children as IEnumerable<VisualObject>);
+        public static VisualObjectContainer Group(IEnumerable<VisualObject> children) => new VisualObjectContainer { ChildrenRenderingMode = VisualObjectChildrenRenderingMode.Embedded, Children = children as VisualObjectCollection ?? new VisualObjectCollection(children) };
+        public static VisualObjectContainer Group(params VisualObject[] children) => Group((IEnumerable<VisualObject>)children);
+
+        public static VisualObjectContainer Renderer(IEnumerable<VisualObject> children) => new VisualObjectContainer { ChildrenRenderingMode = VisualObjectChildrenRenderingMode.Independent, Children = children as VisualObjectCollection ?? new VisualObjectCollection(children) };
+        public static VisualObjectContainer Renderer(params VisualObject[] children) => Renderer((IEnumerable<VisualObject>)children);
 
         #endregion
 
@@ -234,8 +237,8 @@ namespace Coord
             return vo;
         }
 
-        public static T AutoPen<T>(this T vo, Interval<int> interval, PlanePen template, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.AutoPen(interval, template, true, progress, synchronizedProgresses);
-        public static T AutoPen<T>(this T vo, Interval<int> interval, PlanePen template, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.AutoPen(interval, new AutoPenCharacterEffect { Template = template, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
+        public static T AutoPen<T>(this T vo, Interval<int> interval, Pen template, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.AutoPen(interval, template, true, progress, synchronizedProgresses);
+        public static T AutoPen<T>(this T vo, Interval<int> interval, Pen template, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.AutoPen(interval, new AutoPenCharacterEffect { Template = template, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T AutoPen<T>(this T vo, Interval<int> interval, AutoPenCharacterEffect autoPenCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
             vo.Effects.Add(autoPenCharacterEffect, interval);
@@ -248,23 +251,23 @@ namespace Coord
         public static T Hide<T>(this T vo, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(PositiveReals, null, null, progress, synchronizedProgresses);
         public static T Hide<T>(this T vo, Interval<int> interval, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, null, null, false, progress, synchronizedProgresses);
 
-        public static T Color<T>(this T vo, PlanePen stroke) where T : VisualObject => vo.Color(PositiveReals, null, stroke);
+        public static T Color<T>(this T vo, Pen stroke) where T : VisualObject => vo.Color(PositiveReals, null, stroke);
         public static T Color<T>(this T vo, Brush fill) where T : VisualObject => vo.Color(PositiveReals, fill, null);
-        public static T Color<T>(this T vo, Brush fill, PlanePen stroke) where T : VisualObject => vo.Color(PositiveReals, fill, stroke, 1);
+        public static T Color<T>(this T vo, Brush fill, Pen stroke) where T : VisualObject => vo.Color(PositiveReals, fill, stroke, 1);
 
-        public static T Color<T>(this T vo, Interval<int> interval, PlanePen stroke) where T : VisualObject => vo.Color(interval, null, stroke);
+        public static T Color<T>(this T vo, Interval<int> interval, Pen stroke) where T : VisualObject => vo.Color(interval, null, stroke);
         public static T Color<T>(this T vo, Interval<int> interval, Brush fill) where T : VisualObject => vo.Color(interval, fill, null);
-        public static T Color<T>(this T vo, Interval<int> interval, Brush fill, PlanePen stroke) where T : VisualObject => vo.Color(interval, fill, stroke, 1);
+        public static T Color<T>(this T vo, Interval<int> interval, Brush fill, Pen stroke) where T : VisualObject => vo.Color(interval, fill, stroke, 1);
 
-        public static T Color<T>(this T vo, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(PositiveReals, null, stroke, progress, synchronizedProgresses);
+        public static T Color<T>(this T vo, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(PositiveReals, null, stroke, progress, synchronizedProgresses);
         public static T Color<T>(this T vo, Brush fill, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(PositiveReals, fill, null, progress, synchronizedProgresses);
-        public static T Color<T>(this T vo, Brush fill, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(PositiveReals, fill, stroke, progress, synchronizedProgresses);
+        public static T Color<T>(this T vo, Brush fill, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(PositiveReals, fill, stroke, progress, synchronizedProgresses);
 
-        public static T Color<T>(this T vo, Interval<int> interval, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, null, stroke, progress, synchronizedProgresses);
+        public static T Color<T>(this T vo, Interval<int> interval, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, null, stroke, progress, synchronizedProgresses);
         public static T Color<T>(this T vo, Interval<int> interval, Brush fill, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, fill, null, progress, synchronizedProgresses);
 
-        public static T Color<T>(this T vo, Interval<int> interval, Brush fill, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, fill, stroke, true, progress, synchronizedProgresses);
-        public static T Color<T>(this T vo, Interval<int> interval, Brush fill, PlanePen stroke, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, new ColorCharacterEffect { Fill = fill, Stroke = stroke, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
+        public static T Color<T>(this T vo, Interval<int> interval, Brush fill, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, fill, stroke, true, progress, synchronizedProgresses);
+        public static T Color<T>(this T vo, Interval<int> interval, Brush fill, Pen stroke, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, new ColorCharacterEffect { Fill = fill, Stroke = stroke, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Color<T>(this T vo, Interval<int> interval, ColorCharacterEffect colorCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
             vo.Effects.Add(colorCharacterEffect, interval);
@@ -326,18 +329,18 @@ namespace Coord
         //}
 
         //public static T Color<T>(this T visualObject, Brush fill, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, fill, null, 1, synchronizedProgresses);
-        //public static T Color<T>(this T visualObject, PlanePen stroke, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, null, stroke, 1, synchronizedProgresses);
-        //public static T Color<T>(this T visualObject, Brush fill, PlanePen stroke, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, fill, stroke, 1, synchronizedProgresses);
+        //public static T Color<T>(this T visualObject, Pen stroke, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, null, stroke, 1, synchronizedProgresses);
+        //public static T Color<T>(this T visualObject, Brush fill, Pen stroke, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, fill, stroke, 1, synchronizedProgresses);
         //public static T Color<T>(this T visualObject, Brush fill, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, fill, null, progress, synchronizedProgresses);
-        //public static T Color<T>(this T visualObject, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, null, stroke, progress, synchronizedProgresses);
-        //public static T Color<T>(this T visualObject, Brush fill, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, fill, stroke, progress, synchronizedProgresses);
-        //public static T Color<T>(this T visualObject, Interval<int> interval, Brush fill, PlanePen stroke, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, interval, fill, stroke, 1, synchronizedProgresses);
-        //public static T Color<T>(this T visualObject, Interval<int> interval, Brush fill, PlanePen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
+        //public static T Color<T>(this T visualObject, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, null, stroke, progress, synchronizedProgresses);
+        //public static T Color<T>(this T visualObject, Brush fill, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, PositiveReals, fill, stroke, progress, synchronizedProgresses);
+        //public static T Color<T>(this T visualObject, Interval<int> interval, Brush fill, Pen stroke, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => Color(visualObject, interval, fill, stroke, 1, synchronizedProgresses);
+        //public static T Color<T>(this T visualObject, Interval<int> interval, Brush fill, Pen stroke, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         //{
         //    visualObject.Effects.Add(new ColorCharacterEffect(fill, stroke, progress, synchronizedProgresses), interval);
         //    return visualObject;
         //}
-        //public static T Color<T>(this T visualObject, Interval<int> interval, Brush fill, PlanePen stroke, Progress progress, bool withTransforms, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
+        //public static T Color<T>(this T visualObject, Interval<int> interval, Brush fill, Pen stroke, Progress progress, bool withTransforms, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         //{
         //    visualObject.Effects.Add(new ColorCharacterEffect(fill, stroke, progress, withTransforms, synchronizedProgresses), interval);
         //    return visualObject;
@@ -619,7 +622,7 @@ namespace Coord
         public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, params (CharacterEffect, Interval<int>)[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, easingFunction, characterEffects.ToDictionary());
         public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, params (CharacterEffect, Interval<int>)[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, from, to, easingFunction, characterEffects.ToDictionary(), default, false, false, FPS);
 
-        public static async Task ReColor(this VisualObject visualObject, Interval<int> interval, Brush fill, PlanePen stroke, double secondsDelay = 0.5)
+        public static async Task ReColor(this VisualObject visualObject, Interval<int> interval, Brush fill, Pen stroke, double secondsDelay = 0.5)
         {
             var effect = new ColorCharacterEffect { Fill = fill, Stroke = stroke };
             visualObject.Color(interval, effect);
@@ -692,13 +695,13 @@ namespace Coord
 
     public static partial class Extensions
     {
-        public static T Style<T>(this T visualObject, Brush fill, PlanePen stroke) where T : VisualObject
+        public static T Style<T>(this T visualObject, Brush fill, Pen stroke) where T : VisualObject
         {
             visualObject.Fill = fill;
             visualObject.Stroke = stroke;
             return visualObject;
         }
-        public static T Style<T>(this T visualObject, PlanePen stroke) where T : VisualObject
+        public static T Style<T>(this T visualObject, Pen stroke) where T : VisualObject
         {
             visualObject.Stroke = stroke;
             return visualObject;

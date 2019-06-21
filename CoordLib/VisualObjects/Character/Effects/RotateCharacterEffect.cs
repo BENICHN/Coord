@@ -4,28 +4,18 @@ using System.Windows;
 
 namespace Coord
 {
-    public class RotateCharacterEffect : CharacterEffect, ICoordEditable
+    public class RotateCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Center", CenterProperty);
-                yield return ("In", InProperty);
-                yield return ("Angle", AngleProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new RotateCharacterEffect();
 
         public Point Center { get => (Point)GetValue(CenterProperty); set => SetValue(CenterProperty, value); }
-        public static readonly DependencyProperty CenterProperty = CreateProperty<Point>(true, true, "Center", typeof(RotateCharacterEffect));
+        public static readonly DependencyProperty CenterProperty = CreateProperty<RotateCharacterEffect, Point>(true, true, true, "Center");
 
         public bool In { get => (bool)GetValue(InProperty); set => SetValue(InProperty, value); }
-        public static readonly DependencyProperty InProperty = CreateProperty<bool>(true, true, "In", typeof(RotateCharacterEffect));
+        public static readonly DependencyProperty InProperty = CreateProperty<RotateCharacterEffect, bool>(true, true, true, "In");
 
         public double Angle { get => (double)GetValue(AngleProperty); set => SetValue(AngleProperty, value); }
-        public static readonly DependencyProperty AngleProperty = CreateProperty<double>(true, true, "Angle", typeof(RotateCharacterEffect));
+        public static readonly DependencyProperty AngleProperty = CreateProperty<RotateCharacterEffect, double>(true, true, true, "Angle");
 
         /// <summary>
         /// Applique l'effet à une collection de <see cref="Character"/>

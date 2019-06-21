@@ -14,8 +14,8 @@ namespace Coord
         public event EventHandler ItemChanged;
 
         public NotifyObjectCollection() { }
-        public NotifyObjectCollection(IEnumerable<T> collection) : base(collection) { foreach (var item in collection) Register(item); }
-        public NotifyObjectCollection(List<T> list) : base(list) { foreach (var item in list) Register(item); }
+        public NotifyObjectCollection(IEnumerable<T> collection) : base(collection) { foreach (var item in Items) Register(item); }
+        public NotifyObjectCollection(List<T> list) : base(list) { foreach (var item in Items) Register(item); }
 
         protected virtual void Register(T item)
         {
@@ -208,15 +208,15 @@ namespace Coord
         public VisualObjectCollection(IEnumerable<VisualObject> collection) : base(collection) { }
         public VisualObjectCollection(params VisualObject[] collection) : base(collection) { }
 
-        public event PropertyChangedExtendedEventHandler<Interval<int>> SelectionChanged;
-        internal Func<VisualObject, Interval<int>, Interval<int>> CoerceSelection { get; set; }
+        public event EventHandler<VisualObjectSelectionChangedEventArgs> SelectionChanged;
+        internal event EventHandler<VisualObjectSelectionChangedEventArgs> PreviewSelectionChanged;
 
         protected override void Register(VisualObject item)
         {
             if (item != null)
             {
                 base.Register(item);
-                item.CoerceSelection += Item_CoerceSelection;
+                item.PreviewSelectionChanged += Item_PreviewSelectionChanged;
                 item.SelectionChanged += Item_SelectionChanged;
             }
         }
@@ -226,11 +226,12 @@ namespace Coord
             if (item != null)
             {
                 base.UnRegister(item);
+                item.PreviewSelectionChanged -= Item_PreviewSelectionChanged;
                 item.SelectionChanged -= Item_SelectionChanged;
             }
         }
 
-        private Interval<int> Item_CoerceSelection(VisualObject sender, Interval<int> value) => CoerceSelection == null ? value : CoerceSelection(sender, value);
-        private void Item_SelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e) => SelectionChanged?.Invoke(sender, e);
+        private void Item_SelectionChanged(object sender, VisualObjectSelectionChangedEventArgs e) => SelectionChanged?.Invoke(this, e);
+        private void Item_PreviewSelectionChanged(object sender, VisualObjectSelectionChangedEventArgs e) => PreviewSelectionChanged?.Invoke(this, e);
     }
 }

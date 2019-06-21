@@ -9,22 +9,24 @@ namespace Coord
 {
     public class CadreVisualObject : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new CadreVisualObject();
+
         public override string Type => "Cadre";
 
         public CharacterSelection CharacterSelection { get => (CharacterSelection)GetValue(CharacterSelectionProperty); set => SetValue(CharacterSelectionProperty, value); }
-        public static readonly DependencyProperty CharacterSelectionProperty = CreateProperty<CharacterSelection>(true, true, "CharacterSelection", typeof(CadreVisualObject), (sender, e) => (sender as CadreVisualObject).Reset());
+        public static readonly DependencyProperty CharacterSelectionProperty = CreateProperty<CadreVisualObject, CharacterSelection>(true, true, true, "CharacterSelection", (sender, e) => (sender as CadreVisualObject).Reset());
 
         public bool IsEnabled { get => (bool)GetValue(IsEnabledProperty); set => SetValue(IsEnabledProperty, value); }
-        public static readonly DependencyProperty IsEnabledProperty = CreateProperty<bool>(true, true, "IsEnabled", typeof(CadreVisualObject));
+        public static readonly DependencyProperty IsEnabledProperty = CreateProperty<CadreVisualObject, bool>(true, true, true, "IsEnabled");
 
         public RectPoint Focused { get => (RectPoint)GetValue(FocusedProperty); set => SetValue(FocusedProperty, value); }
-        public static readonly DependencyProperty FocusedProperty = CreateProperty<RectPoint>(true, true, "Focused", typeof(CadreVisualObject));
+        public static readonly DependencyProperty FocusedProperty = CreateProperty<CadreVisualObject, RectPoint>(true, true, true, "Focused");
 
         public Vector OutOffset { get => (Vector)GetValue(OutOffsetProperty); set => SetValue(OutOffsetProperty, value); }
-        public static readonly DependencyProperty OutOffsetProperty = CreateProperty<Vector>(true, true, "OutOffset", typeof(CadreVisualObject));
+        public static readonly DependencyProperty OutOffsetProperty = CreateProperty<CadreVisualObject, Vector>(true, true, true, "OutOffset");
 
         public bool Locked { get => (bool)GetValue(LockedProperty); set => SetValue(LockedProperty, value); }
-        public static readonly DependencyProperty LockedProperty = CreateProperty<bool>(false, false, "Locked", typeof(CadreVisualObject));
+        public static readonly DependencyProperty LockedProperty = CreateProperty<CadreVisualObject, bool>(false, false, true, "Locked");
 
         public Rect TopLeft { get; private set; }
         public Rect Top { get; private set; }
@@ -73,8 +75,7 @@ namespace Coord
                 Character.Rectangle(BottomLeft = ArroundPoint(RectPoint.BottomLeft.GetPoint(newRect), 3.5)).Color(Focused == RectPoint.BottomLeft ? Fill : null, Stroke),
                 Character.Rectangle(Left = ArroundPoint(RectPoint.Left.GetPoint(newRect), 3.5)).Color(Focused == RectPoint.Left ? Fill : null, Stroke)
             };
-
-            Rect ArroundPoint(Point point, double dimension)
+            static Rect ArroundPoint(Point point, double dimension)
             {
                 var dim = VectorFromPolarCoordinates(dimension, Math.PI / 4);
                 return new Rect(point - dim, point + dim);

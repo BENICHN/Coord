@@ -5,32 +5,21 @@ using System.Windows;
 
 namespace Coord
 {
-    public class FitCharacterEffect : CharacterEffect, ICoordEditable
+    public class FitCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("BoundsInterval", BoundsIntervalProperty);
-                yield return ("VisualObject", VisualObjectProperty);
-                yield return ("ScaleX", ScaleXProperty);
-                yield return ("ScaleY", ScaleYProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new FitCharacterEffect();
 
         public Interval<int> BoundsInterval { get => (Interval<int>)GetValue(BoundsIntervalProperty); set => SetValue(BoundsIntervalProperty, value); }
-        public static readonly DependencyProperty BoundsIntervalProperty = CreateProperty<Interval<int>>(true, true, "BoundsInterval", typeof(FitCharacterEffect));
+        public static readonly DependencyProperty BoundsIntervalProperty = CreateProperty<FitCharacterEffect, Interval<int>>(true, true, true, "BoundsInterval");
 
         public VisualObject VisualObject { get => (VisualObject)GetValue(VisualObjectProperty); set => SetValue(VisualObjectProperty, value); }
-        public static readonly DependencyProperty VisualObjectProperty = CreateProperty<VisualObject>(true, true, "VisualObject", typeof(FitCharacterEffect));
+        public static readonly DependencyProperty VisualObjectProperty = CreateProperty<FitCharacterEffect, VisualObject>(true, true, true, "VisualObject");
 
         public bool ScaleX { get => (bool)GetValue(ScaleXProperty); set => SetValue(ScaleXProperty, value); }
-        public static readonly DependencyProperty ScaleXProperty = CreateProperty<bool>(true, true, "ScaleX", typeof(FitCharacterEffect));
+        public static readonly DependencyProperty ScaleXProperty = CreateProperty<FitCharacterEffect, bool>(true, true, true, "ScaleX");
 
         public bool ScaleY { get => (bool)GetValue(ScaleYProperty); set => SetValue(ScaleYProperty, value); }
-        public static readonly DependencyProperty ScaleYProperty = CreateProperty<bool>(true, true, "ScaleY", typeof(FitCharacterEffect));
+        public static readonly DependencyProperty ScaleYProperty = CreateProperty<FitCharacterEffect, bool>(true, true, true, "ScaleY");
 
         protected override void ApplyCore(IReadOnlyCollection<Character> characters, Interval<int> interval, in ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {

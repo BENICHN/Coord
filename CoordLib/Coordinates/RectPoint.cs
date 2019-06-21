@@ -1,13 +1,19 @@
-﻿using System;
+﻿using BenLib.Framework;
+using BenLib.Standard;
+using System;
 using System.Windows;
 
 namespace Coord
 {
+    internal class RectPointValueInterpolationHelper : ValueInterpolationHelper<RectPoint> { protected override RectPoint InterpolateCore(RectPoint start, RectPoint end, double progress) => new RectPoint(Num.Interpolate(start.XProgress, end.XProgress, progress), Num.Interpolate(start.YProgress, end.YProgress, progress)); }
+
     /// <summary>
     /// Point d'un rectangle
     /// </summary>
     public readonly struct RectPoint : IEquatable<RectPoint>
     {
+        static RectPoint() => ValueInterpolationHelper<RectPoint>.Default = new RectPointValueInterpolationHelper();
+
         public RectPoint(double xProgress, double yProgress) : this()
         {
             XProgress = xProgress;

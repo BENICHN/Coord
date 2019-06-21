@@ -4,16 +4,16 @@ using System.Windows.Media;
 
 namespace Coord
 {
-    public abstract class Arrow : Freezable
+    public abstract class Arrow : NotifyObject
     {
         public double Length { get => (double)GetValue(LengthProperty); set => SetValue(LengthProperty, value); }
-        public static readonly DependencyProperty LengthProperty = DependencyProperty.Register("Length", typeof(double), typeof(Arrow), new PropertyMetadata(30.0));
+        public static readonly DependencyProperty LengthProperty = CreateProperty<Arrow, double>(true, true, true, "Length", 30);
 
         public double Width { get => (double)GetValue(WidthProperty); set => SetValue(WidthProperty, value); }
-        public static readonly DependencyProperty WidthProperty = DependencyProperty.Register("Width", typeof(double), typeof(Arrow), new PropertyMetadata(10.0));
+        public static readonly DependencyProperty WidthProperty = CreateProperty<Arrow, double>(true, true, true, "Width", 10);
 
         public bool In { get => (bool)GetValue(InProperty); set => SetValue(InProperty, value); }
-        public static readonly DependencyProperty InProperty = DependencyProperty.Register("In", typeof(bool), typeof(Arrow), new PropertyMetadata(false));
+        public static readonly DependencyProperty InProperty = CreateProperty<Arrow, bool>(true, true, true, "In");
 
         public abstract Geometry GetOutGeometry(Point outAnchorPoint, Vector arrow, ArrowEnd arrowEnd);
         public abstract Geometry GetInGeometry(Point outAnchorPoint, Vector arrow, ArrowEnd arrowEnd, ReadOnlyCoordinatesSystemManager coordinatesSystemManager);
@@ -39,7 +39,7 @@ namespace Coord
         protected override Freezable CreateInstanceCore() => new TriangleArrow();
 
         public bool Closed { get => (bool)GetValue(ClosedProperty); set => SetValue(ClosedProperty, value); }
-        public static readonly DependencyProperty ClosedProperty = DependencyProperty.Register("Closed", typeof(bool), typeof(TriangleArrow), new PropertyMetadata(true));
+        public static readonly DependencyProperty ClosedProperty = CreateProperty<TriangleArrow, bool>(true, true, true, "Closed", true);
 
         public override Geometry GetInGeometry(Point inAnchorPoint, Vector inArrow, ArrowEnd arrowEnd, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {

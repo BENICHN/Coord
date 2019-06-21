@@ -2,27 +2,19 @@
 using BenLib.Standard;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Coord
 {
-    public class WriteCharacterEffect : CharacterEffect, ICoordEditable
+    public class WriteCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("StrokeThickness", StrokeThicknessProperty);
-                yield return ("Reverse", ReverseProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new WriteCharacterEffect();
 
         public double StrokeThickness { get => (double)GetValue(StrokeThicknessProperty); set => SetValue(StrokeThicknessProperty, value); }
-        public static readonly DependencyProperty StrokeThicknessProperty = CreateProperty<double>(true, true, "StrokeThickness", typeof(WriteCharacterEffect));
+        public static readonly DependencyProperty StrokeThicknessProperty = CreateProperty<WriteCharacterEffect, double>(true, true, true, "StrokeThickness");
 
         public bool Reverse { get => (bool)GetValue(ReverseProperty); set => SetValue(ReverseProperty, value); }
-        public static readonly DependencyProperty ReverseProperty = CreateProperty<bool>(true, true, "Reverse", typeof(WriteCharacterEffect));
+        public static readonly DependencyProperty ReverseProperty = CreateProperty<WriteCharacterEffect, bool>(true, true, true, "Reverse");
 
         protected override void ApplyCore(IReadOnlyCollection<Character> characters, Interval<int> interval, in ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(interval, true).ForEach((character, i) => ApplyOn(character, Reverse, StrokeThickness, EasedProgress.Get(i, RealLength)));
 
@@ -32,7 +24,7 @@ namespace Coord
 
             if (character.Stroke == null)
             {
-                var sample = new PlanePen(fill, 0);
+                var sample = new Pen(fill, 0);
                 character.Stroke = sample.CloneCurrentValue();
             }
 

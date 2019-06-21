@@ -87,7 +87,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="VisualObjects\Base\Collections\NotifyObjectCollection.cs" />
-    <Compile Include="VisualObjects\Base\Collections\VisualObjectGroup.cs" />
     <Compile Include="VisualObjects\Base\NotifyObject.cs" />
     <Compile Include="VisualObjects\Base\VisualObject.cs" />
     <Compile Include="VisualObjects\CharacterSelection.cs" />

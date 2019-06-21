@@ -12,7 +12,7 @@ namespace Coord
         /// Progression de la translation d'un point du plan à son correspondant transformé
         /// </summary>
         public double Progress { get => (double)GetValue(ProgressProperty); set => SetValue(ProgressProperty, value); }
-        public static readonly DependencyProperty ProgressProperty = CreateProperty<double>(true, true, "Progress", typeof(CoordinatesSystem), 1);
+        public static readonly DependencyProperty ProgressProperty = CreateProperty<CoordinatesSystem, double>(true, true, true, "Progress", 1);
 
         protected abstract Point ComputeOutCoordinatesCore(Point point);
         protected abstract Point ComputeInCoordinatesCore(Point point);

@@ -1,14 +1,19 @@
-﻿using System;
+﻿using BenLib.Framework;
+using System;
 using System.Windows;
 using System.Windows.Media;
 
 namespace Coord
 {
+    internal class MathRectValueInterpolationHelper : ValueInterpolationHelper<MathRect> { protected override MathRect InterpolateCore(MathRect start, MathRect end, double progress) => base.InterpolateCore(start, end, progress); }
+    
     /// <summary>
     /// Décrit la largeur, la hauteur et l'emplacement d'un rectangle dans un repère orthonormé standard.
     /// </summary>
     public readonly struct MathRect : IEquatable<MathRect>
     {
+        static MathRect() => ValueInterpolationHelper<MathRect>.Default = new MathRectValueInterpolationHelper();
+
         public MathRect(Size size)
         {
             X = 0;

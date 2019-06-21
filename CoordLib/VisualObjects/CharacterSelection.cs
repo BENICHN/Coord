@@ -12,6 +12,8 @@ namespace Coord
 {
     public class CharacterSelection : NotifyObject, IReadOnlyDictionary<VisualObject, Interval<int>>
     {
+        protected override Freezable CreateInstanceCore() => new CharacterSelection();
+
         protected IDictionary<VisualObject, Interval<int>> Selection { get; }
 
         public IEnumerable<VisualObject> Keys => Selection.Keys;
@@ -56,6 +58,12 @@ namespace Coord
 
     public class TrackingCharacterSelection : CharacterSelection
     {
+        private bool m_allAtOnce;
+        private bool m_allowMultiple;
+        private Predicate<VisualObject> m_filter;
+
+        public new event EventHandler<VisualObjectSelectionChangedEventArgs> Changed;
+        public event EventHandler<EventArgs<VisualObject>> ObjectPointed;
         private Character[] m_locked;
 
         public Plane Plane { get; }
@@ -70,16 +78,16 @@ namespace Coord
             }
         }
 
-        public int UsageCount { get; set; }
+        public bool IsPointing { get; private set; }
 
         public bool AllowMultiple { get => (bool)GetValue(AllowMultipleProperty); set => SetValue(AllowMultipleProperty, value); }
-        public static readonly DependencyProperty AllowMultipleProperty = CreateProperty(true, true, "AllowMultiple", typeof(TrackingCharacterSelection), true);
+        public static readonly DependencyProperty AllowMultipleProperty = CreateProperty<TrackingCharacterSelection, bool>(true, true, true, "AllowMultiple", true, null, (d, v) => d is TrackingCharacterSelection selection ? selection.IsPointing ? selection.AllowMultiple : v : v);
 
         public bool AllAtOnce { get => (bool)GetValue(AllAtOnceProperty); set => SetValue(AllAtOnceProperty, value); }
-        public static readonly DependencyProperty AllAtOnceProperty = CreateProperty(true, true, "AllAtOnce", typeof(TrackingCharacterSelection), false);
+        public static readonly DependencyProperty AllAtOnceProperty = CreateProperty<TrackingCharacterSelection, bool>(true, true, true, "AllAtOnce", false, null, (d, v) => d is TrackingCharacterSelection selection ? selection.IsPointing ? selection.AllAtOnce : v : v);
 
         public Predicate<VisualObject> Filter { get => (Predicate<VisualObject>)GetValue(FilterProperty); set => SetValue(FilterProperty, value); }
-        public static readonly DependencyProperty FilterProperty = CreateProperty<Predicate<VisualObject>>(true, true, "Filter", typeof(TrackingCharacterSelection));
+        public static readonly DependencyProperty FilterProperty = CreateProperty<TrackingCharacterSelection, Predicate<VisualObject>>(true, true, true, "Filter", null, null, (d, v) => d is TrackingCharacterSelection selection ? selection.IsPointing ? selection.Filter : v : v);
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
@@ -96,15 +104,47 @@ namespace Coord
         public TrackingCharacterSelection(Plane plane) : base(plane.AllChildren())
         {
             Plane = plane;
-            plane.Grid.CoerceSelection += VisualObjects_CoerceSelection;
-            plane.Axes.CoerceSelection += VisualObjects_CoerceSelection;
-            plane.AxesNumbers.CoerceSelection += VisualObjects_CoerceSelection;
-            plane.VisualObjects.CoerceSelection += VisualObjects_CoerceSelection;
+            plane.Grid.PreviewSelectionChanged += VisualObjects_PreviewSelectionChanged;
+            plane.Axes.PreviewSelectionChanged += VisualObjects_PreviewSelectionChanged;
+            plane.AxesNumbers.PreviewSelectionChanged += VisualObjects_PreviewSelectionChanged;
+            plane.VisualObjects.PreviewSelectionChanged += VisualObjects_PreviewSelectionChanged;
             plane.Grid.SelectionChanged += VisualObjects_SelectionChanged;
             plane.Axes.SelectionChanged += VisualObjects_SelectionChanged;
             plane.AxesNumbers.SelectionChanged += VisualObjects_SelectionChanged;
             plane.VisualObjects.SelectionChanged += VisualObjects_SelectionChanged;
             plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
+            Changed = (sender, e) =>
+            {
+                if (IsPointing && !e.NewValue.IsNullOrEmpty()) ObjectPointed?.Invoke(this, EventArgsHelper.Create(e.OriginalSource));
+                NotifyChanged();
+            };
+        }
+
+        public bool EnablePointing(Type type)
+        {
+            if (!IsPointing && typeof(VisualObject).IsAssignableFrom(type))
+            {
+                m_allowMultiple = AllowMultiple;
+                AllowMultiple = false;
+                m_allAtOnce = AllAtOnce;
+                AllAtOnce = true;
+                m_filter = Filter;
+                Filter = vo => type.IsAssignableFrom(vo.GetType());
+                IsPointing = true;
+                return true;
+            }
+            else return false;
+        }
+
+        public void DisablePointing()
+        {
+            if (IsPointing)
+            {
+                IsPointing = false;
+                Filter = m_filter;
+                AllowMultiple = m_allowMultiple;
+                AllAtOnce = m_allAtOnce;
+            }
         }
 
         public void Lock() => m_locked = Selection.SelectMany(kvp => kvp.Key.Cache.Characters?.SubCollection(kvp.Value, true) ?? Enumerable.Empty<Character>()).ToArray();
@@ -113,8 +153,8 @@ namespace Coord
         public void Select(IEnumerable<Character> characters, bool allAtOnce)
         {
             Plane.RenderAtSelectionChange = false;
-            if (allAtOnce || AllAtOnce) foreach (var group in characters.GroupBy(c => c.Owner)) group.Key.Selection = PositiveReals;
-            else foreach (var character in characters) character.IsSelected = true;
+            if (allAtOnce || AllAtOnce) foreach (var group in characters.Where(c => c.IsSelectable).GroupBy(c => c.Owner)) group.Key.Selection = PositiveReals;
+            else foreach (var character in characters.Where(c => c.IsSelectable)) character.IsSelected = true;
             Plane.RenderAtSelectionChange = true;
             Plane.RenderChanged();
         }
@@ -141,11 +181,11 @@ namespace Coord
                 {
                     foreach (VisualObject visualObject in e.OldItems)
                     {
-                        if (Selection.ContainsKey(visualObject))
+                        if (Selection.TryGetValue(visualObject, out var old))
                         {
                             Selection.Remove(visualObject);
                             VisualObjects.Remove(visualObject);
-                            NotifyChanged();
+                            Changed?.Invoke(visualObject, new VisualObjectSelectionChangedEventArgs(visualObject, old, null));
                         }
                     }
                 }
@@ -159,36 +199,34 @@ namespace Coord
                             if (!AllowMultiple) ClearSelection();
                             Selection.Add(visualObject, visualObject.Selection);
                             VisualObjects.Add(visualObject);
-                            NotifyChanged();
+                            Changed?.Invoke(visualObject, new VisualObjectSelectionChangedEventArgs(visualObject, null, visualObject.Selection));
                         }
                     }
                 }
             }
         }
 
-        private Interval<int> VisualObjects_CoerceSelection(VisualObject sender, Interval<int> value) => !(Filter?.Invoke(sender) ?? true) ? EmptySet : AllAtOnce && !value.IsNullOrEmpty() ? PositiveReals : value;
+        private void VisualObjects_PreviewSelectionChanged(object sender, VisualObjectSelectionChangedEventArgs e) => e.NewValue = !(Filter?.Invoke(e.OriginalSource) ?? true) ? EmptySet : AllAtOnce && !e.NewValue.IsNullOrEmpty() ? PositiveReals : e.NewValue;
 
-        private void VisualObjects_SelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e)
+        private void VisualObjects_SelectionChanged(object sender, VisualObjectSelectionChangedEventArgs e)
         {
-            if (sender is VisualObject visualObject)
+            var visualObject = e.OriginalSource;
+            if (Selection.ContainsKey(visualObject))
             {
-                if (Selection.ContainsKey(visualObject))
+                if (e.NewValue.IsNullOrEmpty())
                 {
-                    if (e.NewValue.IsNullOrEmpty())
-                    {
-                        Selection.Remove(visualObject);
-                        VisualObjects.Remove(visualObject);
-                    }
-                    else Selection[visualObject] = e.NewValue;
+                    Selection.Remove(visualObject);
+                    VisualObjects.Remove(visualObject);
                 }
-                else if (!e.NewValue.IsNullOrEmpty())
-                {
-                    if (!AllowMultiple) ClearSelection();
-                    Selection.Add(visualObject, e.NewValue);
-                    VisualObjects.Add(visualObject);
-                }
-                NotifyChanged();
+                else Selection[visualObject] = e.NewValue;
             }
+            else if (!e.NewValue.IsNullOrEmpty())
+            {
+                if (!AllowMultiple) ClearSelection();
+                Selection.Add(visualObject, e.NewValue);
+                VisualObjects.Add(visualObject);
+            }
+            Changed?.Invoke(this, e);
         }
     }
 }

@@ -7,28 +7,19 @@ namespace Coord
     /// <summary>
     /// Translate progressivement une sous-collection de <see cref="Character"/> par un vecteur spécifié
     /// </summary>
-    public class TranslateCharacterEffect : CharacterEffect, ICoordEditable
+    public class TranslateCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Vector", VectorProperty);
-                yield return ("In", InProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new TranslateCharacterEffect();
 
         /// <summary>
         /// Vecteur associé à la translation
         /// </summary>
         public Vector Vector { get => (Vector)GetValue(VectorProperty); set => SetValue(VectorProperty, value); }
-        public static readonly DependencyProperty VectorProperty = CreateProperty<Vector>(true, true, "Vector", typeof(TranslateCharacterEffect));
+        public static readonly DependencyProperty VectorProperty = CreateProperty<TranslateCharacterEffect, Vector>(true, true, true, "Vector");
 
         public bool In { get => (bool)GetValue(InProperty); set => SetValue(InProperty, value); }
 
-        public static readonly DependencyProperty InProperty = CreateProperty<bool>(true, true, "In", typeof(TranslateCharacterEffect));
+        public static readonly DependencyProperty InProperty = CreateProperty<TranslateCharacterEffect, bool>(true, true, true, "In");
 
         /// <summary>
         /// Applique l'effet à une collection de <see cref="Character"/>

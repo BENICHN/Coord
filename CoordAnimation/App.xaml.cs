@@ -1,11 +1,9 @@
-﻿using Coord;
+﻿using BenLib.Standard;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace CoordAnimation
@@ -15,14 +13,17 @@ namespace CoordAnimation
     /// </summary>
     public partial class App : Application
     {
-        public static Type[] CoordTypes { get; private set; }
-        public static Type[] CharacterEffectTypes { get; private set; }
         public static Scene Scene { get; private set; }
+
+        public static string AppPath => AppDomain.CurrentDomain.BaseDirectory;
+        public static TypeTree DependencyObjectTypes { get; private set; }
+
+        public App() => DispatcherUnhandledException += (sender, e) => throw e.Exception;
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            CoordTypes = new[] { "CoordLib", "CoordSpec", "CoordAnimation" }.Select(s => Assembly.Load(s)).SelectMany(a => a.GetTypes()).ToArray();
-            CharacterEffectTypes = CoordTypes.Where(t => t != typeof(CharacterEffect) && typeof(CharacterEffect).IsAssignableFrom(t)).ToArray();
+            foreach (string assembly in Directory.GetFiles(AppPath, "*.dll").Concat(Directory.GetFiles(AppPath, "*.exe"))) Assembly.Load(Path.GetFileNameWithoutExtension(assembly));
+            DependencyObjectTypes = new TypeTree(AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => typeof(DependencyObject).IsAssignableFrom(t)));
             var w = new MainWindow();
             Scene = w.Content as Scene;
             w.Show();

@@ -7,13 +7,15 @@ namespace Coord
     /// </summary>
     public class CharactersVisualObject : TextVisualObjectBase
     {
+        protected override Freezable CreateInstanceCore() => new CharactersVisualObject();
+
         public override string Type => "Characters";
 
         /// <summary>
         /// Tableau contenant les <see cref="Character"/> qui composent ce <see cref="CharactersVisualObject"/>
         /// </summary>
         public Character[] Characters { get => (Character[])GetValue(CharactersProperty); set => SetValue(CharactersProperty, value); }
-        public static readonly DependencyProperty CharactersProperty = CreateProperty<Character[]>(true, true, "Characters", typeof(CharactersVisualObject));
+        public static readonly DependencyProperty CharactersProperty = CreateProperty<CharactersVisualObject, Character[]>(true, true, true, "Characters");
 
         /// <summary>
         /// Obtient les <see cref="Character"/> de <see cref="Characters"/>

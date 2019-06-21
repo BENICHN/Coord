@@ -7,22 +7,25 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 
 namespace CoordSpec
 {
     public class ELC : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new ELC();
+
         public override string Type => "ELC";
 
         private Rect[] m_inRectsCache;
         private Point[][] m_inPointsCache;
 
         public PointVisualObject Center { get => (PointVisualObject)GetValue(CenterProperty); set => SetValue(CenterProperty, value); }
-        public static readonly DependencyProperty CenterProperty = CreateProperty<PointVisualObject>(true, true, "Center", typeof(ELC));
+        public static readonly DependencyProperty CenterProperty = CreateProperty<ELC, PointVisualObject>(true, true, true, "Center");
 
         public int Rank { get => (int)GetValue(RankProperty); set => SetValue(RankProperty, value); }
-        public static readonly DependencyProperty RankProperty = CreateProperty<int>(true, true, "Rank", typeof(ELC));
+        public static readonly DependencyProperty RankProperty = CreateProperty<ELC, int>(true, true, true, "Rank");
 
         protected override void OnChanged()
         {
@@ -119,6 +122,8 @@ namespace CoordSpec
 
     public class ELCWriteCharacterEffect : CharacterEffect
     {
+        protected override Freezable CreateInstanceCore() => new ELCWriteCharacterEffect();
+
         protected override void ApplyCore(IReadOnlyCollection<Character> characters, Interval<int> interval, in ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (characters is ELCCharacters elccharacters)
@@ -147,11 +152,13 @@ namespace CoordSpec
 
     public class ELCFocusCharacterEffect : CharacterEffect
     {
+        protected override Freezable CreateInstanceCore() => new ELCFocusCharacterEffect();
+
         public Predicate<int> RanksToFocus { get => (Predicate<int>)GetValue(RanksToFocusProperty); set => SetValue(RanksToFocusProperty, value); }
-        public static readonly DependencyProperty RanksToFocusProperty = CreateProperty<Predicate<int>>(true, true, "RanksToFocus", typeof(ELCFocusCharacterEffect));
+        public static readonly DependencyProperty RanksToFocusProperty = CreateProperty<ELCFocusCharacterEffect, Predicate<int>>(true, true, true, "RanksToFocus");
 
         public double Opacity { get => (double)GetValue(OpacityProperty); set => SetValue(OpacityProperty, value); }
-        public static readonly DependencyProperty OpacityProperty = CreateProperty<double>(true, true, "Opacity", typeof(ELCFocusCharacterEffect));
+        public static readonly DependencyProperty OpacityProperty = CreateProperty<ELCFocusCharacterEffect, double>(true, true, true, "Opacity");
 
         protected override void ApplyCore(IReadOnlyCollection<Character> characters, Interval<int> interval, in ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
@@ -206,17 +213,15 @@ namespace CoordSpec
 
     public class EA : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new EA();
+
         public override string Type => "EA";
 
-        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
+        protected override IEnumerable<Character> GetCharactersCore(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
-            return GetCharactersCore().ToArray();
-            IEnumerable<Character> GetCharactersCore()
-            {
-                yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(0, -1)), coordinatesSystemManager.ComputeOutCoordinates(new Point(0, 1))).Color(Fill, new PlanePen(FlatBrushes.Alizarin, 4));
-                foreach (var character in new ConversionStartingEase().Locations.Select(loc => Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(loc, -1)), coordinatesSystemManager.ComputeOutCoordinates(new Point(loc, 1))).Color(Fill, Stroke))) yield return character;
-                yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(1, -1)), coordinatesSystemManager.ComputeOutCoordinates(new Point(1, 1))).Color(Fill, new PlanePen(FlatBrushes.Alizarin, 4));
-            }
+            yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(0, -1)), coordinatesSystemManager.ComputeOutCoordinates(new Point(0, 1))).Color(Fill, new Pen(FlatBrushes.Alizarin, 4));
+            foreach (var character in new ConversionStartingEase().Locations.Select(loc => Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(loc, -1)), coordinatesSystemManager.ComputeOutCoordinates(new Point(loc, 1))).Color(Fill, Stroke))) yield return character;
+            yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(1, -1)), coordinatesSystemManager.ComputeOutCoordinates(new Point(1, 1))).Color(Fill, new Pen(FlatBrushes.Alizarin, 4));
         }
     }
 }

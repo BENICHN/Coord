@@ -9,19 +9,19 @@ namespace Coord
     /// </summary>
     public class MultiOperationsPointDefinition : PointDefinition
     {
-        public override string Type => "MultiOperationsPointDefinition";
+        protected override Freezable CreateInstanceCore() => new MultiOperationsPointDefinition();
 
         /// <summary>
         /// Points du plan
         /// </summary>
         public NotifyObjectCollection<PointVisualObject> Points { get => (NotifyObjectCollection<PointVisualObject>)GetValue(PointsProperty); set => SetValue(PointsProperty, value); }
-        public static readonly DependencyProperty PointsProperty = CreateProperty<NotifyObjectCollection<PointVisualObject>>(true, true, "Points", typeof(MultiOperationsPointDefinition));
+        public static readonly DependencyProperty PointsProperty = CreateProperty<MultiOperationsPointDefinition, NotifyObjectCollection<PointVisualObject>>(true, true, true, "Points");
 
         /// <summary>
         /// Transformation des points du plan
         /// </summary>
         public Func<Point[], Point> Operations { get => (Func<Point[], Point>)GetValue(OperationsProperty); set => SetValue(OperationsProperty, value); }
-        public static readonly DependencyProperty OperationsProperty = CreateProperty<Func<Point[], Point>>(true, true, "Operations", typeof(MultiOperationsPointDefinition));
+        public static readonly DependencyProperty OperationsProperty = CreateProperty<MultiOperationsPointDefinition, Func<Point[], Point>>(true, true, true, "Operations");
 
         protected override void OnChanged()
         {

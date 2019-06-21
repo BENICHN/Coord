@@ -87,15 +87,15 @@ namespace CoordSpec
             async Task Animate()
             {
                 await Animate<double>(null, value => xzfgyufdzu.Progress = value, 0, 1, TimeSpan.FromSeconds(0.7), new RepeatBehavior(4), true, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60);
-                elc.Stroke = new PlanePen(FlatBrushes.Alizarin, 3);
+                elc.Stroke = new Pen(FlatBrushes.Alizarin, 3);
                 elc.PointsFill = FlatBrushes.SunFlower;
-                elc.PointsStroke = new PlanePen(FlatBrushes.SunFlower.EditFreezable(brush => brush.Opacity = 0.6), 0);
+                elc.PointsStroke = new Pen(FlatBrushes.SunFlower.EditFreezable(brush => brush.Opacity = 0.6), 0);
                 await elc.Animate(true, TimeSpan.FromSeconds(2), null, new ELCWriteCharacterEffect(0, -1, new Progress(0, ProgressMode.LaggedStart)));
                 await elc.Animate(false, TimeSpan.FromSeconds(0.5), null, new ELCFocusCharacterEffect(0, -1, i => i == 3, 0.1, 0)).AtLeast(200);
-                plane.Grid.Stroke = new PlanePen(Brushes.DeepSkyBlue, 1);
-                plane.Grid.SecondaryStroke = new PlanePen(Brushes.DeepSkyBlue.EditFreezable(fill => fill.Opacity = 0.3), 1);
+                plane.Grid.Stroke = new Pen(Brushes.DeepSkyBlue, 1);
+                plane.Grid.SecondaryStroke = new Pen(Brushes.DeepSkyBlue.EditFreezable(fill => fill.Opacity = 0.3), 1);
                 await plane.Grid.Animate(true, TimeSpan.FromSeconds(4), null, new StrokeCharacterEffect(0, -1, new Progress(0, ProgressMode.LaggedStart)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
-                plane.Axes.Style(null, new PlanePen(FlatBrushes.Clouds, 2));
+                plane.Axes.Style(null, new Pen(FlatBrushes.Clouds, 2));
                 await plane.Axes.Animate(true, TimeSpan.FromSeconds(1), null, new StrokeCharacterEffect(0, -1, 0) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } });
                 plane.AxesNumbers.Style(FlatBrushes.Clouds, null);
                 await plane.AxesNumbers.Write(false);

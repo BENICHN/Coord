@@ -7,38 +7,27 @@ namespace Coord
     /// <summary>
     /// Met progressivement à l'échelle une sous-collection de <see cref="Character"/> au point spécifié
     /// </summary>
-    public class SizeCharacterEffect : CharacterEffect, ICoordEditable
+    public class SizeCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Size", SizeProperty);
-                yield return ("RectPoint", RectPointProperty);
-                yield return ("ScaleX", ScaleXProperty);
-                yield return ("ScaleY", ScaleYProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new SizeCharacterEffect();
 
         /// <summary>
         /// Dimensions que le <see cref="System.Windows.Media.GeometryGroup"/> formé par les <see cref="Character"/> de la sous-collection doit avoir
         /// </summary>
         public Size Size { get => (Size)GetValue(SizeProperty); set => SetValue(SizeProperty, value); }
-        public static readonly DependencyProperty SizeProperty = CreateProperty<Size>(true, true, "Size", typeof(SizeCharacterEffect));
+        public static readonly DependencyProperty SizeProperty = CreateProperty<SizeCharacterEffect, Size>(true, true, true, "Size");
 
         /// <summary>
         /// Point du <see cref="System.Windows.Media.GeometryGroup"/> formé par les <see cref="Character"/> de la sous-collection où appliquer la mise à l'échelle
         /// </summary>
         public RectPoint RectPoint { get => (RectPoint)GetValue(RectPointProperty); set => SetValue(RectPointProperty, value); }
-        public static readonly DependencyProperty RectPointProperty = CreateProperty<RectPoint>(true, true, "RectPoint", typeof(SizeCharacterEffect));
+        public static readonly DependencyProperty RectPointProperty = CreateProperty<SizeCharacterEffect, RectPoint>(true, true, true, "RectPoint");
 
         public bool ScaleX { get => (bool)GetValue(ScaleXProperty); set => SetValue(ScaleXProperty, value); }
-        public static readonly DependencyProperty ScaleXProperty = CreateProperty<bool>(true, true, "ScaleX", typeof(SizeCharacterEffect));
+        public static readonly DependencyProperty ScaleXProperty = CreateProperty<SizeCharacterEffect, bool>(true, true, true, "ScaleX");
 
         public bool ScaleY { get => (bool)GetValue(ScaleYProperty); set => SetValue(ScaleYProperty, value); }
-        public static readonly DependencyProperty ScaleYProperty = CreateProperty<bool>(true, true, "ScaleY", typeof(SizeCharacterEffect));
+        public static readonly DependencyProperty ScaleYProperty = CreateProperty<SizeCharacterEffect, bool>(true, true, true, "ScaleY");
 
         /// <summary>
         /// Applique l'effet à une collection de <see cref="Character"/>

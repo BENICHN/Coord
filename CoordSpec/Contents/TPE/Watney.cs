@@ -5,52 +5,66 @@ using Coord;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using static BenLib.Framework.NumFramework;
 using static Coord.VisualObjects;
 using static System.Math;
+using static CoordSpec.Watney.WatneyGraphics;
 
 namespace CoordSpec
 {
     public class Watney : PhysicalObject
     {
+        public static class WatneyGraphics
+        {
+            public static RectPoint ArmLocation { get; internal set; } = new RectPoint(0.19, 0.41);
+            public static RectPoint ArmAnchor { get; internal set; } = new RectPoint(1, 0.76);
+            public static Rect BodyGraphicBounds { get; internal set; }
+            public static Character[] Body { get; internal set; }
+            public static Character[] Arm { get; internal set; }
+        }
+
+        public VectorVisualObject SpeedVector { get; }
+
+        protected override Freezable CreateInstanceCore() => new Watney();
         public override string Type => "Watney";
 
         /// <summary>
         /// Angle formé entre le corps de Mark et son bras (0 : bras collé à son corps, sens indirect) [rad]
         /// </summary>
         public double ArmAngle { get => (double)GetValue(ArmAngleProperty); set => SetValue(ArmAngleProperty, value); }
-        public static readonly DependencyProperty ArmAngleProperty = CreateProperty<double>(true, true, "ArmAngle", typeof(Watney), (sender, e) => { if (sender is Watney owner) owner.SetArm(false); });
+        public static readonly DependencyProperty ArmAngleProperty = CreateProperty<Watney, double>(true, true, true, "ArmAngle", (sender, e) => { if (sender is Watney owner) owner.SetArm(false); });
 
         /// <summary>
         /// Quantifie la résistance du bras au changement d'orientation par rapport au repère
         /// </summary>
         public double ArmResistance { get => (double)GetValue(ArmResistanceProperty); set => SetValue(ArmResistanceProperty, value); }
-        public static readonly DependencyProperty ArmResistanceProperty = CreateProperty<double>(true, true, "ArmResistance", typeof(Watney));
+        public static readonly DependencyProperty ArmResistanceProperty = CreateProperty<Watney, double>(true, true, true, "ArmResistance");
 
         /// <summary>
         /// Pression à l'intérieur de la combinaison [PSI]
         /// </summary>
         public double Pressure { get => (double)GetValue(PressureProperty); set => SetValue(PressureProperty, value); }
-        public static readonly DependencyProperty PressureProperty = CreateProperty<double>(true, true, "Pressure", typeof(Watney));
+        public static readonly DependencyProperty PressureProperty = CreateProperty<Watney, double>(true, true, true, "Pressure");
 
         /// <summary>
         /// Surface du trou de la combinaison [mm²]
         /// </summary>
         public double HoleArea { get => (double)GetValue(HoleAreaProperty); set => SetValue(HoleAreaProperty, value); }
-        public static readonly DependencyProperty HoleAreaProperty = CreateProperty<double>(true, true, "HoleArea", typeof(Watney));
+        public static readonly DependencyProperty HoleAreaProperty = CreateProperty<Watney, double>(true, true, true, "HoleArea");
 
         /// <summary>
         /// Débit massique de l'air qui s'échappe de la combinaison [kg/s]
         /// </summary>
         public double MassRate { get => (double)GetValue(MassRateProperty); set => SetValue(MassRateProperty, value); }
-        public static readonly DependencyProperty MassRateProperty = CreateProperty<double>(true, true, "MassRate", typeof(Watney));
+        public static readonly DependencyProperty MassRateProperty = CreateProperty<Watney, double>(true, true, true, "MassRate");
 
         /// <summary>
         /// Taille du rectangle [m, m]
         /// </summary>
         public Size Size { get => (Size)GetValue(SizeProperty); set => SetValue(SizeProperty, value); }
-        public static readonly DependencyProperty SizeProperty = CreateProperty<Size>(true, true, "Size", typeof(Watney), (sender, e) =>
+        public static readonly DependencyProperty SizeProperty = CreateProperty<Watney, Size>(true, true, true, "Size", (sender, e) =>
         {
             if (sender is Watney owner)
             {
@@ -64,40 +78,10 @@ namespace CoordSpec
         });
 
         /// <summary>
-        /// Collection de <see cref="Character"/> à retourner par <see cref="GetCharacters"/> pour dessiner le corps
-        /// </summary>
-        public Character[] BodyGraphic { get => (Character[])GetValue(BodyGraphicProperty); set => SetValue(BodyGraphicProperty, value); }
-        public static readonly DependencyProperty BodyGraphicProperty = CreateProperty<Character[]>(true, true, "BodyGraphic", typeof(Watney));
-
-        /// <summary>
-        /// Limites de <see cref="BodyGraphic"/> prises en compte
-        /// </summary>
-        public Rect BodyGraphicBounds { get => (Rect)GetValue(BodyGraphicBoundsProperty); set => SetValue(BodyGraphicBoundsProperty, value); }
-        public static readonly DependencyProperty BodyGraphicBoundsProperty = CreateProperty<Rect>(true, true, "BodyGraphicBounds", typeof(Watney));
-
-        /// <summary>
-        /// Emplacement de la jonction du bras dans <see cref="BodyGraphicBounds"/>
-        /// </summary>
-        public RectPoint ArmLocation { get => (RectPoint)GetValue(ArmLocationProperty); set => SetValue(ArmLocationProperty, value); }
-        public static readonly DependencyProperty ArmLocationProperty = CreateProperty<RectPoint>(true, true, "ArmLocation", typeof(Watney));
-
-        /// <summary>
-        /// Collection de <see cref="Character"/> à retourner par <see cref="GetCharacters"/> pour dessiner le bras
-        /// </summary>
-        public Character[] ArmGraphic { get => (Character[])GetValue(ArmGraphicProperty); set => SetValue(ArmGraphicProperty, value); }
-        public static readonly DependencyProperty ArmGraphicProperty = CreateProperty<Character[]>(true, true, "ArmGraphic", typeof(Watney));
-
-        /// <summary>
-        /// Emplacement de la jonction du bras dans <see cref="ArmGraphic"/>.Geometry().Bounds
-        /// </summary>
-        public RectPoint ArmAnchor { get => (RectPoint)GetValue(ArmAnchorProperty); set => SetValue(ArmAnchorProperty, value); }
-        public static readonly DependencyProperty ArmAnchorProperty = CreateProperty<RectPoint>(true, true, "ArmAnchor", typeof(Watney));
-
-        /// <summary>
         /// <see langword="true"/> pour ne dessiner que le rectangle et la ligne; <see langword="false"/> pour dessiner <see cref="BodyGraphic"/> et <see cref="ArmGraphic"/>; <see langword="null"/> pour dessiner les deux
         /// </summary>
         public bool? Minimal { get => (bool?)GetValue(MinimalProperty); set => SetValue(MinimalProperty, value); }
-        public static readonly DependencyProperty MinimalProperty = CreateProperty<bool?>(true, true, "Minimal", typeof(Watney));
+        public static readonly DependencyProperty MinimalProperty = CreateProperty<Watney, bool?>(true, true, true, "Minimal");
 
         /// <summary>
         /// Corps subissant les transformations
@@ -108,6 +92,28 @@ namespace CoordSpec
         /// Vecteur bras
         /// </summary>
         private Vector m_arm;
+
+        static Watney()
+        {
+            var bodyCanvas = (Canvas)App.Graphics["Corps"];
+            var armCanvas = (Canvas)App.Graphics["Bras"];
+            Body = bodyCanvas.ToCharacters().ToArray();
+            BodyGraphicBounds = bodyCanvas.ToCharacters().Take(3).Geometry().Bounds;
+            Arm = armCanvas.ToCharacters().ToArray();
+            OverrideDefaultValue<Watney, VisualObjectChildrenRenderingMode>(ChildrenRenderingModeProperty, VisualObjectChildrenRenderingMode.Independent);
+        }
+        public Watney()
+        {
+            SpeedVector = Vector(Point(0, 0), 0, 0).Extend(null, new TriangleArrow { Length = 15, Width = 5 }, ArrowEnd.End).Style(FlatBrushes.Nephritis, new Pen(FlatBrushes.Nephritis, 2));
+            Children = new VisualObjectCollection(SpeedVector);
+        }
+
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property == LocationProperty) SpeedVector.InAnchorPoint.SetInPoint((Point)e.NewValue);
+            if (e.Property == SpeedProperty) SpeedVector.SetInVector((Vector)e.NewValue);
+            base.OnPropertyChanged(e);
+        }
 
         protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
@@ -127,7 +133,7 @@ namespace CoordSpec
             {
                 //Corps--------------------------------------------------------------------------------------------------------------------------------
 
-                var bodyGraphic = BodyGraphic.CloneCharacters().ToArray();
+                var bodyGraphic = Body.CloneCharacters().ToArray();
                 var bodyGraphicBounds = BodyGraphicBounds;
                 var armLocation = ArmLocation.GetPoint(bodyGraphicBounds);
                 var bodyGraphicTransform = Matrix.Identity;
@@ -145,7 +151,7 @@ namespace CoordSpec
 
                 //Bras---------------------------------------------------------------------------------------------------------------------------------
 
-                var armGraphic = ArmGraphic.CloneCharacters().ToArray();
+                var armGraphic = Arm.CloneCharacters().ToArray();
                 var armGraphicBounds = armGraphic.Geometry().Bounds;
                 var armAnchor = ArmAnchor.GetPoint(armGraphicBounds);
                 var armGraphicTransform = Matrix.Identity;
@@ -163,7 +169,7 @@ namespace CoordSpec
                 return new[] { bodyGraphic[0] }.Concat(armGraphic).Concat(bodyGraphic.Skip(1));
             }
 
-            return (Minimal == true ? MinimalCharacters() : Minimal == null ? GraphicCharacters().Concat(MinimalCharacters()) : GraphicCharacters()).Concat(VectorVisualObject.GetCharacters(location, speed, new TriangleArrow { Length = 15, Width = 5 }, ArrowEnd.End, FlatBrushes.Nephritis, new PlanePen(FlatBrushes.Nephritis, 2)))/*.Concat(VectorVisualObject.GetCharacters(location, coordinatesSystemManager.ComputeOutCoordinates(Acceleration), new TriangleArrow(false, false, 15, 5), ArrowEnd.End, FlatBrushes.PeterRiver, new PlanePen(FlatBrushes.PeterRiver, 2)))*/.ToArray(); // Vecteur vitesse
+            return (Minimal == true ? MinimalCharacters() : Minimal == null ? GraphicCharacters().Concat(MinimalCharacters()) : GraphicCharacters()).ToArray(); // Vecteur vitesse
         }
 
         public override void Update()
@@ -199,14 +205,14 @@ namespace CoordSpec
                 double angle = IA(oldAngle, newAngle, AngularSpeed, m_arm.Length == 0 ? 1 : 1 / ArmResistance);
                 ArmAngle = (ArmAngle + newAngle - angle).Trim(0, PI);
 
-                double PM(double agl)
+                static double PM(double agl)
                 {
                     double result = agl % (2 * PI);
                     if (result < 0) result += 2 * PI;
                     return result;
                 }
 
-                double IA(double start, double end, double speed, double progress)
+                static double IA(double start, double end, double speed, double progress)
                 {
                     if (speed < 0 && start < end) start += 2 * PI;
                     if (speed > 0 && start > end) end += 2 * PI;

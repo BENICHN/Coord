@@ -1,22 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Media;
 
 namespace Coord
 {
     /// <summary>
     /// Objet visuel représentant un point du plan
     /// </summary>
-    public class PointVisualObject : VisualObject, ICoordEditable
+    public class PointVisualObject : VisualObject
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Definition", DefinitionProperty);
-                yield return ("Radius", RadiusProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new PointVisualObject();
 
         public override string Type => Definition switch
         {
@@ -30,10 +22,10 @@ namespace Coord
         };
 
         public PointDefinition Definition { get => (PointDefinition)GetValue(DefinitionProperty); set => SetValue(DefinitionProperty, value); }
-        public static readonly DependencyProperty DefinitionProperty = CreateProperty<PointDefinition>(true, true, "Definition", typeof(PointVisualObject));
+        public static readonly DependencyProperty DefinitionProperty = CreateProperty<PointVisualObject, PointDefinition>(true, true, true, "Definition");
 
         public double Radius { get => (double)GetValue(RadiusProperty); set => SetValue(RadiusProperty, value); }
-        public static readonly DependencyProperty RadiusProperty = CreateProperty(true, true, "Radius", typeof(PointVisualObject), 10.0);
+        public static readonly DependencyProperty RadiusProperty = CreateProperty<PointVisualObject, double>(true, true, true, "Radius", 10);
 
         /// <summary>
         /// Dans le cas où <see cref="Definition"/> est une <see cref="PointPointDefinition"/>, définit <see cref="PointPointDefinition.InPoint"/> de cette définition
@@ -42,14 +34,13 @@ namespace Coord
         public void SetInPoint(Point inPoint) { if (Definition is PointPointDefinition definition) definition.InPoint = inPoint; }
         public void SetInPoint(double x, double y) => SetInPoint(new Point(x, y));
 
-        public override void Move(Vector inOffset) => SetInPoint(Definition.InPoint + inOffset);
+        protected internal override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest) => SetInPoint(Definition.InPoint + inOffset);
 
-        public override string ToString() => Definition.InPoint.ToString();
+        public override string ToString() => Type + "{" + Definition.InPoint.ToString() + "}";
 
-        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GetCharacters(coordinatesSystemManager, Fill, Stroke, Definition, Radius);
-        public static Character[] GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager, Brush fill, PlanePen stroke, PointDefinition definition, double radius) => new[] { Character.Ellipse(coordinatesSystemManager.ComputeOutCoordinates(definition.InPoint), radius, radius).Color(fill, stroke) };
+        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new[] { Character.Ellipse(coordinatesSystemManager.ComputeOutCoordinates(Definition.InPoint), Radius, Radius).Color(Fill, Stroke) };
 
-        public static implicit operator PointVisualObject(Point inPoint) => new PointVisualObject { Definition = new PointPointDefinition { InPoint = inPoint} };
+        public static implicit operator PointVisualObject(Point inPoint) => new PointVisualObject { Definition = new PointPointDefinition { InPoint = inPoint } };
         public static implicit operator Point(PointVisualObject pointVisualObject) => pointVisualObject.Definition.InPoint;
     }
 }

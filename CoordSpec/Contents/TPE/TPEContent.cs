@@ -42,23 +42,19 @@ namespace CoordSpec
             var accLS = new StaticPointSeries();
             var vitLS = new StaticPointSeries();
             var distLS = new StaticPointSeries();
-            var curvesL = Renderer(Curve(accLS, false, false).Style(new PlanePen(FlatBrushes.PeterRiver, 3)), Curve(vitLS, false, false).Style(new PlanePen(FlatBrushes.SunFlower, 3)), Curve(distLS, false, false).Style(new PlanePen(FlatBrushes.Nephritis, 3)));
+            var curvesL = Renderer(Curve(accLS, false, false).Style(new Pen(FlatBrushes.PeterRiver, 3)), Curve(vitLS, false, false).Style(new Pen(FlatBrushes.SunFlower, 3)), Curve(distLS, false, false).Style(new Pen(FlatBrushes.Nephritis, 3)));
 
             var accXS = new StaticPointSeries();
             var vitXS = new StaticPointSeries();
             var distXS = new StaticPointSeries();
-            var curvesX = Renderer(Curve(accXS, false, false).Style(new PlanePen(FlatBrushes.PeterRiver, 3)), Curve(vitXS, false, false).Style(new PlanePen(FlatBrushes.SunFlower, 3)), Curve(distXS, false, false).Style(new PlanePen(FlatBrushes.Nephritis, 3)));
+            var curvesX = Renderer(Curve(accXS, false, false).Style(new Pen(FlatBrushes.PeterRiver, 3)), Curve(vitXS, false, false).Style(new Pen(FlatBrushes.SunFlower, 3)), Curve(distXS, false, false).Style(new Pen(FlatBrushes.Nephritis, 3)));
 
             var accYS = new StaticPointSeries();
             var vitYS = new StaticPointSeries();
             var distYS = new StaticPointSeries();
-            var curvesY = Renderer(Curve(accYS, false, false).Style(new PlanePen(FlatBrushes.PeterRiver, 3)), Curve(vitYS, false, false).Style(new PlanePen(FlatBrushes.SunFlower, 3)), Curve(distYS, false, false).Style(new PlanePen(FlatBrushes.Nephritis, 3)));
+            var curvesY = Renderer(Curve(accYS, false, false).Style(new Pen(FlatBrushes.PeterRiver, 3)), Curve(vitYS, false, false).Style(new Pen(FlatBrushes.SunFlower, 3)), Curve(distYS, false, false).Style(new Pen(FlatBrushes.Nephritis, 3)));
 
             var traceS = new StaticPointSeries();
-
-            var canvas = Resources["Corps"] as Canvas;
-            var corps = Character.FromCanvas(canvas).ToArray();
-            canvas.Children.RemoveAt(canvas.Children.Count - 1);
 
             var watney = new Watney
             {
@@ -73,19 +69,14 @@ namespace CoordSpec
                 ArmAngle = PI / 2,
                 ArmResistance = 1.3,
 
-                BodyGraphic = corps,
-                BodyGraphicBounds = Character.FromCanvas(canvas).Geometry().Bounds,
-                ArmGraphic = Character.FromCanvas(Resources["Bras"] as Canvas).ToArray(),
-                ArmLocation = new RectPoint(0.19, 0.41),
-                ArmAnchor = new RectPoint(1, 0.76),
                 Minimal = false,
 
                 Fill = FlatBrushes.Alizarin,
-                Stroke = new PlanePen(FlatBrushes.Alizarin, 4)
+                Stroke = new Pen(FlatBrushes.Alizarin, 4)
             };
 
             plane.VisualObjects.Add(curvesL);
-            plane.VisualObjects.Add(Curve(traceS, false, false).Style(new PlanePen(FlatBrushes.Amethyst, 3)));
+            plane.VisualObjects.Add(Curve(traceS, false, false).Style(new Pen(FlatBrushes.Amethyst, 3)));
             plane.VisualObjects.Add(watney);
             plane.OverAxesNumbers = watney;
 

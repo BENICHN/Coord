@@ -39,7 +39,7 @@
       </Declarations>
       <Code Language="csharp">
         <![CDATA[public $type$ $property$ { get => ($type$)GetValue($property$Property); set => SetValue($property$Property, value); }
-public static readonly DependencyProperty $property$Property = CreateProperty<$type$>(true, true, "$property$", typeof($ownerclass$), (sender, e) => { if (sender is $ownerclass$ owner) $end$; });]]>
+public static readonly DependencyProperty $property$Property = CreateProperty<$ownerclass$, $type$>(true, true, true, "$property$", (sender, e) => { if (sender is $ownerclass$ owner) $end$; });]]>
       </Code>
     </Snippet>
 	</CodeSnippet>

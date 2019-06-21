@@ -5,7 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CoordAnimation"
              xmlns:coord="clr-namespace:Coord;assembly=CoordLib"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
-    <coord:Plane Name="plane" ZoomDirection="Horizontal" MoveDirection="Horizontal"/>
+             mc:Ignorable="d" Loaded="UserControl_Loaded">
+    <UserControl.Resources>
+        <Path Canvas.Left="-8" x:Key="ER" Data="M8.2 16.3c4.4 0 8-3.6 8-8s-3.6-8-8-8V16.3z" Fill="White"/>
+        <Path Canvas.Left="-8" x:Key="EL" Data="M8.2 0.3c-4.4 0-8 3.6-8 8s3.6 8 8 8V0.3z" Fill="White"/>
+        <Polygon Canvas.Left="-8" x:Key="LR" Points="8.2,16.3 16.2,8.3 8.2,0.3" Fill="White"/>
+        <Polygon Canvas.Left="-8" x:Key="LL" Points="8.2,0.3 0.2,8.3 8.2,16.3" Fill="White"/>
+        <Rectangle x:Key="DL" Canvas.Left="-8" Width="8" Height="16" Fill="White"/>
+        <Rectangle x:Key="DR" Canvas.Left="0" Width="8" Height="16" Fill="White"/>
+        <Path x:Key="SL" Canvas.Left="-8" Data="M8.2 16.3c0 0-6.1 0-8 0c4.1-8 4.1-8 0-16c2.1 0 8 0 8 0V16.3z" Fill="White"/>
+        <Path x:Key="SR" Canvas.Left="-8" Data="M8.2 0.3c0 0 6.2 0 8 0c-4.1 8-4.1 8 0 16c-2.7 0-8 0-8 0V0.3z" Fill="White"/>
+        <Polygon x:Key="CUR" Canvas.Left="-7" Canvas.Top="-22.4" Points="14,11.2 14,0 0,0 0,11.2 7,22.4" Fill="BlueViolet"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+        <coord:Plane Name="plane" ZoomDirection="Horizontal" MoveDirection="Horizontal" EnableSelection="True" PreviewMouseDown="UpdatePlaneDirection" PreviewKeyDown="UpdatePlaneDirection" PreviewKeyUp="UpdatePlaneDirection"/>
+        <local:PropertiesEditor x:Name="keyFramesEditor" Grid.Column="1" IsAnimatable="False" ObjectChanged="KeyFramesEditor_ObjectChanged"/>
+    </Grid>
 </UserControl>

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using static BenLib.Framework.Animating;
 using static BenLib.Standard.Interval<int>;
@@ -16,6 +17,8 @@ namespace CoordSpec
 {
     public class MAF : VisualObjectGroupBase
     {
+        protected override Freezable CreateInstanceCore() => new MAF();
+
         public override string Type => "MAF";
 
         public const double TextSize = 2.4;
@@ -31,7 +34,7 @@ namespace CoordSpec
         private readonly SynchronizedProgress m_syncpg = new SynchronizedProgress(0);
 
         public double ArrowLength { get => (double)GetValue(ArrowLengthProperty); set => SetValue(ArrowLengthProperty, value); }
-        public static readonly DependencyProperty ArrowLengthProperty = CreateProperty<double>(true, true, "ArrowLength", typeof(MAF));
+        public static readonly DependencyProperty ArrowLengthProperty = CreateProperty<MAF, double>(true, true, true, "ArrowLength");
 
         public MAF()
         {
@@ -39,7 +42,7 @@ namespace CoordSpec
             this.Opacity(CO(2, 3), 0, 0, 1, m_syncpb).Translate(CO(2, 3), new Vector(-50, 0), false, 0, m_syncpb).Scale(CO(3, 4), 0, 0, RectPoint.Center, 1, m_syncpc).Scale(CO(4, 5), 0, 0, RectPoint.Center, 1, m_syncpf).Insert(CO(3, 4), null, InCharacters(m_obja, CO(4, 5)), RectPoint.NaN, true, true, 0, m_syncpd).Insert(CO(4, 5), null, InCharacters(m_obja, CO(2, 3)), RectPoint.NaN, true, true, 0, m_syncpd).Write(CO(5, 7), 1, false, new Progress(0, ProgressMode.LaggedStart, 1.5), m_syncpg).Scale(CO(8, 9), 0, 1, RectPoint.Center, 1, m_syncpe);
         }
 
-        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => VectorVisualObject.GetCharacters(Point(0, 0), new Vector(ArrowLength, 0), new TriangleArrow { In = true, Closed = true, Length = 0.78, Width = 0.52 }, ArrowEnd.End, null, new PlanePen(FlatBrushes.Alizarin, 1.3 * coordinatesSystemManager.WidthRatio), coordinatesSystemManager).Concat( //[0;2[
+        protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => VectorVisualObject.GetCharacters(Point(0, 0), new Vector(ArrowLength, 0), new TriangleArrow { In = true, Closed = true, Length = 0.78, Width = 0.52 }, ArrowEnd.End, null, new Pen(FlatBrushes.Alizarin, 1.3 * coordinatesSystemManager.WidthRatio), coordinatesSystemManager).Concat( //[0;2[
             CircleVisualObject.GetCharacters(Point(0, 0), 3, FlatBrushes.Concrete, null, coordinatesSystemManager)) //[2;3[
             .Concat(base.GetCharacters(coordinatesSystemManager)).ToArray(); //[3;10[
 

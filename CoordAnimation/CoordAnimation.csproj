@@ -98,17 +98,28 @@
     <Compile Include="ConfigEdit.xaml.cs">
       <DependentUpon>ConfigEdit.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PropertiesAnimation.cs" />
+    <Compile Include="PropertyEditors\AnimatablePropertyEditor.xaml.cs">
+      <DependentUpon>AnimatablePropertyEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyEditors\ColorEditor.xaml.cs">
+      <DependentUpon>ColorEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyEditors\EnumEditor.xaml.cs">
+      <DependentUpon>EnumEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyEditors\ListEditor.xaml.cs">
+      <DependentUpon>ListEditor.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PropertyEditors\PropertiesEditorBase.cs" />
+    <Compile Include="PropertyEditors\VectorEditor.xaml.cs">
+      <DependentUpon>VectorEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PropertyEditors\PropertiesEditor.xaml.cs">
       <DependentUpon>PropertiesEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PropertyEditors\PropertiesSelector.xaml.cs">
-      <DependentUpon>PropertiesSelector.xaml</DependentUpon>
-    </Compile>
     <Compile Include="PropertyEditors\RectEditor.xaml.cs">
       <DependentUpon>RectEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="PropertyEditors\VectorEditor.xaml.cs">
-      <DependentUpon>VectorEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="PropertyEditors\PointEditor.xaml.cs">
       <DependentUpon>PointEditor.xaml</DependentUpon>
@@ -119,7 +130,7 @@
     <Compile Include="Timeline.xaml.cs">
       <DependentUpon>Timeline.xaml</DependentUpon>
     </Compile>
-    <Compile Include="TimelineBackground.cs" />
+    <Compile Include="Timeline.cs" />
     <Compile Include="VisualObjectControl.xaml.cs">
       <DependentUpon>VisualObjectControl.xaml</DependentUpon>
     </Compile>
@@ -130,6 +141,30 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Graphics.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PropertyEditors\AnimatablePropertyEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PropertyEditors\ColorEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PropertyEditors\EnumEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PropertyEditors\ListEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PropertyEditors\VectorEditor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Scene.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -139,19 +174,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PropertyEditors\PropertiesSelector.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="PropertyEditors\IntervalEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="PropertyEditors\RectEditor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="PropertyEditors\VectorEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

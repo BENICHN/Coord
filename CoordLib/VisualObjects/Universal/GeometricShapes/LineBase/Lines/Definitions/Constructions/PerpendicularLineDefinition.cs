@@ -8,17 +8,19 @@ namespace Coord
     /// </summary>
     public class PerpendicularLineDefinition : LineDefinition
     {
+        protected override Freezable CreateInstanceCore() => new PerpendicularLineDefinition();
+
         /// <summary>
         /// Point de la droite
         /// </summary>
         public PointVisualObject Point { get => (PointVisualObject)GetValue(PointProperty); set => SetValue(PointProperty, value); }
-        public static readonly DependencyProperty PointProperty = CreateProperty<PointVisualObject>(true, true, "Point", typeof(PerpendicularLineDefinition));
+        public static readonly DependencyProperty PointProperty = CreateProperty<PerpendicularLineDefinition, PointVisualObject>(true, true, true, "Point");
 
         /// <summary>
         /// Droite perpendiculaire à la droite
         /// </summary>
         public LineVisualObjectBase Line { get => (LineVisualObjectBase)GetValue(LineProperty); set => SetValue(LineProperty, value); }
-        public static readonly DependencyProperty LineProperty = CreateProperty<LineVisualObjectBase>(true, true, "Line", typeof(PerpendicularLineDefinition));
+        public static readonly DependencyProperty LineProperty = CreateProperty<PerpendicularLineDefinition, LineVisualObjectBase>(true, true, true, "Line");
 
         protected override void OnChanged()
         {

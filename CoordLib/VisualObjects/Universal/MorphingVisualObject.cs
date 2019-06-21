@@ -12,6 +12,8 @@ namespace Coord
 {
     public class OutMorphingVisualObject : VisualObject, IProgressive
     {
+        protected override Freezable CreateInstanceCore() => new OutMorphingVisualObject();
+
         public override string Type => "OutMorphing";
 
         private MorphingCharacter[] m_fromCharacters;
@@ -19,19 +21,19 @@ namespace Coord
         private (MorphingCharacter From, MorphingCharacter To)[] m_correspondingPoints;
 
         public IReadOnlyCollection<Character> From { get => (IReadOnlyCollection<Character>)GetValue(FromProperty); set => SetValue(FromProperty, value); }
-        public static readonly DependencyProperty FromProperty = CreateProperty<IReadOnlyCollection<Character>>(true, true, "From", typeof(OutMorphingVisualObject), (sender, e) => { if (sender is OutMorphingVisualObject owner) owner.Compute(true, false); });
+        public static readonly DependencyProperty FromProperty = CreateProperty<OutMorphingVisualObject, IReadOnlyCollection<Character>>(true, true, true, "From", (sender, e) => { if (sender is OutMorphingVisualObject owner) owner.Compute(true, false); });
 
         public IReadOnlyCollection<Character> To { get => (IReadOnlyCollection<Character>)GetValue(ToProperty); set => SetValue(ToProperty, value); }
-        public static readonly DependencyProperty ToProperty = CreateProperty<IReadOnlyCollection<Character>>(true, true, "To", typeof(OutMorphingVisualObject), (sender, e) => { if (sender is OutMorphingVisualObject owner) owner.Compute(false, true); });
+        public static readonly DependencyProperty ToProperty = CreateProperty<OutMorphingVisualObject, IReadOnlyCollection<Character>>(true, true, true, "To", (sender, e) => { if (sender is OutMorphingVisualObject owner) owner.Compute(false, true); });
 
         public CorrespondanceDictionary Correspondances { get => (CorrespondanceDictionary)GetValue(CorrespondancesProperty); set => SetValue(CorrespondancesProperty, value); }
-        public static readonly DependencyProperty CorrespondancesProperty = CreateProperty<CorrespondanceDictionary>(true, true, "Correspondances", typeof(OutMorphingVisualObject), (sender, e) => { if (sender is OutMorphingVisualObject owner) owner.Compute(false, false); });
+        public static readonly DependencyProperty CorrespondancesProperty = CreateProperty<OutMorphingVisualObject, CorrespondanceDictionary>(true, true, true, "Correspondances", (sender, e) => { if (sender is OutMorphingVisualObject owner) owner.Compute(false, false); });
 
         public Progress Progress { get => (Progress)GetValue(ProgressProperty); set => SetValue(ProgressProperty, value); }
-        public static readonly DependencyProperty ProgressProperty = CreateProperty<Progress>(true, true, "Progress", typeof(OutMorphingVisualObject));
+        public static readonly DependencyProperty ProgressProperty = CreateProperty<OutMorphingVisualObject, Progress>(true, true, true, "Progress");
 
         public PointVisualObject InAnchorPoint { get => (PointVisualObject)GetValue(InAnchorPointProperty); set => SetValue(InAnchorPointProperty, value); }
-        public static readonly DependencyProperty InAnchorPointProperty = CreateProperty<PointVisualObject>(true, true, "InAnchorPoint", typeof(OutMorphingVisualObject));
+        public static readonly DependencyProperty InAnchorPointProperty = CreateProperty<OutMorphingVisualObject, PointVisualObject>(true, true, true, "InAnchorPoint");
 
         private void Compute(bool from, bool to)
         {
@@ -60,19 +62,21 @@ namespace Coord
 
     public class InMorphingVisualObject : VisualObject, IProgressive
     {
+        protected override Freezable CreateInstanceCore() => new InMorphingVisualObject();
+
         public override string Type => "InMorphing";
 
         public VisualObject From { get => (VisualObject)GetValue(FromProperty); set => SetValue(FromProperty, value); }
-        public static readonly DependencyProperty FromProperty = CreateProperty<VisualObject>(true, true, "From", typeof(InMorphingVisualObject));
+        public static readonly DependencyProperty FromProperty = CreateProperty<InMorphingVisualObject, VisualObject>(true, true, true, "From");
 
         public VisualObject To { get => (VisualObject)GetValue(ToProperty); set => SetValue(ToProperty, value); }
-        public static readonly DependencyProperty ToProperty = CreateProperty<VisualObject>(true, true, "To", typeof(InMorphingVisualObject));
+        public static readonly DependencyProperty ToProperty = CreateProperty<InMorphingVisualObject, VisualObject>(true, true, true, "To");
 
         public CorrespondanceDictionary Correspondances { get => (CorrespondanceDictionary)GetValue(CorrespondancesProperty); set => SetValue(CorrespondancesProperty, value); }
-        public static readonly DependencyProperty CorrespondancesProperty = CreateProperty<CorrespondanceDictionary>(true, true, "Correspondances", typeof(InMorphingVisualObject));
+        public static readonly DependencyProperty CorrespondancesProperty = CreateProperty<InMorphingVisualObject, CorrespondanceDictionary>(true, true, true, "Correspondances");
 
         public Progress Progress { get => (Progress)GetValue(ProgressProperty); set => SetValue(ProgressProperty, value); }
-        public static readonly DependencyProperty ProgressProperty = CreateProperty<Progress>(true, true, "Progress", typeof(InMorphingVisualObject));
+        public static readonly DependencyProperty ProgressProperty = CreateProperty<InMorphingVisualObject, Progress>(true, true, true, "Progress");
 
         protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
@@ -92,7 +96,7 @@ namespace Coord
 
     public readonly struct MorphingCharacter
     {
-        public MorphingCharacter(Point[] points, Brush fill, PlanePen stroke) : this()
+        public MorphingCharacter(Point[] points, Brush fill, Pen stroke) : this()
         {
             Points = points;
             Fill = fill;
@@ -101,7 +105,7 @@ namespace Coord
 
         public Point[] Points { get; }
         public Brush Fill { get; }
-        public PlanePen Stroke { get; }
+        public Pen Stroke { get; }
 
         public static IEnumerable<(MorphingCharacter From, MorphingCharacter To)> ComputeCorrespondances(MorphingCharacter[] from, MorphingCharacter[] to, CorrespondanceDictionary correspondances)
         {

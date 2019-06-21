@@ -4,10 +4,6 @@
              xmlns:local="clr-namespace:CoordSpec"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Global.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <ResourceDictionary Source="Global.xaml"/>
     </Application.Resources>
 </Application>

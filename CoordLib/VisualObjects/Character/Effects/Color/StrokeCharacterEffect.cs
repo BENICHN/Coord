@@ -9,20 +9,12 @@ namespace Coord
     /// <summary>
     /// Dessine progressivement le contour des <see cref="Character"/> d'une sous-collection
     /// </summary>
-    public class StrokeCharacterEffect : CharacterEffect, ICoordEditable
+    public class StrokeCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Reverse", ReverseProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new StrokeCharacterEffect();
 
         public bool Reverse { get => (bool)GetValue(ReverseProperty); set => SetValue(ReverseProperty, value); }
-        public static readonly DependencyProperty ReverseProperty = CreateProperty<bool>(true, true, "Reverse", typeof(StrokeCharacterEffect));
+        public static readonly DependencyProperty ReverseProperty = CreateProperty<StrokeCharacterEffect, bool>(true, true, true, "Reverse");
 
         /// <summary>
         /// Applique l'effet à une collection de <see cref="Character"/>

@@ -1,209 +1,158 @@
-﻿using BenLib.Framework;
-using BenLib.Standard;
+﻿using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
 
 namespace CoordAnimation
 {
     /// <summary>
     /// Logique d'interaction pour PropertiesEditor.xaml
     /// </summary>
-    public partial class PropertiesEditor : UserControl
+    public partial class PropertiesEditor : PropertiesEditorBase, INotifyPropertyChanged
     {
-        public ObservableCollection<CoordEditableProperty> Properties { get => (ObservableCollection<CoordEditableProperty>)GetValue(PropertiesProperty); set => SetValue(PropertiesProperty, value); }
-        public static readonly DependencyProperty PropertiesProperty = DependencyProperty.Register("Properties", typeof(ObservableCollection<CoordEditableProperty>), typeof(PropertiesEditor));
+        public bool AreEditorsVisible { get => (bool)GetValue(AreEditorsVisibleProperty); set => SetValue(AreEditorsVisibleProperty, value); }
+        public static readonly DependencyProperty AreEditorsVisibleProperty = DependencyProperty.Register("AreEditorsVisible", typeof(bool), typeof(PropertiesEditor), new PropertyMetadata(true));
 
-        public NotifyObject Object { get => (NotifyObject)GetValue(ObjectProperty); set => SetValue(ObjectProperty, value); }
-        public static readonly DependencyProperty ObjectProperty = DependencyProperty.Register("Object", typeof(NotifyObject), typeof(PropertiesEditor), new PropertyMetadata((sender, e) =>
+        private bool m_settingObject;
+
+        public bool IsUndefined => Type == null && Object == null;
+        public bool IsTypeSelecting => Type != null && (Type.IsAbstract || Type.IsInterface);
+
+        public bool CanFreeze => Object is Freezable freezable && !(freezable is NotifyObject) && freezable.CanFreeze;
+        public bool IsFrozen
         {
-            if (sender is PropertiesEditor owner)
+            get => Object is Freezable freezable && freezable.IsFrozen;
+            set
             {
-                var oldValue = e.OldValue as NotifyObject;
-                var newValue = e.NewValue as NotifyObject;
-
-                owner.Properties.Clear();
-                if (newValue != null)
+                if (Object is Freezable freezable)
                 {
-                    foreach (var (description, property) in newValue.AllProperties)
-                    {
-                        var editor = owner.GetEditorFromProperty(newValue, property);
-                        if (editor != null) owner.Properties.Add(new CoordEditableProperty(description, property, editor));
-                    }
+                    if (value && freezable.CanFreeze) Object = freezable.GetCurrentValueAsFrozen();
+                    else if (!value && freezable.IsFrozen) Object = freezable.CloneCurrentValue();
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        public Type ObjectType => Type ?? Object?.GetType();
+
+        public event PropertyChangedExtendedEventHandler<DependencyObject> ObjectChanged;
+
+        public Type Type { get => (Type)GetValue(TypeProperty); set => SetValue(TypeProperty, value); }
+        public static readonly DependencyProperty TypeProperty = DependencyProperty.Register("Type", typeof(Type), typeof(PropertiesEditor));
+
+        public DependencyObject Object { get => (DependencyObject)GetValue(ObjectProperty); set => SetValue(ObjectProperty, value); }
+        public static readonly DependencyProperty ObjectProperty = DependencyProperty.Register("Object", typeof(DependencyObject), typeof(PropertiesEditor));
+
+        protected override async void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property == AreEditorsVisibleProperty) SetVisibility(Type, Object);
+            else if (e.Property == TypeProperty)
+            {
+                var newValue = (Type)e.NewValue;
+
+                typeBlock.Text = ObjectType?.Name;
+
+                typesBox.Items.Clear();
+                if (newValue != null && (newValue.IsAbstract || newValue.IsInterface) && App.DependencyObjectTypes.TryGetValue(newValue, out var node)) { foreach (var t in node.DerivedTypes.AllTreeItems().Where(node => !node.Type.IsAbstract).Select(node => node.Type)) typesBox.Items.Add(t); }
+
+                SetVisibility(newValue, Object);
+            }
+            else if (e.Property == ObjectProperty)
+            {
+                if (e.OldValue == e.NewValue) return;
+
+                var oldValue = (DependencyObject)e.OldValue;
+                var newValue = (DependencyObject)e.NewValue;
+
+                typeBlock.Text = ObjectType?.Name;
+
+                if (IsTypeSelecting)
+                {
+                    m_settingObject = true;
+                    typesBox.SelectedItem = newValue?.GetType();
+                    m_settingObject = false;
                 }
 
-                owner.ObjectChanged?.Invoke(owner, new PropertyChangedExtendedEventArgs<NotifyObject>("Object", oldValue, newValue));
-            }
-        }));
+                SetVisibility(Type, newValue);
 
-        public event PropertyChangedExtendedEventHandler<NotifyObject> ObjectChanged;
+                ClearProperties();
+
+                if (newValue != null)
+                {
+                    bool isAnimatable = IsAnimatable;
+                    var properties = newValue is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : newValue.GetType().GetAllDependencyProperties().Select(fi =>
+                    {
+                        var dp = (DependencyProperty)fi.GetValue(null);
+                        var metadata = dp.GetMetadata(newValue);
+                        return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
+                    });
+
+                    foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, property, GetEditorFromProperty(newValue, property, metadata, isAnimatable)));
+                }
+
+                NotifyPropertyChanged("CanFreeze");
+                NotifyPropertyChanged("IsFrozen");
+
+                ObjectChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<DependencyObject>("Object", oldValue, newValue));
+            }
+            base.OnPropertyChanged(e);
+        }
+
+        private void Types_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!m_settingObject && typesBox.SelectedItem is Type type)
+            {
+                try { Object = (DependencyObject)Activator.CreateInstance(type); }
+                catch { Object = null; }
+            }
+        }
 
         public PropertiesEditor()
         {
             InitializeComponent();
-            Properties = new ObservableCollection<CoordEditableProperty>();
+            SetVisibility(null, null);
         }
 
-        public UIElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property)
+        private void SetVisibility(Type type, DependencyObject dependencyObject)
         {
-            var type = property.PropertyType;
-            if (type == typeof(string))
-            {
-                var editor = new SwitchableTextBox();
-                editor.SetBinding(SwitchableTextBox.TextProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(int))
-            {
-                var editor = new IntEditor();
-                editor.SetBinding(IntEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(uint))
-            {
-                var editor = new UIntEditor();
-                editor.SetBinding(UIntEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(long))
-            {
-                var editor = new LongEditor();
-                editor.SetBinding(LongEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(ulong))
-            {
-                var editor = new ULongEditor();
-                editor.SetBinding(ULongEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(double))
-            {
-                var editor = new DoubleEditor();
-                editor.SetBinding(DoubleEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(decimal))
-            {
-                var editor = new DecimalEditor();
-                editor.SetBinding(DecimalEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(float))
-            {
-                var editor = new FloatEditor();
-                editor.SetBinding(FloatEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(short))
-            {
-                var editor = new ShortEditor();
-                editor.SetBinding(ShortEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(ushort))
-            {
-                var editor = new UShortEditor();
-                editor.SetBinding(UShortEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(byte))
-            {
-                var editor = new ByteEditor();
-                editor.SetBinding(ByteEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(sbyte))
-            {
-                var editor = new SByteEditor();
-                editor.SetBinding(SByteEditor.ValueProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(bool))
-            {
-                var editor = new CheckBox();
-                editor.SetBinding(ToggleButton.IsCheckedProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(bool?))
-            {
-                var editor = new CheckBox { IsThreeState = true };
-                editor.SetBinding(ToggleButton.IsCheckedProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(Point))
-            {
-                var editor = new PointEditor();
-                editor.SetBinding(PointEditor.PointProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(Vector))
-            {
-                var editor = new VectorEditor();
-                editor.SetBinding(VectorEditor.VectorProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(Size))
-            {
-                var editor = new SizeEditor { Width = 150, Height = 100 };
-                editor.SetBinding(SizeEditor.SizeProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(Rect))
-            {
-                var editor = new RectEditor { Width = 150, Height = 100 };
-                editor.SetBinding(RectEditor.RectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(RectPoint))
-            {
-                var editor = new RectPointEditor { Width = 150, Height = 100 };
-                editor.SetBinding(RectPointEditor.RectPointProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(Progress))
-            {
-                var editor = new DoubleEditor { Value = ((Progress)owner.GetValue(property)).Value, IncrementFactor = 0.001, IsUnsigned = true };
-                editor.ValueChanged += (sender, e) => owner.SetValue(property, new Progress(e.NewValue));
-                return editor;
-            }
-            else if (type == typeof(Interval<int>))
-            {
-                var editor = new IntervalEditor { IntervalType = IntervalType.Int };
-                editor.SetBinding(IntervalEditor.IntIntervalProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (type == typeof(VisualObject))
-            {
-                var editor = new VisualObjectSelector { Selection = App.Scene.Plane.Selection };
-                editor.SetBinding(VisualObjectSelector.VisualObjectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (typeof(VisualObject).IsAssignableFrom(type))
-            {
-                var editor = new VisualObjectSelector { Selection = App.Scene.Plane.Selection, Filter = vo => type.IsAssignableFrom(vo.GetType()), AllAtOnce = true, AllowMultiple = false };
-                editor.SetBinding(VisualObjectSelector.VisualObjectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else if (typeof(NotifyObject).IsAssignableFrom(type))
-            {
-                var editor = new PropertiesEditor();
-                editor.SetBinding(ObjectProperty, new Binding(property.Name) { Source = owner, Mode = BindingMode.TwoWay });
-                return editor;
-            }
-            else return null;
+            bool istypeSelecting = type != null && (type.IsAbstract || type.IsInterface);
+            bool typeBlockV = dependencyObject != null && !istypeSelecting;
+            bool typesBoxV = istypeSelecting;
+            bool buttonsV = dependencyObject != null;
+            bool editorsV = dependencyObject != null && AreEditorsVisible;
+            bool instanceButtonV = dependencyObject == null && type != null && !istypeSelecting;
+
+            typeBlock.Visibility = typeBlockV ? Visibility.Visible : Visibility.Collapsed;
+            typesBox.Visibility = typesBoxV ? Visibility.Visible : Visibility.Collapsed;
+            lockButton.Visibility = nullButton.Visibility = buttonsV ? Visibility.Visible : Visibility.Collapsed;
+            Editors.Visibility = editorsV ? Visibility.Visible : Visibility.Collapsed;
+            instanceButton.Visibility = instanceButtonV ? Visibility.Visible : Visibility.Collapsed;
+
+            Grid.SetColumnSpan(typesBox, buttonsV ? 1 : 3);
+            firstRow.Height = new GridLength(typesBoxV || typeBlockV ? 25 : 0);
         }
+
+        private void InstanceButton_Click(object sender, RoutedEventArgs e) => Object = (DependencyObject)Activator.CreateInstance(Type);
+
+        private void NullButton_Click(object sender, RoutedEventArgs e)
+        {
+            (Object as NotifyObject)?.Destroy();
+            Object = null;
+        }
+
+        private void NullButton_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) { if (CurrentEditor != this && this.FindParent<PropertiesEditorBase>() is PropertiesEditorBase propertiesEditorBase) propertiesEditorBase.CancelCellChange = true; }
     }
 
-    public readonly struct CoordEditableProperty
+    public readonly struct EditableProperty : IPropertyEditorContainer, IEquatable<EditableProperty>
     {
-        public CoordEditableProperty(string description, DependencyProperty property, UIElement editor)
+        public EditableProperty(string description, DependencyProperty property, FrameworkElement editor)
         {
             Description = description;
             Property = property;
@@ -212,6 +161,15 @@ namespace CoordAnimation
 
         public string Description { get; }
         public DependencyProperty Property { get; }
-        public UIElement Editor { get; }
+        public FrameworkElement Editor { get; }
+
+        public override bool Equals(object obj) => obj is EditableProperty property && Equals(property);
+        public bool Equals(EditableProperty other) => EqualityComparer<FrameworkElement>.Default.Equals(Editor, other.Editor);
+        public override int GetHashCode() => 517744472 + EqualityComparer<FrameworkElement>.Default.GetHashCode(Editor);
+
+        public static bool operator ==(EditableProperty left, EditableProperty right) => left.Equals(right);
+        public static bool operator !=(EditableProperty left, EditableProperty right) => !(left == right);
+
+        public override string ToString() => Description;
     }
 }

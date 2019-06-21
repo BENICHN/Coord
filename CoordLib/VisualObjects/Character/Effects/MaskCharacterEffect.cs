@@ -7,19 +7,9 @@ namespace Coord
     /// <summary>
     /// Rétrécit progressivement une sous-collection de <see cref="Character"/> au point spécifié puis translate progressivement les <see cref="Character"/> après cette sous-collection par la différence entre <see cref="BigSize"/> et <see cref="SmallSize"/>
     /// </summary>
-    public class MaskCharacterEffect : CharacterEffect, ICoordEditable
+    public class MaskCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("SmallSize", SmallSizeProperty);
-                yield return ("BigSize", BigSizeProperty);
-                yield return ("RectPoint", RectPointProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new MaskCharacterEffect();
 
         private Vector m_sizeDiff;
 
@@ -27,19 +17,19 @@ namespace Coord
         /// Dimensions du <see cref="System.Windows.Media.GeometryGroup"/> formé par les <see cref="Character"/> de la sous-collection après le masquage
         /// </summary>
         public Size SmallSize { get => (Size)GetValue(SmallSizeProperty); set => SetValue(SmallSizeProperty, value); }
-        public static readonly DependencyProperty SmallSizeProperty = CreateProperty<Size>(true, true, "SmallSize", typeof(MaskCharacterEffect), (sender, e) => { if (sender is MaskCharacterEffect owner) owner.ComputeSizeDiff(); });
+        public static readonly DependencyProperty SmallSizeProperty = CreateProperty<MaskCharacterEffect, Size>(true, true, true, "SmallSize", (sender, e) => { if (sender is MaskCharacterEffect owner) owner.ComputeSizeDiff(); });
 
         /// <summary>
         /// Dimensions du <see cref="System.Windows.Media.GeometryGroup"/> formé par les <see cref="Character"/> de la sous-collection avant le masquage
         /// </summary>
         public Size BigSize { get => (Size)GetValue(BigSizeProperty); set => SetValue(BigSizeProperty, value); }
-        public static readonly DependencyProperty BigSizeProperty = CreateProperty<Size>(true, true, "BigSize", typeof(MaskCharacterEffect), (sender, e) => { if (sender is MaskCharacterEffect owner) owner.ComputeSizeDiff(); });
+        public static readonly DependencyProperty BigSizeProperty = CreateProperty<MaskCharacterEffect, Size>(true, true, true, "BigSize", (sender, e) => { if (sender is MaskCharacterEffect owner) owner.ComputeSizeDiff(); });
 
         /// <summary>
         /// Point du <see cref="System.Windows.Media.GeometryGroup"/> formé par les <see cref="Character"/> de la sous-collection où appliquer la mise à l'échelle
         /// </summary>
         public RectPoint RectPoint { get => (RectPoint)GetValue(RectPointProperty); set => SetValue(RectPointProperty, value); }
-        public static readonly DependencyProperty RectPointProperty = CreateProperty<RectPoint>(true, true, "RectPoint", typeof(MaskCharacterEffect));
+        public static readonly DependencyProperty RectPointProperty = CreateProperty<MaskCharacterEffect, RectPoint>(true, true, true, "RectPoint");
 
         private void ComputeSizeDiff() => m_sizeDiff = new Vector(BigSize.Width - SmallSize.Width, BigSize.Height - SmallSize.Height);
 

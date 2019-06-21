@@ -15,15 +15,27 @@ namespace CoordAnimation
     /// </summary>
     public partial class VisualObjectSelector : UserControl, INotifyPropertyChanged
     {
-        private bool m_allAtOnce;
-        private bool m_allowMultiple;
-        private Predicate<VisualObject> m_filter;
+        public int SelectionUsageCount { get => GetUsageCount(Selection); set => SetUsageCount(Selection, value); }
+        public static int GetUsageCount(DependencyObject obj) => (int)obj.GetValue(UsageCountProperty);
+        public static void SetUsageCount(DependencyObject obj, int value) => obj.SetValue(UsageCountProperty, value);
+        public static readonly DependencyProperty UsageCountProperty = DependencyProperty.RegisterAttached("UsageCount", typeof(int), typeof(VisualObjectSelector));
 
         public bool IsSelecting { get => (bool)GetValue(IsSelectingProperty); set => SetValue(IsSelectingProperty, value); }
         public static readonly DependencyProperty IsSelectingProperty = DependencyProperty.Register("IsSelecting", typeof(bool), typeof(VisualObjectSelector));
 
-        public INotifyCollectionChanged VisualObjects { get => (INotifyCollectionChanged)GetValue(VisualObjectsProperty); protected set => SetValue(VisualObjectsProperty, value); }
-        protected static readonly DependencyProperty VisualObjectsProperty = DependencyProperty.Register("VisualObjects", typeof(INotifyCollectionChanged), typeof(VisualObjectSelector));
+        private INotifyCollectionChanged m_visualObjects;
+        public INotifyCollectionChanged VisualObjects
+        {
+            get => m_visualObjects;
+            protected set
+            {
+                if (m_visualObjects != value)
+                {
+                    m_visualObjects = value;
+                    NotifyPropertyChanged("VisualObjects");
+                }
+            }
+        }
 
         public TrackingCharacterSelection Selection { get => (TrackingCharacterSelection)GetValue(SelectionProperty); set => SetValue(SelectionProperty, value); }
         public static readonly DependencyProperty SelectionProperty = DependencyProperty.Register("Selection", typeof(TrackingCharacterSelection), typeof(VisualObjectSelector));
@@ -31,16 +43,11 @@ namespace CoordAnimation
         public VisualObject VisualObject { get => (VisualObject)GetValue(VisualObjectProperty); set => SetValue(VisualObjectProperty, value); }
         public static readonly DependencyProperty VisualObjectProperty = DependencyProperty.Register("VisualObject", typeof(VisualObject), typeof(VisualObjectSelector));
 
-        public bool AllowMultiple { get => (bool)GetValue(AllowMultipleProperty); set => SetValue(AllowMultipleProperty, value); }
-        public static readonly DependencyProperty AllowMultipleProperty = DependencyProperty.Register("AllowMultiple", typeof(bool), typeof(VisualObjectSelector), new PropertyMetadata(true));
+        public Type Pointing { get => (Type)GetValue(PointingProperty); set => SetValue(PointingProperty, value); }
+        public static readonly DependencyProperty PointingProperty = DependencyProperty.Register("Pointing", typeof(Type), typeof(VisualObjectSelector));
 
-        public bool AllAtOnce { get => (bool)GetValue(AllAtOnceProperty); set => SetValue(AllAtOnceProperty, value); }
-        public static readonly DependencyProperty AllAtOnceProperty = DependencyProperty.Register("AllAtOnce", typeof(bool), typeof(VisualObjectSelector), new PropertyMetadata(false));
-
-        public bool IsSelectionVisible => !AllAtOnce;
-
-        public Predicate<VisualObject> Filter { get => (Predicate<VisualObject>)GetValue(FilterProperty); set => SetValue(FilterProperty, value); }
-        public static readonly DependencyProperty FilterProperty = DependencyProperty.Register("Filter", typeof(Predicate<VisualObject>), typeof(VisualObjectSelector));
+        public bool IsPointing => Pointing != null;
+        public bool IsSelectionVisible => Pointing == null;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
@@ -49,62 +56,51 @@ namespace CoordAnimation
         {
             if (e.Property == SelectionProperty)
             {
-                if (e.OldValue is TrackingCharacterSelection oldValue) oldValue.Changed -= OnSelectionChanged;
-                if (e.NewValue is TrackingCharacterSelection newValue) newValue.Changed += OnSelectionChanged;
+                if (e.OldValue is TrackingCharacterSelection oldValue) oldValue.ObjectPointed -= OnObjectPointed;
+                if (e.NewValue is TrackingCharacterSelection newValue) newValue.ObjectPointed += OnObjectPointed;
             }
             else if (e.Property == IsSelectingProperty)
             {
                 if ((bool)e.NewValue)
                 {
-                    Selection.UsageCount++;
+                    SelectionUsageCount++;
                     VisualObjects = Selection.VisualObjects;
-                    m_allowMultiple = Selection.AllowMultiple;
-                    Selection.AllowMultiple = AllowMultiple;
-                    m_allAtOnce = Selection.AllAtOnce;
-                    Selection.AllAtOnce = AllAtOnce;
-                    m_filter = Selection.Filter;
-                    Selection.Filter = Filter;
+                    Selection.EnablePointing(Pointing);
                 }
                 else
                 {
-                    Selection.UsageCount--;
-                    Selection.Filter = m_filter;
-                    Selection.AllowMultiple = m_allowMultiple;
-                    Selection.AllAtOnce = m_allAtOnce;
-
-                    m_filter = null;
-
-                    VisualObject = Selection.Count switch
+                    Selection.DisablePointing();
+                    var visualObject = Selection.Count switch
                     {
                         0 => null,
                         1 => VisualObject = Selection.VisualObjects[0].Selection >= Interval<int>.PositiveReals ? Selection.VisualObjects[0] : InCharacters(Selection.VisualObjects[0]),
                         _ => InCharactersGroup(Selection.VisualObjects)
                     };
+
+                    VisualObject = visualObject;
+                    if (VisualObjects == Selection.VisualObjects) VisualObjects = GetVisualObjectsFromVisualObject(visualObject);
+
+                    SelectionUsageCount--;
                 }
             }
             else if (e.Property == VisualObjectProperty)
             {
                 IsSelecting = false;
-                VisualObjects = e.NewValue switch
-                {
-                    InCharactersVisualObject inCharacters => new FreezableCollection<VisualObjectPart>(new[] { new InCharactersVisualObjectPart(inCharacters) }),
-                    InCharactersVisualObjectGroup inCharactersGroup => new FreezableCollection<VisualObjectPart>(inCharactersGroup.Children.Select((vo, i) => new InCharactersVisualObjectGroupPart(inCharactersGroup, i))),
-                    VisualObject visualObject => new FreezableCollection<VisualObjectPart>(new[] { new VisualObjectVisualObjectPart(visualObject) }),
-                    _ => null
-                };
+                if (VisualObjects == null || VisualObjects == Selection.VisualObjects) VisualObjects = GetVisualObjectsFromVisualObject((VisualObject)e.NewValue);
                 VisualObjectChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<VisualObject>("VisualObject", e.OldValue as VisualObject, e.NewValue as VisualObject));
             }
-            else if (e.Property == AllowMultipleProperty && IsSelecting) Selection.AllowMultiple = (bool)e.NewValue;
-            else if (e.Property == AllAtOnceProperty && IsSelecting)
-            {
-                Selection.AllAtOnce = (bool)e.NewValue;
-                NotifyPropertyChanged("IsSelectionVisible");
-            }
-            else if (e.Property == FilterProperty && IsSelecting) Selection.Filter = (Predicate<VisualObject>)e.NewValue;
+            else if (e.Property == PointingProperty && IsSelecting) NotifyPropertyChanged("IsSelectionVisible");
             base.OnPropertyChanged(e);
         }
 
-        private void OnSelectionChanged(object sender, EventArgs e) { if (IsSelecting && !AllowMultiple && AllAtOnce && Selection.Count > 0) IsSelecting = false; }
+        private INotifyCollectionChanged GetVisualObjectsFromVisualObject(VisualObject visualObject) => visualObject switch
+        {
+            InCharactersVisualObject inCharacters => new FreezableCollection<VisualObjectPart>(new[] { new InCharactersVisualObjectPart(inCharacters) }),
+            InCharactersVisualObjectGroup inCharactersGroup => new FreezableCollection<VisualObjectPart>(inCharactersGroup.Children.Select((vo, i) => new InCharactersVisualObjectGroupPart(inCharactersGroup, i))),
+            _ => new FreezableCollection<VisualObjectPart>(new[] { new VisualObjectVisualObjectPart(visualObject) })
+        };
+
+        private void OnObjectPointed(object sender, EventArgs<VisualObject> e) { if (IsSelecting) IsSelecting = false; }
 
         public event PropertyChangedExtendedEventHandler<VisualObject> VisualObjectChanged;
 

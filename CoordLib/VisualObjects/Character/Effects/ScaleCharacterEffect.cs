@@ -8,36 +8,24 @@ namespace Coord
     /// <summary>
     /// Met progressivement à l'échelle une sous-collection de <see cref="Character"/> par un coefficient spécifié
     /// </summary>
-    public class ScaleCharacterEffect : CharacterEffect, ICoordEditable
+    public class ScaleCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("ScaleX", ScaleXProperty);
-                yield return ("ScaleY", ScaleYProperty);
-                yield return ("RectPoint", RectPointProperty);
-                yield return ("Center", CenterProperty);
-                yield return ("In", InProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new ScaleCharacterEffect();
 
         public double ScaleX { get => (double)GetValue(ScaleXProperty); set => SetValue(ScaleXProperty, value); }
-        public static readonly DependencyProperty ScaleXProperty = CreateProperty(true, true, "ScaleX", typeof(ScaleCharacterEffect), 1.0);
+        public static readonly DependencyProperty ScaleXProperty = CreateProperty<ScaleCharacterEffect, double>(true, true, true, "ScaleX", 1.0);
 
         public double ScaleY { get => (double)GetValue(ScaleYProperty); set => SetValue(ScaleYProperty, value); }
-        public static readonly DependencyProperty ScaleYProperty = CreateProperty(true, true, "ScaleY", typeof(ScaleCharacterEffect), 1.0);
+        public static readonly DependencyProperty ScaleYProperty = CreateProperty<ScaleCharacterEffect, double>(true, true, true, "ScaleY", 1.0);
 
         public RectPoint RectPoint { get => (RectPoint)GetValue(RectPointProperty); set => SetValue(RectPointProperty, value); }
-        public static readonly DependencyProperty RectPointProperty = CreateProperty<RectPoint>(true, true, "RectPoint", typeof(ScaleCharacterEffect));
+        public static readonly DependencyProperty RectPointProperty = CreateProperty<ScaleCharacterEffect, RectPoint>(true, true, true, "RectPoint");
 
         public Point Center { get => (Point)GetValue(CenterProperty); set => SetValue(CenterProperty, value); }
-        public static readonly DependencyProperty CenterProperty = CreateProperty(true, true, "Center", typeof(ScaleCharacterEffect), new Point(double.NaN, double.NaN));
+        public static readonly DependencyProperty CenterProperty = CreateProperty<ScaleCharacterEffect, Point>(true, true, true, "Center", new Point(double.NaN, double.NaN));
 
         public bool In { get => (bool)GetValue(InProperty); set => SetValue(InProperty, value); }
-        public static readonly DependencyProperty InProperty = CreateProperty(true, true, "In", typeof(ScaleCharacterEffect), true);
+        public static readonly DependencyProperty InProperty = CreateProperty<ScaleCharacterEffect, bool>(true, true, true, "In", true);
 
         /// <summary>
         /// Applique l'effet à une collection de <see cref="Character"/>

@@ -16,6 +16,8 @@ namespace CoordSpec
 {
     public class Deriv : VisualObjectGroupBase
     {
+        protected override Freezable CreateInstanceCore() => new Deriv();
+
         public override string Type => "Deriv";
 
         public const double FuncEnd = 6.5235;
@@ -32,16 +34,16 @@ namespace CoordSpec
         private readonly SynchronizedProgress m_syncpf = new SynchronizedProgress(0);
 
         public double X { get => (double)GetValue(XProperty); set => SetValue(XProperty, value); }
-        public static readonly DependencyProperty XProperty = CreateProperty<double>(true, true, "X", typeof(Deriv));
+        public static readonly DependencyProperty XProperty = CreateProperty<Deriv, double>(true, true, true, "X");
 
         public double Length { get => (double)GetValue(LengthProperty); set => SetValue(LengthProperty, value); }
-        public static readonly DependencyProperty LengthProperty = CreateProperty<double>(true, true, "Length", typeof(Deriv), 1);
+        public static readonly DependencyProperty LengthProperty = CreateProperty<Deriv, double>(true, true, true, "Length", 1);
 
         public double SpeedEnd { get => (double)GetValue(SpeedEndProperty); set => SetValue(SpeedEndProperty, value); }
-        public static readonly DependencyProperty SpeedEndProperty = CreateProperty<double>(true, true, "SpeedEnd", typeof(Deriv));
+        public static readonly DependencyProperty SpeedEndProperty = CreateProperty<Deriv, double>(true, true, true, "SpeedEnd");
 
         public double AccEnd { get => (double)GetValue(AccEndProperty); set => SetValue(AccEndProperty, value); }
-        public static readonly DependencyProperty AccEndProperty = CreateProperty<double>(true, true, "AccEnd", typeof(Deriv));
+        public static readonly DependencyProperty AccEndProperty = CreateProperty<Deriv, double>(true, true, true, "AccEnd");
 
         public TextVisualObject AccL { get; }
         public TextVisualObject SpeedL { get; }
@@ -54,12 +56,12 @@ namespace CoordSpec
 
         public Deriv()
         {
-            SpeedC = Curve(new FunctionSeries { Function = SpeedF, Interval = (0, SpeedEnd), Type = SeriesType.Y }, false, false).Style(new PlanePen(FlatBrushes.Alizarin, StrokeThickness));
-            AccC = Curve(new FunctionSeries { Function = AccF, Interval = (0, AccEnd), Type = SeriesType.Y }, false, false).Style(new PlanePen(FlatBrushes.PeterRiver, StrokeThickness));
-            Asymptote = new AsymptoteVisualObject { Stroke = new PlanePen(FlatBrushes.SunFlower, StrokeThickness), Template = Point(default).Extend(PointsRadius).Style(FlatBrushes.SunFlower), Function = SpeedF, X = X, Length = Length }.Scale(Single(3), 0, 0, RectPoint.Center, 1, m_syncpd).Stroke(Single(0), false, 0, m_syncpa).Opacity(Single(4), 0, 0, 1, m_syncpb);
+            SpeedC = Curve(new FunctionSeries { Function = SpeedF, Interval = (0, SpeedEnd), Type = SeriesType.Y }, false, false).Style(new Pen(FlatBrushes.Alizarin, StrokeThickness));
+            AccC = Curve(new FunctionSeries { Function = AccF, Interval = (0, AccEnd), Type = SeriesType.Y }, false, false).Style(new Pen(FlatBrushes.PeterRiver, StrokeThickness));
+            Asymptote = new AsymptoteVisualObject { Stroke = new Pen(FlatBrushes.SunFlower, StrokeThickness), Template = Point(default).Extend(PointsRadius).Style(FlatBrushes.SunFlower), Function = SpeedF, X = X, Length = Length }.Scale(Single(3), 0, 0, RectPoint.Center, 1, m_syncpd).Stroke(Single(0), false, 0, m_syncpa).Opacity(Single(4), 0, 0, 1, m_syncpb);
             SpeedP = Point(X, SpeedF(X)).Extend(PointsRadius).Style(FlatBrushes.SunFlower);
             AccP = Point(X, AccF(X)).Extend(PointsRadius).Style(FlatBrushes.PeterRiver).Scale(Single(0), 0, 0, RectPoint.Center, 1, m_syncpc);
-            Segment = Segment(SpeedP, AccP).Style(new PlanePen(FlatBrushes.PeterRiver, 5) { DashStyle = new DashStyle(new double[] { 2 }, 0) }).Scale(Single(0), 1, 0, RectPoint.TopLeft, 1, m_syncpc);
+            Segment = Segment(SpeedP, AccP).Style(new Pen(FlatBrushes.PeterRiver, 5) { DashStyle = new DashStyle(new double[] { 2 }, 0) }).Scale(Single(0), 1, 0, RectPoint.TopLeft, 1, m_syncpc);
             AccL = InTex("a(t)", 0.4, Point(0.25, -1.6)).Color(FlatBrushes.PeterRiver).Write(PositiveReals, 1, false, new Progress(0, ProgressMode.LaggedStart, 1.5), m_syncpe);
             SpeedL = InTex("v(t)", 0.4, Point(0.3, -0.17)).Color(FlatBrushes.Alizarin).Write(PositiveReals, 1, false, new Progress(0, ProgressMode.LaggedStart, 1.5), m_syncpf);
 

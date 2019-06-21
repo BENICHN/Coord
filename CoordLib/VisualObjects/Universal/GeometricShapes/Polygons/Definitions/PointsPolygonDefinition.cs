@@ -10,8 +10,10 @@ namespace Coord
     /// </summary>
     public class PointsPolygonDefinition : PolygonDefinition
     {
+        protected override Freezable CreateInstanceCore() => new PointsPolygonDefinition();
+
         public new NotifyObjectCollection<PointVisualObject> InPoints { get => (NotifyObjectCollection<PointVisualObject>)GetValue(InPointsProperty); set => SetValue(InPointsProperty, value); }
-        public static readonly DependencyProperty InPointsProperty = CreateProperty<NotifyObjectCollection<PointVisualObject>>(true, true, "InPoints", typeof(PointsPolygonDefinition));
+        public static readonly DependencyProperty InPointsProperty = CreateProperty<PointsPolygonDefinition, NotifyObjectCollection<PointVisualObject>>(true, true, true, "InPoints");
 
         protected override void OnChanged() => base.InPoints = InPoints.IsNullOrEmpty() ? Array.Empty<Point>() : InPoints.Select(p => p.Definition.InPoint).ToArray();
     }

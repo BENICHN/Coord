@@ -46,7 +46,7 @@ namespace CoordSpec
                 return (double)result;
             }
 
-            plane.VisualObjects.Add(Curve(new FunctionSeries(f, SeriesType.Y), false, false).Style(new PlanePen(FlatBrushes.Amethyst, 3)));
+            plane.VisualObjects.Add(Curve(new FunctionSeries(f, SeriesType.Y), false, false).Style(new Pen(FlatBrushes.Amethyst, 3)));
 
             async Task Animate()
             {

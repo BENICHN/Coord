@@ -8,16 +8,18 @@ namespace Coord
 {
     public class VisualObjectIntersection : VisualObjectGroupBase
     {
+        protected override Freezable CreateInstanceCore() => new VisualObjectIntersection();
+
         public override string Type => "VisualObjectIntersection";
 
         public VisualObject Object1 { get => (VisualObject)GetValue(Object1Property); set => SetValue(Object1Property, value); }
-        public static readonly DependencyProperty Object1Property = CreateProperty<VisualObject>(true, true, "Object1", typeof(VisualObjectIntersection));
+        public static readonly DependencyProperty Object1Property = CreateProperty<VisualObjectIntersection, VisualObject>(true, true, true, "Object1");
 
         public VisualObject Object2 { get => (VisualObject)GetValue(Object2Property); set => SetValue(Object2Property, value); }
-        public static readonly DependencyProperty Object2Property = CreateProperty<VisualObject>(true, true, "Object2", typeof(VisualObjectIntersection));
+        public static readonly DependencyProperty Object2Property = CreateProperty<VisualObjectIntersection, VisualObject>(true, true, true, "Object2");
 
         public double Radius { get => (double)GetValue(RadiusProperty); set => SetValue(RadiusProperty, value); }
-        public static readonly DependencyProperty RadiusProperty = CreateProperty<double>(true, true, "Radius", typeof(VisualObjectIntersection), 10);
+        public static readonly DependencyProperty RadiusProperty = CreateProperty<VisualObjectIntersection, double>(true, true, true, "Radius", 10);
 
         private Point[] m_inPoints;
         private readonly List<(PointVisualObject visualObject, int index)> m_generatedPoints = new List<(PointVisualObject visualObject, int index)>();

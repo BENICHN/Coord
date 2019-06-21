@@ -1,21 +1,19 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Coord
 {
     /// <summary>
     /// Détermine un point du plan grâce à un <see cref="Point"/>
     /// </summary>
-    public class PointPointDefinition : PointDefinition, ICoordEditable
+    public class PointPointDefinition : PointDefinition
     {
-        public override string Type => "PointPointDefinition";
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties { get { yield return ("InPoint", InPointProperty); } }
+        protected override Freezable CreateInstanceCore() => new PointPointDefinition();
 
         /// <summary>
         /// Point du plan
         /// </summary>
         public new Point InPoint { get => (Point)GetValue(InPointProperty); set => SetValue(InPointProperty, value); }
-        public static readonly DependencyProperty InPointProperty = CreateProperty<Point>(true, true, "InPoint", typeof(PointPointDefinition));
+        public static readonly DependencyProperty InPointProperty = CreateProperty<PointPointDefinition, Point>(true, true, true, "InPoint");
 
         protected override void OnChanged() => base.InPoint = InPoint;
     }

@@ -91,7 +91,7 @@
     <Compile Include="Contents\DoublePendulum\DPContent.cs" />
     <Compile Include="Contents\ELC\ELC.cs" />
     <Compile Include="Contents\TPEAnim\Deriv.cs" />
-    <Compile Include="Contents\TPEAnim\MAF.cs" />
+    <None Include="Contents\TPEAnim\MAF.cs" />
     <None Include="Contents\TPEAnim\TPEAnimContent.cs" />
     <None Include="Contents\TPE\TPEMainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -100,6 +100,10 @@
     <Page Include="Global.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Graphics.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -115,6 +119,9 @@
     <Compile Include="Contents\TPE\Watney.cs" />
     <Compile Include="Global.xaml.cs">
       <DependentUpon>Global.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Graphics.xaml.cs">
+      <DependentUpon>Graphics.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

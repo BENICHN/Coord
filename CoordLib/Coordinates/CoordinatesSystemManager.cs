@@ -9,44 +9,45 @@ namespace Coord
     /// </summary>
     public class CoordinatesSystemManager : NotifyObject
     {
+        protected override Freezable CreateInstanceCore() => new CoordinatesSystemManager();
+
+        public double MaxCellSize { get => (double)GetValue(MaxCellSizeProperty); set => SetValue(MaxCellSizeProperty, value); }
+        public static readonly DependencyProperty MaxCellSizeProperty = CreateProperty<CoordinatesSystemManager, double>(true, true, true, "MaxCellSize", 200);
+
+        public double MinCellSize { get => (double)GetValue(MinCellSizeProperty); set => SetValue(MinCellSizeProperty, value); }
+        public static readonly DependencyProperty MinCellSizeProperty = CreateProperty<CoordinatesSystemManager, double>(true, true, true, "MinCellSize", 100);
+
+        internal Func<MathRect, MathRect> m_coerceInputRange;
+
         /// <summary>
         /// Zone du plan
         /// </summary>
         public MathRect InputRange { get => (MathRect)GetValue(InputRangeProperty); set => SetValue(InputRangeProperty, value); }
-        public static readonly DependencyProperty InputRangeProperty = CreateProperty<MathRect>(true, true, "InputRange", typeof(CoordinatesSystemManager), (sender, e) => { if (sender is CoordinatesSystemManager owner) owner.UpdateRatio(); });
+        public static readonly DependencyProperty InputRangeProperty = CreateProperty<CoordinatesSystemManager, MathRect>(true, true, true, "InputRange", default, null, (d, v) => (d as CoordinatesSystemManager).m_coerceInputRange((MathRect)v));
 
         /// <summary>
         /// Zone de l'écran
         /// </summary>
-        public Rect OutputRange { get => (Rect)GetValue(OutputRangeProperty); set => SetValue(OutputRangeProperty, value); }
-        public static readonly DependencyProperty OutputRangeProperty = CreateProperty<Rect>(true, true, "OutputRange", typeof(CoordinatesSystemManager), (sender, e) => { if (sender is CoordinatesSystemManager owner) owner.UpdateRatio(); });
+        internal Rect OutputRange { get => (Rect)GetValue(OutputRangeProperty); set => SetValue(OutputRangeProperty, value); }
+        internal static readonly DependencyProperty OutputRangeProperty = CreateProperty<CoordinatesSystemManager, Rect>(false, false, true, "OutputRange");
 
         /// <summary>
         /// Rapport (largeur de la zone de l'écran) / (largeur de la zone du plan)
         /// </summary>
-        public double WidthRatio { get; private set; }
+        public double WidthRatio => OutputRange.Width / InputRange.Width;
 
         /// <summary>
         /// Rapport (hauteur de la zone de l'écran) / (hauteur de la zone du plan)
         /// </summary>
-        public double HeightRatio { get; private set; }
+        public double HeightRatio => OutputRange.Height / InputRange.Height;
 
         /// <summary>
         /// Système de coordonnées du plan
         /// </summary>
         public CoordinatesSystem CoordinatesSystem { get => (CoordinatesSystem)GetValue(CoordinatesSystemProperty); set => SetValue(CoordinatesSystemProperty, value); }
-        public static readonly DependencyProperty CoordinatesSystemProperty = CreateProperty<CoordinatesSystem>(true, true, "CoordinatesSystem", typeof(CoordinatesSystemManager));
+        public static readonly DependencyProperty CoordinatesSystemProperty = CreateProperty<CoordinatesSystemManager, CoordinatesSystem>(true, true, true, "CoordinatesSystem");
 
-        /// <summary>
-        /// Calcule <see cref="WidthRatio"/> et <see cref="HeightRatio"/>
-        /// </summary>
-        private void UpdateRatio()
-        {
-            WidthRatio = OutputRange.Width / InputRange.Width;
-            HeightRatio = OutputRange.Height / InputRange.Height;
-        }
-
-        public ReadOnlyCoordinatesSystemManager AsReadOnly() => new ReadOnlyCoordinatesSystemManager(InputRange, OutputRange, CoordinatesSystem);
+        public ReadOnlyCoordinatesSystemManager AsReadOnly() => new ReadOnlyCoordinatesSystemManager(MaxCellSize, MinCellSize, InputRange, OutputRange, CoordinatesSystem);
     }
 
     public readonly struct ReadOnlyCoordinatesSystemManager : IEquatable<ReadOnlyCoordinatesSystemManager>
@@ -54,12 +55,12 @@ namespace Coord
         /// <summary>
         /// Largeur et hauteur à l'écran maximale d'une celllule de la grille du plan
         /// </summary>
-        public const double MaxCellSize = 200.0;
+        public double MaxCellSize { get; }
 
         /// <summary>
         /// Largeur et hauteur à l'écran maximale d'une celllule de la grille du plan
         /// </summary>
-        public const double MinCellSize = 100.0;
+        public double MinCellSize { get; }
 
         /// <summary>
         /// Point de l'écran correspondant à l'origine du plan transformée par le système de coordonnées
@@ -196,8 +197,10 @@ namespace Coord
 
         public Rect ComputeInCoordinates(MathRect rect) => new Rect(ComputeInCoordinates(rect.TopLeft), ComputeInCoordinates(rect.BottomRight));
 
-        public ReadOnlyCoordinatesSystemManager(MathRect inputRange, Rect outputRange, CoordinatesSystem coordinatesSystem) : this()
+        public ReadOnlyCoordinatesSystemManager(double maxCellSize, double minCellSize, MathRect inputRange, Rect outputRange, CoordinatesSystem coordinatesSystem) : this()
         {
+            MaxCellSize = maxCellSize;
+            MinCellSize = minCellSize;
             InputRange = inputRange;
             OutputRange = outputRange;
             CoordinatesSystem = coordinatesSystem;

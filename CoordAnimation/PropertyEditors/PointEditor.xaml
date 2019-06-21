@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
-             mc:Ignorable="d" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             mc:Ignorable="d" Name="this">
     <DockPanel VerticalAlignment="Center">
-        <TextBlock Text="● " Visibility="{Binding Prefix, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+        <TextBlock Text="● " Visibility="{Binding Prefix, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
         <TextBlock Text="("/>
         <DockPanel Name="Coordinates">
             <benlib:DoubleEditor Name="X" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged"/>

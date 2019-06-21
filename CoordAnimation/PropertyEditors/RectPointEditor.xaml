@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
              mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="110" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             d:DesignHeight="100" d:DesignWidth="110" Name="this">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -16,23 +16,23 @@
             <ColumnDefinition Width="35"/>
         </Grid.ColumnDefinitions>
 
-        <benlib:DoubleEditor Name="xprogressSB" Value="{Binding RectPointXProgress, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center"/>
-        <benlib:DoubleEditor Name="yprogressSB" Value="{Binding RectPointYProgress, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
+        <benlib:DoubleEditor Name="xprogressSB" Value="{Binding RectPointXProgress, ElementName=this, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center"/>
+        <benlib:DoubleEditor Name="yprogressSB" Value="{Binding RectPointYProgress, ElementName=this, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
 
-        <Ellipse Name="currentPoint" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{Binding Foreground}" Margin="{Binding PointMargin}"/>
+        <Ellipse Name="currentPoint" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{Binding Foreground, ElementName=this}" Margin="{Binding PointMargin, ElementName=this}"/>
 
-        <Border Name="border" Grid.Row="1" Background="Transparent" BorderBrush="{Binding Foreground}" BorderThickness="1" Margin="3" MouseDown="Border_MouseDown" MouseMove="Border_MouseMove" MouseUp="Border_MouseUp"/>
-        <Border Grid.Row="1" Background="{Binding Foreground}" Opacity="0.5" HorizontalAlignment="Center" Width="1" Margin="{Binding Margin, ElementName=border}"/>
-        <Border Grid.Row="1" Background="{Binding Foreground}" Opacity="0.5" VerticalAlignment="Center" Height="1" Margin="{Binding Margin, ElementName=border}"/>
+        <Border Name="border" Grid.Row="1" Background="Transparent" BorderBrush="{Binding Foreground, ElementName=this}" BorderThickness="1" Margin="3" MouseDown="Border_MouseDown" MouseMove="Border_MouseMove" MouseUp="Border_MouseUp"/>
+        <Border Grid.Row="1" Background="{Binding Foreground, ElementName=this}" Opacity="0.5" HorizontalAlignment="Center" Width="1" Margin="{Binding Margin, ElementName=border}"/>
+        <Border Grid.Row="1" Background="{Binding Foreground, ElementName=this}" Opacity="0.5" VerticalAlignment="Center" Height="1" Margin="{Binding Margin, ElementName=border}"/>
         
-        <Ellipse Name="topLeftB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="topB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="topRightB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="rightB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="bottomRightB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="bottomB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="bottomLeftB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="leftB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center"  Stroke="{Binding Foreground}"/>
-        <Ellipse Name="centerB" Width="{Binding PointsRadius}" Height="{Binding PointsRadius}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Stroke="{Binding Foreground}"/>
+        <Ellipse Name="topLeftB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="topB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Top"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="topRightB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Top"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="rightB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Center"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="bottomRightB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="bottomB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="bottomLeftB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Bottom"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="leftB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Center"  Stroke="{Binding Foreground, ElementName=this}"/>
+        <Ellipse Name="centerB" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Stroke="{Binding Foreground, ElementName=this}"/>
     </Grid>
 </UserControl>

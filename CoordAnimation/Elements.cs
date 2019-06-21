@@ -1,5 +1,5 @@
-﻿using BenLib.Standard;
-using BenLib.WPF;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using Coord;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -100,8 +100,8 @@ namespace CoordAnimation
         public double Opacity => IsEnabled ? 1 : 0.313;
         public Brush Background => IsSelected switch
         {
-            true => Misc.BrushFromHex(0xFF007ACC),
-            null => Misc.BrushFromHex(0x5F007ACC),
+            true => Imaging.BrushFromHex(0xFF007ACC),
+            null => Imaging.BrushFromHex(0x5F007ACC),
             false => Brushes.Transparent
         };
 
@@ -211,7 +211,7 @@ namespace CoordAnimation
             {
                 if (children.Nodes.Count > i)
                 {
-                    var ce = (CharacterElement)children.Nodes[i];
+                    var ce = (CharacterElement)children.Nodes[i]; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     ce.Character = characterElement.Character;
                 }
                 else
@@ -247,7 +247,7 @@ namespace CoordAnimation
 
                 if (fromOwner == null) IndependentElement.VisualObject.RenderAtSelectionChange = true;
 
-                if (SelectedChildrenCount == 0) SetValue(IsSelectedProperty, false);
+                if (!Children.IsNullOrEmpty() && SelectedChildrenCount == 0) SetValue(IsSelectedProperty, false);
             }
         }
         public override void SetIsEnabled(bool value)
@@ -295,8 +295,8 @@ namespace CoordAnimation
             }
         }
 
-        private void VisualObject_SelectionChanged(object sender, PropertyChangedExtendedEventArgs<Interval<int>> e) { if (sender == VisualObject && e.NewValue >= PositiveReals) IsSelected = true; }
-        private void VisualObject_CacheChanged(object sender, PropertyChangedExtendedEventArgs<(Character[] Characters, ReadOnlyCoordinatesSystemManager ReadOnlyCoordinatesSystemManager)> e) { if (e.OldValue.Characters != e.NewValue.Characters) { if (e.NewValue.Characters != null && RefreshAtChange) Refresh(); else IsEnabled = false; } }
+        private void VisualObject_SelectionChanged(object sender, VisualObjectSelectionChangedEventArgs e) { if (e.OriginalSource == VisualObject && e.NewValue >= PositiveReals) IsSelected = true; }
+        private void VisualObject_CacheChanged(object sender, PropertyChangedExtendedEventArgs<Character[]> e) { if (e.OldValue != e.NewValue) { if (e.NewValue != null && RefreshAtChange) Refresh(); else IsEnabled = false; } }
 
         public override string ToString() => GetName(VisualObject);
     }

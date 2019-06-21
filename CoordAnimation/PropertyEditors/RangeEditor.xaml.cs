@@ -31,100 +31,41 @@ namespace CoordAnimation
         public event EventHandler RemoveRequested;
         public event EventHandler TextBoxDesactivated;
 
-        public Range<int> IntRange
-        {
-            get => (Range<int>)GetValue(IntRangeProperty);
-            set
-            {
-                SetValue(IntRangeProperty, value ?? Interval<int>.EmptySet);
-                SetUI();
-            }
-        }
-        public static readonly DependencyProperty IntRangeProperty = DependencyProperty.Register("IntRange", typeof(Range<int>), typeof(RangeEditor), new PropertyMetadata(Range<int>.EmptySet, (sender, e) => (sender as RangeEditor).RangeChanged?.Invoke(sender, EventArgs.Empty)));
+        public Range<int> IntRange { get => (Range<int>)GetValue(IntRangeProperty); set => SetValue(IntRangeProperty, value ?? Interval<int>.EmptySet); }
+        public static readonly DependencyProperty IntRangeProperty = DependencyProperty.Register("IntRange", typeof(Range<int>), typeof(RangeEditor), new PropertyMetadata(Range<int>.EmptySet));
 
-        public Range<double> DoubleRange
-        {
-            get => (Range<double>)GetValue(DoubleRangeProperty);
-            set
-            {
-                SetValue(DoubleRangeProperty, value ?? Interval<double>.EmptySet);
-                SetUI();
-            }
-        }
-        public static readonly DependencyProperty DoubleRangeProperty = DependencyProperty.Register("DoubleRange", typeof(Range<double>), typeof(RangeEditor), new PropertyMetadata(Interval<double>.EmptySet, (sender, e) => (sender as RangeEditor).RangeChanged?.Invoke(sender, EventArgs.Empty)));
+        public Range<double> DoubleRange { get => (Range<double>)GetValue(DoubleRangeProperty); set => SetValue(DoubleRangeProperty, value ?? Interval<double>.EmptySet); }
+        public static readonly DependencyProperty DoubleRangeProperty = DependencyProperty.Register("DoubleRange", typeof(Range<double>), typeof(RangeEditor), new PropertyMetadata(Interval<double>.EmptySet));
 
-        public Range<decimal> DecimalRange
-        {
-            get => (Range<decimal>)GetValue(DecimalRangeProperty);
-            set
-            {
-                SetValue(DecimalRangeProperty, value ?? Interval<decimal>.EmptySet);
-                SetUI();
-            }
-        }
-        public static readonly DependencyProperty DecimalRangeProperty = DependencyProperty.Register("DecimalRange", typeof(Range<decimal>), typeof(RangeEditor), new PropertyMetadata(Interval<decimal>.EmptySet, (sender, e) => (sender as RangeEditor).RangeChanged?.Invoke(sender, EventArgs.Empty)));
+        public Range<decimal> DecimalRange { get => (Range<decimal>)GetValue(DecimalRangeProperty); set => SetValue(DecimalRangeProperty, value ?? Interval<decimal>.EmptySet); }
+        public static readonly DependencyProperty DecimalRangeProperty = DependencyProperty.Register("DecimalRange", typeof(Range<decimal>), typeof(RangeEditor), new PropertyMetadata(Interval<decimal>.EmptySet));
 
-        private IntervalType m_rangeType;
-        public IntervalType RangeType
+        public IntervalType RangeType { get => (IntervalType)GetValue(RangeTypeProperty); set => SetValue(RangeTypeProperty, value); }
+        public static readonly DependencyProperty RangeTypeProperty = DependencyProperty.Register("RangeType", typeof(IntervalType), typeof(RangeEditor), new PropertyMetadata(IntervalType.Int));
+
+        public object Range
         {
-            get => m_rangeType;
+            get => RangeType switch
+            {
+                IntervalType.Int => IntRange,
+                IntervalType.Double => DoubleRange,
+                IntervalType.Decimal => DecimalRange,
+                _ => (object)null
+            };
             set
             {
-                switch (value)
+                switch (RangeType)
                 {
                     case IntervalType.Int:
-                        {
-                            startSB.ContentType = ContentType.Integer;
-                            startSB.TextValidation = s => s.IsInt().ShowException();
-                            endSB.ContentType = ContentType.Integer;
-                            endSB.TextValidation = s => s.IsInt().ShowException();
-                            switch (m_rangeType)
-                            {
-                                case IntervalType.Double:
-                                    IntRange = DoubleRange.Convert(d => d.TrimToInt());
-                                    break;
-                                case IntervalType.Decimal:
-                                    IntRange = DecimalRange.Convert(m => m.TrimToInt());
-                                    break;
-                            }
-                        }
+                        IntRange = (Range<int>)value ?? Range<int>.EmptySet;
                         break;
                     case IntervalType.Double:
-                        {
-                            startSB.ContentType = ContentType.Decimal;
-                            startSB.TextValidation = s => s.IsDouble().ShowException();
-                            endSB.ContentType = ContentType.Decimal;
-                            endSB.TextValidation = s => s.IsDouble().ShowException();
-                            switch (m_rangeType)
-                            {
-                                case IntervalType.Int:
-                                    DoubleRange = IntRange.Convert<double>();
-                                    break;
-                                case IntervalType.Decimal:
-                                    DoubleRange = DecimalRange.Convert<double>();
-                                    break;
-                            }
-                        }
+                        DoubleRange = (Range<double>)value ?? Range<double>.EmptySet;
                         break;
                     case IntervalType.Decimal:
-                        {
-                            startSB.ContentType = ContentType.Decimal;
-                            startSB.TextValidation = s => s.IsDecimal().ShowException();
-                            endSB.ContentType = ContentType.Decimal;
-                            endSB.TextValidation = s => s.IsDecimal().ShowException();
-                            switch (m_rangeType)
-                            {
-                                case IntervalType.Int:
-                                    DecimalRange = IntRange.Convert<decimal>();
-                                    break;
-                                case IntervalType.Double:
-                                    DecimalRange = DoubleRange.Convert(d => d.TrimToDecimal());
-                                    break;
-                            }
-                        }
+                        DecimalRange = (Range<decimal>)value ?? Range<decimal>.EmptySet;
                         break;
                 }
-                m_rangeType = value;
             }
         }
 
@@ -144,13 +85,13 @@ namespace CoordAnimation
             switch (rangeType)
             {
                 case IntervalType.Int:
-                    if (range is Range<int> intRange) SetValue(IntRangeProperty, intRange);
+                    if (range is Range<int> intRange) IntRange = intRange;
                     break;
                 case IntervalType.Double:
-                    if (range is Range<double> doubleRange) SetValue(DoubleRangeProperty, doubleRange);
+                    if (range is Range<double> doubleRange) DoubleRange = doubleRange;
                     break;
                 case IntervalType.Decimal:
-                    if (range is Range<decimal> decimalRange) SetValue(DecimalRangeProperty, decimalRange);
+                    if (range is Range<decimal> decimalRange) DecimalRange = decimalRange;
                     break;
             }
 
@@ -206,7 +147,7 @@ namespace CoordAnimation
                     break;
             }
         }
-        public void SetInterval()
+        public void SetRange()
         {
             switch (RangeType)
             {
@@ -289,7 +230,8 @@ namespace CoordAnimation
                 IntervalType.Decimal => DecimalRange.ToString(),
                 _ => "∅"
             };
-            if (!text.ContainsAny('[', ']', '⟦', '⟧'))
+            if (text.ContainsAny('[', ']', '⟦', '⟧')) HideOver();
+            else
             {
                 overSB.Text = text;
                 ends.Visibility = Visibility.Collapsed;
@@ -306,11 +248,77 @@ namespace CoordAnimation
 
         #region Events
 
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property == IntRangeProperty || e.Property == DoubleRangeProperty || e.Property == DecimalRangeProperty) RangeChanged?.Invoke(this, EventArgs.Empty);
+            else if (e.Property == RangeTypeProperty)
+            {
+                var oldValue = (IntervalType)e.OldValue;
+                var newValue = (IntervalType)e.NewValue;
+
+                switch (newValue)
+                {
+                    case IntervalType.Int:
+                        {
+                            startSB.ContentType = ContentType.Integer;
+                            startSB.TextValidation = s => s.IsInt().ShowException();
+                            endSB.ContentType = ContentType.Integer;
+                            endSB.TextValidation = s => s.IsInt().ShowException();
+                            switch (oldValue)
+                            {
+                                case IntervalType.Double:
+                                    IntRange = DoubleRange.Convert(d => d.TrimToInt());
+                                    break;
+                                case IntervalType.Decimal:
+                                    IntRange = DecimalRange.Convert(m => m.TrimToInt());
+                                    break;
+                            }
+                        }
+                        break;
+                    case IntervalType.Double:
+                        {
+                            startSB.ContentType = ContentType.Decimal;
+                            startSB.TextValidation = s => s.IsDouble().ShowException();
+                            endSB.ContentType = ContentType.Decimal;
+                            endSB.TextValidation = s => s.IsDouble().ShowException();
+                            switch (oldValue)
+                            {
+                                case IntervalType.Int:
+                                    DoubleRange = IntRange.Convert<double>();
+                                    break;
+                                case IntervalType.Decimal:
+                                    DoubleRange = DecimalRange.Convert<double>();
+                                    break;
+                            }
+                        }
+                        break;
+                    case IntervalType.Decimal:
+                        {
+                            startSB.ContentType = ContentType.Decimal;
+                            startSB.TextValidation = s => s.IsDecimal().ShowException();
+                            endSB.ContentType = ContentType.Decimal;
+                            endSB.TextValidation = s => s.IsDecimal().ShowException();
+                            switch (oldValue)
+                            {
+                                case IntervalType.Int:
+                                    DecimalRange = IntRange.Convert<decimal>();
+                                    break;
+                                case IntervalType.Double:
+                                    DecimalRange = DoubleRange.Convert(d => d.TrimToDecimal());
+                                    break;
+                            }
+                        }
+                        break;
+                }
+            }
+            base.OnPropertyChanged(e);
+        }
+
         private void StartSB_Desactivated(object sender, EventArgs<IInputElement> e)
         {
             if (EnableUICorrection && !(e.Param1 is RangeEditor || e.Param1 is DependencyObject dependencyObject && dependencyObject.FindParent<RangeEditor>() != null))
             {
-                SetInterval();
+                SetRange();
                 TextBoxDesactivated?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -318,7 +326,7 @@ namespace CoordAnimation
         {
             if (EnableUICorrection && !(e.Param1 is RangeEditor || e.Param1 is DependencyObject dependencyObject && dependencyObject.FindParent<RangeEditor>() != null))
             {
-                SetInterval();
+                SetRange();
                 TextBoxDesactivated?.Invoke(this, EventArgs.Empty);
             }
         }

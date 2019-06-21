@@ -1,12 +1,9 @@
-﻿using BenLib.Framework;
-using BenLib.Standard;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media.Animation;
 
 namespace Coord
 {
@@ -18,227 +15,489 @@ namespace Coord
         public NotifyObjectPropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback) : base(defaultValue, propertyChangedCallback) { }
         public NotifyObjectPropertyMetadata(object defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback) : base(defaultValue, propertyChangedCallback, coerceValueCallback) { }
 
+        public string Description { get; set; }
+        public bool Display { get; set; } = true;
         public bool Register { get; set; }
         public bool Notify { get; set; }
     }
 
-    public abstract class NotifyObject : DependencyObject
+    public abstract class NotifyObject : Freezable
     {
-        private static readonly Dictionary<Type, List<(string Description, DependencyProperty Property)>> m_typesProperties = new Dictionary<Type, List<(string Description, DependencyProperty Property)>>();
-        public IReadOnlyDictionary<DependencyProperty, IKeyFrame[]> AnimationData => m_animationData;
+        private static readonly Dictionary<Type, List<DependencyProperty>> m_typesProperties = new Dictionary<Type, List<DependencyProperty>>();
 
-        public event EventHandler Changed;
+        public new event EventHandler Changed;
         public event EventHandler Destroyed;
 
-        private static long s_generalTime;
-        public static long GeneralTime
-        {
-            get => s_generalTime;
-            set
-            {
-                long old = value;
-                s_generalTime = value;
-                GeneralTimeChanged?.Invoke(null, new PropertyChangedExtendedEventArgs<long>("GeneralTime", old, value));
-            }
-        }
+        public bool IsDestroyed { get; private set; }
 
-        public static event PropertyChangedExtendedEventHandler<long> GeneralTimeChanged;
+        public IEnumerable<DependencyProperty> Properties => GetProperties(GetType());
+        public IEnumerable<DependencyProperty> AllProperties => GetAllProperties(GetType());
 
-        //public long Time { get => (long)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
-        //public static readonly DependencyProperty TimeProperty = CreateProperty<long>(true, true, "Time", typeof(NotifyObject), (d, e) => (d as NotifyObject).TimeChanged?.Invoke(d, new PropertyChangedExtendedEventArgs<long>("Time", (long)e.OldValue, (long)e.NewValue)));
-        //public event PropertyChangedExtendedEventHandler<long> TimeChanged;
+        public IEnumerable<(DependencyProperty Property, NotifyObjectPropertyMetadata Metadata)> PropertiesWithMetadata => GetPropertiesWithMetadata(GetType());
+        public IEnumerable<(DependencyProperty Property, NotifyObjectPropertyMetadata Metadata)> AllPropertiesWithMetadata => GetAllPropertiesWithMetadata(GetType());
 
-        private readonly Dictionary<DependencyProperty, IKeyFrame[]> m_animationData = new Dictionary<DependencyProperty, IKeyFrame[]>();
+        public IEnumerable<(DependencyProperty Property, NotifyObjectPropertyMetadata Metadata)> DisplayableProperties => PropertiesWithMetadata.Where(p => p.Metadata.Display);
+        public IEnumerable<(DependencyProperty Property, NotifyObjectPropertyMetadata Metadata)> AllDisplayableProperties => AllPropertiesWithMetadata.Where(p => p.Metadata.Display);
 
-        public void AddKeyFrame<T>(DependencyProperty dependencyProperty, AbsoluteKeyFrame<T> keyFrame)
-        {
-            if (m_animationData.TryGetValue(dependencyProperty, out var keyFrames)) m_animationData[dependencyProperty] = Animating.ResolveKeyTimes(((AbsoluteKeyFrame<T>[])keyFrames).Append(keyFrame), Duration.Forever, out var _);
-            else
-            {
-                m_animationData.Add(dependencyProperty, new[] { keyFrame });
-                GeneralTimeChanged += (sender, e) => { foreach (var kvp in m_animationData) SetValue(kvp.Key, AbsoluteKeyFrame<T>.GetValue(GeneralTime, (AbsoluteKeyFrame<T>[])kvp.Value)); };
-            }
-        }
+        public static IEnumerable<DependencyProperty> GetProperties(Type type) => m_typesProperties.TryGetValue(type, out var properties) ? properties : Enumerable.Empty<DependencyProperty>();
+        public static IEnumerable<DependencyProperty> GetAllProperties(Type type) => type.BaseType == typeof(DependencyObject) ? GetProperties(type) : GetProperties(type).Concat(GetAllProperties(type.BaseType));
 
-        public IEnumerable<(string Description, DependencyProperty Property)> Properties => GetProperties(GetType());
-        public IEnumerable<(string Description, DependencyProperty Property)> AllProperties => GetAllProperties(GetType());
-
-        //protected NotifyObject() => GeneralTimeChanged += (sender, e) => Time = e.NewValue;
-
-        public static IEnumerable<(string Description, DependencyProperty Property)> GetProperties(Type type) => m_typesProperties.TryGetValue(type, out var properties) ? properties : Enumerable.Empty<(string Description, DependencyProperty Property)>();
-        public static IEnumerable<(string Description, DependencyProperty Property)> GetAllProperties(Type type) => type.BaseType == typeof(DependencyObject) ? GetProperties(type) : GetProperties(type).Concat(GetAllProperties(type.BaseType));
+        public static IEnumerable<(DependencyProperty Property, NotifyObjectPropertyMetadata Metadata)> GetPropertiesWithMetadata(Type type) => GetProperties(type).Select(dp => (dp, (NotifyObjectPropertyMetadata)dp.GetMetadata(type)));
+        public static IEnumerable<(DependencyProperty Property, NotifyObjectPropertyMetadata Metadata)> GetAllPropertiesWithMetadata(Type type) => GetAllProperties(type).Select(dp => (dp, (NotifyObjectPropertyMetadata)dp.GetMetadata(type)));
 
         public void Destroy()
         {
-            OnDestroyed();
-            Destroyed?.Invoke(this, EventArgs.Empty);
+            if (!IsDestroyed)
+            {
+                IsDestroyed = true;
+                Changed = null;
+                OnDestroyed();
+                foreach (var property in AllProperties) SetValue(property, property.DefaultMetadata.DefaultValue);
+                Destroyed?.Invoke(this, EventArgs.Empty);
+            }
         }
         public void NotifyChanged()
         {
-            OnChanged();
-            Changed?.Invoke(this, EventArgs.Empty);
+            if (!IsDestroyed)
+            {
+                OnChanged();
+                Changed?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property.GetMetadata(this) is NotifyObjectPropertyMetadata metadata)
+            var metadata = e.Property.GetMetadata(this);
+            if (metadata is NotifyObjectPropertyMetadata notifyObjectPropertyMetadata)
             {
-                if (metadata.Register)
+                if (notifyObjectPropertyMetadata.Register)
                 {
                     UnRegister(e.OldValue);
                     Register(e.NewValue);
                 }
-                if (metadata.Notify) NotifyChanged();
+                if (notifyObjectPropertyMetadata.Notify) NotifyChanged();
             }
-            base.OnPropertyChanged(e);
+            metadata?.PropertyChangedCallback?.Invoke(this, e);
+            //base.OnPropertyChanged(e);
         }
 
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType)
+        protected static void OverrideDefaultValue<TOwner, TProperty>(DependencyProperty property, TProperty value) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(default(T)) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
-            return dp;
-        }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, T defaultValue)
-        {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
-            return dp;
-        }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, PropertyChangedCallback propertyChangedCallback)
-        {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
-            return dp;
-        }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback)
-        {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
-            return dp;
-        }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback)
-        {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
-            return dp;
+            var type = typeof(TOwner);
+            var metadata = (NotifyObjectPropertyMetadata)property.GetMetadata(type);
+            property.OverrideMetadata(type, new NotifyObjectPropertyMetadata(value, metadata.PropertyChangedCallback, metadata.CoerceValueCallback) { Register = metadata.Register, Notify = metadata.Notify, Display = metadata.Display, Description = metadata.Description });
         }
 
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(default(T)) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, T defaultValue, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((propertyName, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (propertyName, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
 
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(default(T)) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, T defaultValue)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, PropertyChangedCallback propertyChangedCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify });
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
 
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(default(T)) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, T defaultValue, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
-        protected static DependencyProperty CreateProperty<T>(bool register, bool notify, string propertyName, string description, Type ownerType, T defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback)
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback) where TOwner : NotifyObject
         {
-            var dp = DependencyProperty.Register(propertyName, typeof(T), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify }, validateValueCallback);
-            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add((description, dp));
-            else m_typesProperties.Add(ownerType, new List<(string Description, DependencyProperty Property)> { (description, dp) });
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
             return dp;
         }
 
-        private void DestroyHandler(object sender, EventArgs e) => Destroy();
-        private void ChangedHandler(object sender, EventArgs e) => NotifyChanged();
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+
+        /*protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = propertyName });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = propertyName }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = description });
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }
+        protected static DependencyProperty CreateAttachedProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback) where TOwner : NotifyObject
+        {
+            var ownerType = typeof(TOwner);
+            var dp = DependencyProperty.RegisterAttached(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = description }, validateValueCallback);
+
+            if (m_typesProperties.TryGetValue(ownerType, out var properties)) properties.Add(dp);
+            else m_typesProperties.Add(ownerType, new List<DependencyProperty> { dp });
+
+            return dp;
+        }*/
+
+        protected void DestroyHandler(object sender, EventArgs e) => Destroy();
+        protected void ChangedHandler(object sender, EventArgs e) => NotifyChanged();
 
         protected virtual void Register(object obj)
         {
@@ -249,11 +508,10 @@ namespace Coord
                     notifyObject.Destroyed += DestroyHandler;
                     notifyObject.Changed += ChangedHandler;
                 }
+                else if (obj is Freezable freezable && !freezable.IsFrozen) freezable.Changed += ChangedHandler;
                 if (obj is INotifyPropertyChanged notifyPropertyChanged) notifyPropertyChanged.PropertyChanged += ChangedHandler;
                 if (obj is INotifyCollectionChanged notifyCollectionChanged) notifyCollectionChanged.CollectionChanged += ChangedHandler;
                 if (obj is INotifyItemChanged notifyItemChanged) notifyItemChanged.ItemChanged += ChangedHandler;
-                if (obj is Freezable freezable && !freezable.IsFrozen) freezable.Changed += ChangedHandler;
-
             }
         }
         protected virtual void UnRegister(object obj)
@@ -265,15 +523,15 @@ namespace Coord
                     notifyObject.Destroyed -= DestroyHandler;
                     notifyObject.Changed -= ChangedHandler;
                 }
+                else if (obj is Freezable freezable && !freezable.IsFrozen) freezable.Changed -= ChangedHandler;
                 if (obj is INotifyPropertyChanged notifyPropertyChanged) notifyPropertyChanged.PropertyChanged -= ChangedHandler;
                 if (obj is INotifyCollectionChanged notifyCollectionChanged) notifyCollectionChanged.CollectionChanged -= ChangedHandler;
                 if (obj is INotifyItemChanged notifyItemChanged) notifyItemChanged.ItemChanged -= ChangedHandler;
-                if (obj is Freezable freezable && !freezable.IsFrozen) freezable.Changed -= ChangedHandler;
             }
         }
 
         protected virtual void OnDestroyed() { }
-        protected virtual void OnChanged() { }
+        protected new virtual void OnChanged() { }
     }
 
     public class NotifyObjectTuple
@@ -286,63 +544,63 @@ namespace Coord
 
     public class NotifyObjectTuple<T1, T2> : NotifyObject
     {
+        protected override Freezable CreateInstanceCore() => new NotifyObjectTuple<T1, T2>();
+
         public T1 Item1 { get => (T1)GetValue(Item1Property); set => SetValue(Item1Property, value); }
-        public static readonly DependencyProperty Item1Property = CreateProperty<T1>(true, true, "Item1", typeof(NotifyObjectTuple<T1, T2>));
+        public static readonly DependencyProperty Item1Property = CreateProperty<NotifyObjectTuple<T1, T2>, T1>(true, true, true, "Item1");
 
         public T2 Item2 { get => (T2)GetValue(Item2Property); set => SetValue(Item2Property, value); }
-        public static readonly DependencyProperty Item2Property = CreateProperty<T2>(true, true, "Item2", typeof(NotifyObjectTuple<T1, T2>));
+        public static readonly DependencyProperty Item2Property = CreateProperty<NotifyObjectTuple<T1, T2>, T2>(true, true, true, "Item2");
     }
 
     public class NotifyObjectTuple<T1, T2, T3> : NotifyObject
     {
+        protected override Freezable CreateInstanceCore() => new NotifyObjectTuple<T1, T2, T3>();
+
         public T1 Item1 { get => (T1)GetValue(Item1Property); set => SetValue(Item1Property, value); }
-        public static readonly DependencyProperty Item1Property = CreateProperty<T1>(true, true, "Item1", typeof(NotifyObjectTuple<T1, T2, T3>));
+        public static readonly DependencyProperty Item1Property = CreateProperty<NotifyObjectTuple<T1, T2, T3>, T1>(true, true, true, "Item1");
 
         public T2 Item2 { get => (T2)GetValue(Item2Property); set => SetValue(Item2Property, value); }
-        public static readonly DependencyProperty Item2Property = CreateProperty<T2>(true, true, "Item2", typeof(NotifyObjectTuple<T1, T2, T3>));
+        public static readonly DependencyProperty Item2Property = CreateProperty<NotifyObjectTuple<T1, T2, T3>, T2>(true, true, true, "Item2");
 
         public T3 Item3 { get => (T3)GetValue(Item3Property); set => SetValue(Item3Property, value); }
-        public static readonly DependencyProperty Item3Property = CreateProperty<T3>(true, true, "Item3", typeof(NotifyObjectTuple<T1, T2, T3>));
+        public static readonly DependencyProperty Item3Property = CreateProperty<NotifyObjectTuple<T1, T2, T3>, T3>(true, true, true, "Item3");
     }
 
     public class NotifyObjectTuple<T1, T2, T3, T4> : NotifyObject
     {
+        protected override Freezable CreateInstanceCore() => new NotifyObjectTuple<T1, T2, T3, T4>();
+
         public T1 Item1 { get => (T1)GetValue(Item1Property); set => SetValue(Item1Property, value); }
-        public static readonly DependencyProperty Item1Property = CreateProperty<T1>(true, true, "Item1", typeof(NotifyObjectTuple<T1, T2, T3, T4>));
+        public static readonly DependencyProperty Item1Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4>, T1>(true, true, true, "Item1");
 
         public T2 Item2 { get => (T2)GetValue(Item2Property); set => SetValue(Item2Property, value); }
-        public static readonly DependencyProperty Item2Property = CreateProperty<T2>(true, true, "Item2", typeof(NotifyObjectTuple<T1, T2, T3, T4>));
+        public static readonly DependencyProperty Item2Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4>, T2>(true, true, true, "Item2");
 
         public T3 Item3 { get => (T3)GetValue(Item3Property); set => SetValue(Item3Property, value); }
-        public static readonly DependencyProperty Item3Property = CreateProperty<T3>(true, true, "Item3", typeof(NotifyObjectTuple<T1, T2, T3, T4>));
+        public static readonly DependencyProperty Item3Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4>, T3>(true, true, true, "Item3");
 
         public T4 Item4 { get => (T4)GetValue(Item4Property); set => SetValue(Item4Property, value); }
-        public static readonly DependencyProperty Item4Property = CreateProperty<T4>(true, true, "Item4", typeof(NotifyObjectTuple<T1, T2, T3, T4>));
+        public static readonly DependencyProperty Item4Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4>, T4>(true, true, true, "Item4");
     }
 
     public class NotifyObjectTuple<T1, T2, T3, T4, T5> : NotifyObject
     {
+        protected override Freezable CreateInstanceCore() => new NotifyObjectTuple<T1, T2, T3, T4, T5>();
+
         public T1 Item1 { get => (T1)GetValue(Item1Property); set => SetValue(Item1Property, value); }
-        public static readonly DependencyProperty Item1Property = CreateProperty<T1>(true, true, "Item1", typeof(NotifyObjectTuple<T1, T2, T3, T4, T5>));
+        public static readonly DependencyProperty Item1Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4, T5>, T1>(true, true, true, "Item1");
 
         public T2 Item2 { get => (T2)GetValue(Item2Property); set => SetValue(Item2Property, value); }
-        public static readonly DependencyProperty Item2Property = CreateProperty<T2>(true, true, "Item2", typeof(NotifyObjectTuple<T1, T2, T3, T4, T5>));
+        public static readonly DependencyProperty Item2Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4, T5>, T2>(true, true, true, "Item2");
 
         public T3 Item3 { get => (T3)GetValue(Item3Property); set => SetValue(Item3Property, value); }
-        public static readonly DependencyProperty Item3Property = CreateProperty<T3>(true, true, "Item3", typeof(NotifyObjectTuple<T1, T2, T3, T4, T5>));
+        public static readonly DependencyProperty Item3Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4, T5>, T3>(true, true, true, "Item3");
 
         public T4 Item4 { get => (T4)GetValue(Item4Property); set => SetValue(Item4Property, value); }
-        public static readonly DependencyProperty Item4Property = CreateProperty<T4>(true, true, "Item4", typeof(NotifyObjectTuple<T1, T2, T3, T4, T5>));
+        public static readonly DependencyProperty Item4Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4, T5>, T4>(true, true, true, "Item4");
 
         public T5 Item5 { get => (T5)GetValue(Item5Property); set => SetValue(Item5Property, value); }
-        public static readonly DependencyProperty Item5Property = CreateProperty<T5>(true, true, "Item5", typeof(NotifyObjectTuple<T1, T2, T3, T4, T5>));
-    }
-
-    public interface ICoordEditable { IEnumerable<(string Description, DependencyProperty Property)> Properties { get; } }
-    public interface ICoordSelectable
-    {
-        string Type { get; }
-        IEnumerable<string> Types { get; }
-        ICoordEditable GetObject(string type);
+        public static readonly DependencyProperty Item5Property = CreateProperty<NotifyObjectTuple<T1, T2, T3, T4, T5>, T5>(true, true, true, "Item5");
     }
 }

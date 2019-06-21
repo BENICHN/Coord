@@ -11,17 +11,19 @@ namespace Coord
     /// </summary>
     public class TranslateAlongPathCharacterEffect : CharacterEffect
     {
+        protected override Freezable CreateInstanceCore() => new TranslateAlongPathCharacterEffect();
+
         /// <summary>
         /// <see cref="PathGeometry"/> sur lequel translater les <see cref="Character"/> de la sous-collection
         /// </summary>
         public PathGeometry PathGeometry { get => (PathGeometry)GetValue(PathGeometryProperty); set => SetValue(PathGeometryProperty, value); }
-        public static readonly DependencyProperty PathGeometryProperty = CreateProperty<PathGeometry>(true, true, "PathGeometry", typeof(TranslateAlongPathCharacterEffect));
+        public static readonly DependencyProperty PathGeometryProperty = CreateProperty<TranslateAlongPathCharacterEffect, PathGeometry>(true, true, true, "PathGeometry");
 
         /// <summary>
         /// Méthode permettant d'obtenir le vecteur de translation à partir d'un point de <see cref="Geometry"/>
         /// </summary>
         public Func<Point, Vector> Translation { get => (Func<Point, Vector>)GetValue(TranslationProperty); set => SetValue(TranslationProperty, value); }
-        public static readonly DependencyProperty TranslationProperty = CreateProperty<Func<Point, Vector>>(true, true, "Translation", typeof(TranslateAlongPathCharacterEffect));
+        public static readonly DependencyProperty TranslationProperty = CreateProperty<TranslateAlongPathCharacterEffect, Func<Point, Vector>>(true, true, true, "Translation");
 
         /// <summary>
         /// Applique l'effet à une collection de <see cref="Character"/>

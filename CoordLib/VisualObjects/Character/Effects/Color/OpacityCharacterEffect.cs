@@ -5,24 +5,15 @@ using System.Windows;
 
 namespace Coord
 {
-    public class OpacityCharacterEffect : CharacterEffect, ICoordEditable
+    public class OpacityCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("FillOpacity", FillOpacityProperty);
-                yield return ("StrokeOpacity", StrokeOpacityProperty);
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new OpacityCharacterEffect();
 
         public double FillOpacity { get => (double)GetValue(FillOpacityProperty); set => SetValue(FillOpacityProperty, value); }
-        public static readonly DependencyProperty FillOpacityProperty = CreateProperty<double>(true, true, "FillOpacity", typeof(OpacityCharacterEffect));
+        public static readonly DependencyProperty FillOpacityProperty = CreateProperty<OpacityCharacterEffect, double>(true, true, true, "FillOpacity");
 
         public double StrokeOpacity { get => (double)GetValue(StrokeOpacityProperty); set => SetValue(StrokeOpacityProperty, value); }
-        public static readonly DependencyProperty StrokeOpacityProperty = CreateProperty<double>(true, true, "StrokeOpacity", typeof(OpacityCharacterEffect));
+        public static readonly DependencyProperty StrokeOpacityProperty = CreateProperty<OpacityCharacterEffect, double>(true, true, true, "StrokeOpacity");
 
         protected override void ApplyCore(IReadOnlyCollection<Character> characters, Interval<int> interval, in ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => characters.SubCollection(interval, true).ForEach((character, i) => ApplyOn(character, FillOpacity, StrokeOpacity, EasedProgress.Get(i, RealLength)));
 

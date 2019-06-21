@@ -10,6 +10,8 @@ namespace Coord
     /// </summary>
     public class PolygonVisualObject : VisualObject
     {
+        protected override Freezable CreateInstanceCore() => new PolygonVisualObject();
+
         public override string Type => Definition switch
         {
             PointsPolygonDefinition _ => "PointsPolygon",
@@ -21,7 +23,7 @@ namespace Coord
         /// Détermine les propriétés fondamentales de ce <see cref="PolygonVisualObject"/>
         /// </summary>
         public PolygonDefinition Definition { get => (PolygonDefinition)GetValue(DefinitionProperty); set => SetValue(DefinitionProperty, value); }
-        public static readonly DependencyProperty DefinitionProperty = CreateProperty<PolygonDefinition>(true, true, "Definition", typeof(PolygonVisualObject));
+        public static readonly DependencyProperty DefinitionProperty = CreateProperty<PolygonVisualObject, PolygonDefinition>(true, true, true, "Definition");
 
         protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => GeometryHelper.GetCurve(Definition.InPoints.Select(pointVisualObject => coordinatesSystemManager.ComputeOutCoordinates(pointVisualObject)).ToArray(), true, false).ToCharacters(Fill, Stroke).ToArray();
     }

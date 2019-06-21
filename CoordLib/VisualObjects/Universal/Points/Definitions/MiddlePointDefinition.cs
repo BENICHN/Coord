@@ -1,34 +1,25 @@
-﻿using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 
 namespace Coord
 {
     /// <summary>
     /// Détermine le milieu d'un segment défini par deux <see cref="PointVisualObject"/>
     /// </summary>
-    public class MiddlePointDefinition : PointDefinition, ICoordEditable
+    public class MiddlePointDefinition : PointDefinition
     {
-        public override string Type => "MiddlePointDefinition";
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("PointA", PointAProperty);
-                yield return ("PointB", PointBProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new MiddlePointDefinition();
 
         /// <summary>
         /// Première extrémité du segment
         /// </summary>
         public PointVisualObject PointA { get => (PointVisualObject)GetValue(PointAProperty); set => SetValue(PointAProperty, value); }
-        public static readonly DependencyProperty PointAProperty = CreateProperty<PointVisualObject>(true, true, "PointA", typeof(MiddlePointDefinition));
+        public static readonly DependencyProperty PointAProperty = CreateProperty<MiddlePointDefinition, PointVisualObject>(true, true, true, "PointA");
 
         /// <summary>
         /// Seconde extrémité du segment
         /// </summary>
         public PointVisualObject PointB { get => (PointVisualObject)GetValue(PointBProperty); set => SetValue(PointBProperty, value); }
-        public static readonly DependencyProperty PointBProperty = CreateProperty<PointVisualObject>(true, true, "PointB", typeof(MiddlePointDefinition));
+        public static readonly DependencyProperty PointBProperty = CreateProperty<MiddlePointDefinition, PointVisualObject>(true, true, true, "PointB");
 
         protected override void OnChanged()
         {

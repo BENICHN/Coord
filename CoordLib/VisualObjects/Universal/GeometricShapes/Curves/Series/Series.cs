@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Collections.Generic;
+using System.Windows;
 
 namespace Coord
 {
@@ -12,6 +13,6 @@ namespace Coord
         /// </summary>
         /// <param name="coordinatesSystemManager">Système de coordonnées du <see cref="Plane"/></param>
         /// <returns>Coordonnées à l'écran des points de cette <see cref="Series"/></returns>
-        public abstract Point[] GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager);
+        public abstract IEnumerable<Point> GetOutPoints(ReadOnlyCoordinatesSystemManager coordinatesSystemManager);
     }
 }

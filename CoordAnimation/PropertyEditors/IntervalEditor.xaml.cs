@@ -1,5 +1,7 @@
 ﻿using BenLib.Standard;
 using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -23,49 +25,45 @@ namespace CoordAnimation
 
         public event EventHandler IntervalChanged;
 
-        public Interval<int> IntInterval
-        {
-            get => (Interval<int>)GetValue(IntIntervalProperty);
-            set
-            {
-                SetValue(IntIntervalProperty, value);
-                SetUI();
-            }
-        }
+        public Interval<int> IntInterval { get => (Interval<int>)GetValue(IntIntervalProperty); set => SetValue(IntIntervalProperty, value); }
         public static readonly DependencyProperty IntIntervalProperty = DependencyProperty.Register("IntInterval", typeof(Interval<int>), typeof(IntervalEditor), new PropertyMetadata(Interval<int>.EmptySet, (sender, e) => (sender as IntervalEditor).IntervalChanged?.Invoke(sender, EventArgs.Empty)));
 
-        public Interval<double> DoubleInterval
-        {
-            get => (Interval<double>)GetValue(DoubleIntervalProperty);
-            set
-            {
-                SetValue(DoubleIntervalProperty, value);
-                SetUI();
-            }
-        }
+        public Interval<double> DoubleInterval { get => (Interval<double>)GetValue(DoubleIntervalProperty); set => SetValue(DoubleIntervalProperty, value); }
         public static readonly DependencyProperty DoubleIntervalProperty = DependencyProperty.Register("DoubleInterval", typeof(Interval<double>), typeof(IntervalEditor), new PropertyMetadata(Interval<double>.EmptySet, (sender, e) => (sender as IntervalEditor).IntervalChanged?.Invoke(sender, EventArgs.Empty)));
 
-        public Interval<decimal> DecimalInterval
-        {
-            get => (Interval<decimal>)GetValue(DecimalIntervalProperty);
-            set
-            {
-                SetValue(DecimalIntervalProperty, value);
-                SetUI();
-            }
-        }
+        public Interval<decimal> DecimalInterval { get => (Interval<decimal>)GetValue(DecimalIntervalProperty); set => SetValue(DecimalIntervalProperty, value); }
         public static readonly DependencyProperty DecimalIntervalProperty = DependencyProperty.Register("DecimalInterval", typeof(Interval<decimal>), typeof(IntervalEditor), new PropertyMetadata(Interval<decimal>.EmptySet, (sender, e) => (sender as IntervalEditor).IntervalChanged?.Invoke(sender, EventArgs.Empty)));
 
-        private IntervalType m_rangeType;
-        public IntervalType IntervalType
+        public object Interval
         {
-            get => m_rangeType;
+            get => IntervalType switch
+            {
+                IntervalType.Int => IntInterval,
+                IntervalType.Double => DoubleInterval,
+                IntervalType.Decimal => DecimalInterval,
+                _ => (object)null
+            };
             set
             {
-                m_rangeType = value;
-                foreach (var rangeEditor in ranges.Children.OfType<RangeEditor>()) rangeEditor.RangeType = value;
+                switch (IntervalType)
+                {
+                    case IntervalType.Int:
+                        IntInterval = (Interval<int>)value ?? Interval<int>.EmptySet;
+                        break;
+                    case IntervalType.Double:
+                        DoubleInterval = (Interval<double>)value ?? Interval<double>.EmptySet;
+                        break;
+                    case IntervalType.Decimal:
+                        DecimalInterval = (Interval<decimal>)value ?? Interval<decimal>.EmptySet;
+                        break;
+                }
             }
         }
+
+        public IntervalType IntervalType { get => (IntervalType)GetValue(IntervalTypeProperty); set => SetValue(IntervalTypeProperty, value); }
+        public static readonly DependencyProperty IntervalTypeProperty = DependencyProperty.Register("IntervalType", typeof(IntervalType), typeof(IntervalEditor), new PropertyMetadata(IntervalType.Int));
+
+        private readonly ObservableCollection<RangeEditorConteiner> m_rangeEditors;
 
         #endregion
 
@@ -75,6 +73,17 @@ namespace CoordAnimation
         public IntervalEditor(IntervalType intervalType, object interval)
         {
             InitializeComponent();
+
+            m_rangeEditors = new ObservableCollection<RangeEditorConteiner>();
+            m_rangeEditors.CollectionChanged += (sender, e) =>
+            {
+                if (m_rangeEditors.Count > 0)
+                {
+                    for (int i = 0; i < m_rangeEditors.Count - 1; i++) m_rangeEditors[i].UnionVisibility = Visibility.Visible;
+                    m_rangeEditors.Last().UnionVisibility = Visibility.Collapsed;
+                }
+            };
+            its.ItemsSource = m_rangeEditors;
 
             IntervalType = intervalType;
             switch (intervalType)
@@ -94,52 +103,55 @@ namespace CoordAnimation
             SetUI();
         }
 
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property == IntervalTypeProperty)
+            {
+                var newValue = (IntervalType)e.NewValue;
+                foreach (var rangeEditor in m_rangeEditors) rangeEditor.RangeEditor.RangeType = newValue;
+            }
+            base.OnPropertyChanged(e);
+        }
+
         #endregion
 
         #region Méthodes
 
         private void SetInterval()
         {
-            foreach (var range in ranges.Children.OfType<RangeEditor>()) range.SetInterval();
+            foreach (var range in m_rangeEditors) range.RangeEditor.SetRange();
             switch (IntervalType)
             {
                 case IntervalType.Int:
-                    IntInterval = ranges.Children.OfType<RangeEditor>().Union(rE => rE.IntRange);
+                    IntInterval = m_rangeEditors.Union(rE => rE.RangeEditor.IntRange);
                     break;
                 case IntervalType.Double:
-                    DoubleInterval = ranges.Children.OfType<RangeEditor>().Union(rE => rE.DoubleRange);
+                    DoubleInterval = m_rangeEditors.Union(rE => rE.RangeEditor.DoubleRange);
                     break;
                 case IntervalType.Decimal:
-                    DecimalInterval = ranges.Children.OfType<RangeEditor>().Union(rE => rE.DecimalRange);
+                    DecimalInterval = m_rangeEditors.Union(rE => rE.RangeEditor.DecimalRange);
                     break;
             }
         }
 
         public void SetUI()
         {
-            ranges.Children.Clear();
-            switch (IntervalType)
+            object[] rs = IntervalType switch
             {
-                case IntervalType.Int:
-                    if (!IntInterval.IsNullOrEmpty()) foreach (var intRange in IntInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, intRange);
-                    break;
-                case IntervalType.Double:
-                    if (!DoubleInterval.IsNullOrEmpty()) foreach (var doubleRange in DoubleInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, doubleRange);
-                    break;
-                case IntervalType.Decimal:
-                    if (!DecimalInterval.IsNullOrEmpty()) foreach (var decimalRange in DecimalInterval.Ranges) InsertNewRange(ranges.Children.Count, false, true, decimalRange);
-                    break;
-            }
+                IntervalType.Int => IntInterval?.Ranges.ToArray() ?? Array.Empty<object>(),
+                IntervalType.Double => DoubleInterval?.Ranges.ToArray() ?? Array.Empty<object>(),
+                IntervalType.Decimal => DecimalInterval?.Ranges.ToArray() ?? Array.Empty<object>(),
+                _ => Array.Empty<object>()
+            };
 
-            //if (ranges.Children.Count == 0) InsertNewRange(0, true, true);
-            //ranges.Children.RemoveAt(ranges.Children.Count - 1);
+            while (rs.Length > m_rangeEditors.Count) InsertNewRange(m_rangeEditors.Count, true);
+            while (rs.Length < m_rangeEditors.Count) m_rangeEditors.RemoveAt(m_rangeEditors.Count - 1);
+
+            for (int i = 0; i < rs.Length; i++) m_rangeEditors[i].RangeEditor.Range = rs[i];
         }
 
-        private Task<RangeEditor> InsertNewRange(int index, bool left, bool showOver, object range = null)
+        private RangeEditor InsertNewRange(int index, bool showOver, object range = null)
         {
-            var tcs = new TaskCompletionSource<RangeEditor>();
-
-            var textBlock = new TextBlock { Text = " ∪ ", VerticalAlignment = VerticalAlignment.Center };
             var rangeEditor = new RangeEditor(IntervalType, range, showOver);
 
             rangeEditor.RightTabOverflow += RangeEditor_RightTabOverflow;
@@ -147,20 +159,23 @@ namespace CoordAnimation
             rangeEditor.RemoveRequested += RangeEditor_RemoveRequested;
             rangeEditor.TextBoxDesactivated += RangeEditor_TextBoxDesactivated;
 
-            if (ranges.Children.Count == 0) ranges.Children.Add(rangeEditor);
-            else
-            {
-                if (left)
-                {
-                    ranges.Children.Insert(index, textBlock);
-                    ranges.Children.Insert(index, rangeEditor);
-                }
-                else
-                {
-                    ranges.Children.Insert(index, rangeEditor);
-                    ranges.Children.Insert(index, textBlock);
-                }
-            }
+            m_rangeEditors.Insert(index, new RangeEditorConteiner(rangeEditor));
+
+            return rangeEditor;
+        }
+
+        private Task<RangeEditor> InsertNewRangeAsync(int index, bool showOver, object range = null)
+        {
+            var tcs = new TaskCompletionSource<RangeEditor>();
+
+            var rangeEditor = new RangeEditor(IntervalType, range, showOver);
+
+            rangeEditor.RightTabOverflow += RangeEditor_RightTabOverflow;
+            rangeEditor.LeftTabOverflow += RangeEditor_LeftTabOverflow;
+            rangeEditor.RemoveRequested += RangeEditor_RemoveRequested;
+            rangeEditor.TextBoxDesactivated += RangeEditor_TextBoxDesactivated;
+
+            m_rangeEditors.Insert(index, new RangeEditorConteiner(rangeEditor));
 
             if (rangeEditor.IsLoaded) tcs.TrySetResult(rangeEditor);
             else rangeEditor.Loaded += (sender, e) => tcs.TrySetResult(rangeEditor);
@@ -176,49 +191,63 @@ namespace CoordAnimation
         {
             if (sender is RangeEditor rangeEditor && rangeEditor.DesactivateLeft(rangeEditor))
             {
-                int index = ranges.Children.IndexOf(rangeEditor);
+                int index = m_rangeEditors.IndexOf(rC => rC.RangeEditor == rangeEditor);
                 if (index == 0)
                 {
-                    var range = await InsertNewRange(0, true, false);
+                    var range = await InsertNewRangeAsync(0, false);
                     await range.ActivateRight();
                 }
-                else if (ranges.Children[index - 2] is RangeEditor rE) await rE.ActivateRight();
+                else if (m_rangeEditors[index - 1] is RangeEditorConteiner rE) await rE.RangeEditor.ActivateRight();
             }
         }
         private async void RangeEditor_RightTabOverflow(object sender, EventArgs e)
         {
             if (sender is RangeEditor rangeEditor && rangeEditor.DesactivateRight(rangeEditor))
             {
-                int index = ranges.Children.IndexOf(rangeEditor) + 1;
-                if (index == ranges.Children.Count)
+                int index = m_rangeEditors.IndexOf(rC => rC.RangeEditor == rangeEditor);
+                if (index == m_rangeEditors.Count - 1)
                 {
-                    var range = await InsertNewRange(index, false, false);
+                    var range = await InsertNewRangeAsync(index, false);
                     await range.ActivateLeft();
                 }
-                else if (ranges.Children[index + 1] is RangeEditor rE) await rE.ActivateLeft();
+                else if (m_rangeEditors[index + 1] is RangeEditorConteiner rE) await rE.RangeEditor.ActivateLeft();
             }
         }
 
-        private async void RangeEditor_RemoveRequested(object sender, EventArgs e)
+        private void RangeEditor_RemoveRequested(object sender, EventArgs e)
         {
-            if (ranges.Children.Count == 1)
-            {
-                ranges.Children.Clear();
-                await InsertNewRange(0, false, true);
-            }
+            if (m_rangeEditors.Count == 1) m_rangeEditors[0].RangeEditor.Range = null;
             else if (sender is RangeEditor rangeEditor)
             {
-                int index = ranges.Children.IndexOf(rangeEditor);
-                if (index == 0) ranges.Children.RemoveRange(0, 2);
-                else ranges.Children.RemoveRange(index - 1, 2);
-                if (index < ranges.Children.Count) await ((RangeEditor)ranges.Children[index]).ActivateLeft();
-                else await ((RangeEditor)ranges.Children[index - 2]).ActivateRight();
+                /*int index = */m_rangeEditors.RemoveAt(m_rangeEditors.IndexOf(rC => rC.RangeEditor == rangeEditor));
+                /*if (index < ranges.Children.Count) await ((RangeEditor)ranges.Children[index]).ActivateLeft();
+                else await ((RangeEditor)ranges.Children[index - 2]).ActivateRight();*/
             }
         }
 
         private void RangeEditor_TextBoxDesactivated(object sender, EventArgs e) => SetInterval();
 
         #endregion
+    }
+
+    public class RangeEditorConteiner : INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        public RangeEditorConteiner(RangeEditor rangeEditor) => RangeEditor = rangeEditor;
+        public RangeEditor RangeEditor { get; }
+
+        private Visibility m_unionVisibility = Visibility.Visible;
+        public Visibility UnionVisibility
+        {
+            get => m_unionVisibility;
+            set
+            {
+                m_unionVisibility = value;
+                NotifyPropertyChanged("UnionVisibility");
+            }
+        }
     }
 
     public enum IntervalType { Int, Double, Decimal }

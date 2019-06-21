@@ -7,17 +7,19 @@ namespace Coord
     /// </summary>
     public class CenterPointCircleDefinition : CircleDefinition
     {
+        protected override Freezable CreateInstanceCore() => new CenterPointCircleDefinition();
+
         /// <summary>
         /// Centre du cercle du plan
         /// </summary>
         public new PointVisualObject Center { get => (PointVisualObject)GetValue(CenterProperty); set => SetValue(CenterProperty, value); }
-        public static readonly DependencyProperty CenterProperty = CreateProperty<PointVisualObject>(true, true, "Center", typeof(CenterPointCircleDefinition));
+        public static readonly DependencyProperty CenterProperty = CreateProperty<CenterPointCircleDefinition, PointVisualObject>(true, true, true, "Center");
 
         /// <summary>
         /// Point du cercle du plan
         /// </summary>
         public PointVisualObject Point { get => (PointVisualObject)GetValue(PointProperty); set => SetValue(PointProperty, value); }
-        public static readonly DependencyProperty PointProperty = CreateProperty<PointVisualObject>(true, true, "Point", typeof(CenterPointCircleDefinition));
+        public static readonly DependencyProperty PointProperty = CreateProperty<CenterPointCircleDefinition, PointVisualObject>(true, true, true, "Point");
 
         protected override void OnChanged()
         {

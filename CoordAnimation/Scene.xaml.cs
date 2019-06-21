@@ -23,9 +23,11 @@ namespace CoordAnimation
     /// </summary>
     public partial class Scene : UserControl, INotifyPropertyChanged
     {
+        public Timeline Timeline => timeline;
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; } = new ElementTree { RefreshAtChange = true };
 
+        public bool IsPlaying { get; private set; }
         public WpfObservableRangeCollection<CharacterEffectElement> EffectElements { get; } = new WpfObservableRangeCollection<CharacterEffectElement>();
 
         private Element m_lastSelectedElement;
@@ -43,19 +45,18 @@ namespace CoordAnimation
 
             Plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
             Plane.OverAxesNumbersChanged += Plane_OverAxesNumbersChanged;
-            Plane.Selection.Changed += Selection_Changed;
 
             var cm = TryFindResource("PlaneCM") as ContextMenu;
-            (cm.Items[0] as MenuItem).ItemsSource = App.CharacterEffectTypes.Select(t => new ContextMenuCharacterEffectType(t)).ToArray();
+            (cm.Items[0] as MenuItem).ItemsSource = App.DependencyObjectTypes[typeof(CharacterEffect)].DerivedTypes.AllTreeItems().Select(node => new ContextMenuCharacterEffectType(node.Type)).ToArray();
             Plane.ContextMenu = cm;
+            menuAddVisualObject.ItemsSource = App.DependencyObjectTypes[typeof(VisualObject)].DerivedTypes.AllTreeItems().Where(node => !node.Type.IsAbstract && !node.Type.IsGenericType).Select(node => node.Type).ToArray();
         }
-
-        private void Selection_Changed(object sender, EventArgs e) { if (Plane.Selection.UsageCount == 0) VisualObjectsEditor.Object = Plane.Selection.VisualObjects.FirstOrDefault(); }
 
         private void Plane_OverAxesNumbersChanged(object sender, PropertyChangedExtendedEventArgs<VisualObject> e) => Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            if (e.OldItems != null) { foreach (VisualObject visualObject in e.OldItems) Elements.RemoveAt(Elements.Nodes.IndexOf(node => node is VisualObjectElement visualObjectElement && visualObjectElement.VisualObject == visualObject)); }
             if (e.NewItems != null)
             {
                 foreach (VisualObject visualObject in e.NewItems)
@@ -68,7 +69,7 @@ namespace CoordAnimation
             Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
         }
 
-        private async void UserControl_Loaded(object sender, RoutedEventArgs e)
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             var p = Point(4, 2).Style(FlatBrushes.Alizarin);
             var g = Group(Point(0, 0).Style(FlatBrushes.PeterRiver));
@@ -79,7 +80,9 @@ namespace CoordAnimation
             //var m = new MAF();//.Insert(PositiveReals, PositiveReals, c, default, true, true, 1).Fit(PositiveReals, PositiveReals, c, true, true, 1);
             //VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
             //previewPlane.OverAxesNumbersChanged += (sender, e) => UpdateAxesNumbers();
-            Plane.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
+            //Plane.RenderAtChange = true;
+            //Plane.RenderAtSelectionChange = true;
+            Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
             Plane.VisualObjects.Add(p);
             //VisualObjects.Add(g2);
             Plane.VisualObjects.Add(FunctionCurve(x => x + Sin(PI * x), false).Style(new Pen(FlatBrushes.Nephritis, 3)));
@@ -87,37 +90,42 @@ namespace CoordAnimation
             Plane.VisualObjects.Add(t);
             Plane.VisualObjects.Add(new ELC { Center = new PointVisualObject { Definition = p.Definition, Fill = FlatBrushes.Amethyst, Radius = 15 }, Rank = 5, Stroke = new Pen(FlatBrushes.Pumpkin, 3) });
             Plane.VisualObjects.Add(d);
+            //Plane.VisualObjects.Add(new A());
 
-            c.Definition.AddKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new LinearAbsoluteKeyFrame<double> { FramesCount = 120, Value = 8 });
-            c.Definition.AddKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new EasingAbsoluteKeyFrame<double> { FramesCount = 180, Value = 5, EasingFunction = new CubicEase() });
+            c.Definition.PutKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new LinearAbsoluteKeyFrame<double> { FramesCount = 120, Value = 8 });
+            c.Definition.PutKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new EasingAbsoluteKeyFrame<double> { FramesCount = 180, Value = 5, EasingFunction = new CubicEase() });
 
             //EffectElements.Add(new CharacterEffectElement(new InsertCharacterEffect(), new AnimationData((0, 60), null), t));
             //EffectElements.Add(new CharacterEffectElement(new TranslateCharacterEffect { Vector = new Vector(0, 5), In = true }, new AnimationData((0, 60), null), t));
             //EffectElements.Add(new CharacterEffectElement(new ScaleCharacterEffect(), new AnimationData((0, 80), null), t));
             //EffectElements.Add(new CharacterEffectElement(new SizeCharacterEffect(), new AnimationData((70, 100), null), t));
 
-            var dp1 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Alizarin, new PlanePen(FlatBrushes.Clouds, 3));
-            var dp2 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.PeterRiver, new PlanePen(FlatBrushes.Clouds, 3));
-            var dp3 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Emerald, new PlanePen(FlatBrushes.Clouds, 3));
-            var dp4 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.SunFlower, new PlanePen(FlatBrushes.Clouds, 3));
-            var dp5 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Amethyst, new PlanePen(FlatBrushes.Clouds, 3));
+            var dp1 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Alizarin, new Pen(FlatBrushes.Clouds, 3));
+            var dp2 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.PeterRiver, new Pen(FlatBrushes.Clouds, 3));
+            var dp3 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Emerald, new Pen(FlatBrushes.Clouds, 3));
+            var dp4 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.SunFlower, new Pen(FlatBrushes.Clouds, 3));
+            var dp5 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Amethyst, new Pen(FlatBrushes.Clouds, 3));
             Plane.VisualObjects.Add(Renderer(dp1, dp2, dp3));
             Plane.VisualObjects.Add(Group(dp4, dp5));
-            CompositionTarget.Rendering += (sender, e) =>
+            Plane.RenderAtChange = true;
+            //CompositionTarget.Rendering += (sender, e) => { if (!IsPlaying) Plane.RenderChanged(); };
+            PropertiesAnimation.GeneralTimeChanged += (sender, e) =>
             {
+                Plane.RenderAtChange = false;
                 dp1.Update(1.0 / 60);
                 dp2.Update(1.0 / 60);
                 dp3.Update(1.0 / 60);
                 dp4.Update(1.0 / 60);
                 dp5.Update(1.0 / 60);
                 Plane.RenderChanged();
+                Plane.RenderAtChange = true;
             };
             //CompositionTarget.Rendering += (sender, e) => Plane.RenderChanged();
 
-            await d.Animate();
+            //await d.Animate();
             //BenLib.Framework.ThreadingFramework.SetInterval(() => previewPlane.RenderChanged(), 1000.0 / 60);
             Plane.VisualObjects.Add(c);
-            Plane.VisualObjects.Add(Vector(p, new Vector(2, 5)).Style(new PlanePen(FlatBrushes.PeterRiver, 3)));
+            Plane.VisualObjects.Add(Vector(p, new Vector(2, 5)).Style(new Pen(FlatBrushes.PeterRiver, 3)));
             //Plane.VisualObjects.Add(Group(new GridVisualObject { Primary = true, Secondary = true, SecondaryDensity = 10 }));
 
             //Plane.VisualObjects.CollectionChanged += (sndr, args) => VisualObjectsTreeView.IsEnabled = false;
@@ -133,7 +141,7 @@ namespace CoordAnimation
             //RefreshElements();
         }
 
-        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (Plane.Selection.UsageCount == 0) EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect; }
+        //private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) => EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect;
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
@@ -174,11 +182,44 @@ namespace CoordAnimation
             }
         }
 
-        private void PlayButton_Click(object sender, RoutedEventArgs e) => CompositionTarget.Rendering += (sender, e) =>
+        private void UpdateTime(object sender, EventArgs e)
         {
-            NotifyObject.GeneralTime ++;
+            PropertiesAnimation.GeneralTime++;
             Plane.RenderChanged();
-        };
+        }
+
+        private void VisualObjectsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            var vo = e.NewValue is VisualObjectElement visualObjectElement ? visualObjectElement.VisualObject : null;
+            if (VisualObjectSelector.GetUsageCount(Plane.Selection) == 0) VisualObjectsEditor.Object = vo;
+        }
+
+        private void MenuAddVisualObject_Click(object sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is MenuItem menuItem && menuItem.Header is Type type && Activator.CreateInstance(type) is VisualObject visualObject)
+            {
+                Plane.VisualObjects.Add(visualObject);
+                VisualObjectsEditor.Object = visualObject;
+            }
+        }
+
+        private void MenuGC_Click(object sender, RoutedEventArgs e) => GC.Collect();
+
+        private void MenuPP_Click(object sender, RoutedEventArgs e)
+        {
+            if (IsPlaying)
+            {
+                CompositionTarget.Rendering -= UpdateTime;
+                IsPlaying = false;
+                Plane.RenderAtChange = true;
+            }
+            else
+            {
+                CompositionTarget.Rendering += UpdateTime;
+                IsPlaying = true;
+                Plane.RenderAtChange = false;
+            }
+        }
     }
 
     public struct ContextMenuCharacterEffectType

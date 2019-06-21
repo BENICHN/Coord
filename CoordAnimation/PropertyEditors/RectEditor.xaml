@@ -4,11 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CoordAnimation"
-             mc:Ignorable="d" 
-             d:DesignHeight="100" d:DesignWidth="150">
+             mc:Ignorable="d" Name="this" d:DesignHeight="100" d:DesignWidth="150">
     <Grid>
-        <local:SizeEditor Size="{Binding RectSize, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"/>
+        <local:SizeEditor Size="{Binding RectSize, ElementName=this, Mode=TwoWay}"/>
         <TextBlock Text="●" FontSize="17" Margin="0, 17" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-        <local:PointEditor VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10, 35" Prefix="False" Point="{Binding RectOrigin, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Mode=TwoWay}"/>
+        <local:PointEditor VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10, 35" Prefix="False" Point="{Binding RectOrigin, ElementName=this, Mode=TwoWay}"/>
     </Grid>
 </UserControl>

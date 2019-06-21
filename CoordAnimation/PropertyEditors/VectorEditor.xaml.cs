@@ -15,6 +15,8 @@ namespace CoordAnimation
     /// </summary>
     public partial class VectorEditor : UserControl
     {
+        private bool m_settingText;
+
         public event PropertyChangedExtendedEventHandler<Vector> VectorChanged;
 
         public bool IsPolar
@@ -54,6 +56,9 @@ namespace CoordAnimation
 
         public bool IsRadian { get => AngleUnit.Text == "rad"; set => AngleUnit.Text = value ? "rad" : "°"; }
 
+        public bool Prefix { get => (bool)GetValue(PrefixProperty); set => SetValue(PrefixProperty, value); }
+        public static readonly DependencyProperty PrefixProperty = DependencyProperty.Register("Prefix", typeof(bool), typeof(VectorEditor), new PropertyMetadata(true));
+
         public Vector Vector { get => (Vector)GetValue(VectorProperty); set => SetValue(VectorProperty, value); }
         public static readonly DependencyProperty VectorProperty = DependencyProperty.Register("Vector", typeof(Vector), typeof(VectorEditor));
 
@@ -86,6 +91,7 @@ namespace CoordAnimation
 
         private void SetText(Vector value, bool isPolar)
         {
+            m_settingText = true;
             var (x, y) = (value.X, value.Y);
             if (isPolar)
             {
@@ -99,14 +105,15 @@ namespace CoordAnimation
                 X.Value = x;
                 Y.Value = y;
             }
+            m_settingText = false;
         }
 
         private void SwitchableTextBox_Desactivated(object sender, EventArgs<IInputElement> e)
         {
             if (sender == e.Param1)
             {
-                var vector = Vector;
-                SetText(vector, IsPolar);
+                var point = Vector;
+                SetText(point, IsPolar);
             }
             else if (e.Param1 != X && e.Param1 != Y && e.Param1 != L && e.Param1 != A) Vector = GetVectorFromText();
         }
@@ -156,5 +163,7 @@ namespace CoordAnimation
                     break;
             }
         }
+
+        private void DoubleEditor_ValueChanged(object sender, PropertyChangedExtendedEventArgs<double> e) { if (!m_settingText && !(sender as DoubleEditor).IsActivated) Vector = GetVectorFromText(); }
     }
 }

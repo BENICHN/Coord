@@ -1,22 +1,16 @@
 ﻿using BenLib.Standard;
 using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Coord
 {
-    public class AutoPenCharacterEffect : CharacterEffect, ICoordEditable
+    public class AutoPenCharacterEffect : CharacterEffect
     {
-        IEnumerable<(string Description, DependencyProperty Property)> ICoordEditable.Properties
-        {
-            get
-            {
-                yield return ("Progress", ProgressProperty);
-                yield return ("WithTransforms", WithTransformsProperty);
-            }
-        }
+        protected override Freezable CreateInstanceCore() => new AutoPenCharacterEffect();
 
-        public PlanePen Template { get => (PlanePen)GetValue(TemplateProperty); set => SetValue(TemplateProperty, value); }
-        public static readonly DependencyProperty TemplateProperty = CreateProperty<PlanePen>(true, true, "Template", typeof(AutoPenCharacterEffect));
+        public Pen Template { get => (Pen)GetValue(TemplateProperty); set => SetValue(TemplateProperty, value); }
+        public static readonly DependencyProperty TemplateProperty = CreateProperty<AutoPenCharacterEffect, Pen>(true, true, true, "Template");
 
         protected override void ApplyCore(IReadOnlyCollection<Character> characters, Interval<int> interval, in ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {

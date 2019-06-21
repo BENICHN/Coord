@@ -4,8 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:c="clr-namespace:Coord;assembly=CoordLib"
-             mc:Ignorable="d"
-             Loaded="UserControl_Loaded">
+             mc:Ignorable="d" KeyDown="UserControl_KeyDown">
     <DockPanel>
         <Border Background="{StaticResource VSBackground}" Panel.ZIndex="1" DockPanel.Dock="Top">
             <Grid>
@@ -13,11 +12,12 @@
                     <Button Name="Point" Content="Point" Width="50" Height="50" Click="Button_Click"/>
                     <Button Name="InTex" Content="InTex" Width="50" Height="50" Click="Button_Click"/>
                     <Button Name="Line" Content="Line" Width="50" Height="50" Click="Button_Click"/>
+                    <Button Name="Circle" Content="Circle" Width="50" Height="50" Click="Button_Click"/>
                     <Button Name="MidPoint" Content="Middle" Width="50" Height="50" Click="Button_Click"/>
-                    <Button Name="Manipulation" Content="Manipulation" Width="50" Height="50" Click="Button_Click"/>
+                    <ToggleButton Name="Manipulation" Content="Manipulation" Width="50" Height="50" IsChecked="{Binding EnableCharactersManipulating, ElementName=plane}"/>
                 </DockPanel>
             </Grid>
         </Border>
-        <c:Plane DockPanel.Dock="Top" x:Name="plane" EnableCharactersManipulating="False" EnableSelectionRect="True" EnableSelection="True" EnableCharacterEvents="True" PreviewCharacterMouseDown="Plane_PreviewCharacterMouseDown" PreviewCharacterMouseMove="Plane_PreviewCharacterMouseMove" PreviewCharacterMouseUp="Plane_PreviewCharacterMouseUp"/>
+        <c:Plane DockPanel.Dock="Top" x:Name="plane" EnableCharactersManipulating="False" EnableSelectionRect="True" EnableSelection="True" MouseDown="Plane_MouseDown" MouseMove="Plane_MouseMove" MouseUp="Plane_MouseUp"/>
     </DockPanel>
 </UserControl>

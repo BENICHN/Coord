@@ -15,6 +15,8 @@ namespace CoordAnimation
     /// </summary>
     public partial class PointEditor : UserControl
     {
+        private bool m_settingText;
+
         public event PropertyChangedExtendedEventHandler<Point> PointChanged;
 
         public bool IsPolar
@@ -89,6 +91,7 @@ namespace CoordAnimation
 
         private void SetText(Point value, bool isPolar)
         {
+            m_settingText = true;
             var (x, y) = (value.X, value.Y);
             if (isPolar)
             {
@@ -102,6 +105,7 @@ namespace CoordAnimation
                 X.Value = x;
                 Y.Value = y;
             }
+            m_settingText = false;
         }
 
         private void SwitchableTextBox_Desactivated(object sender, EventArgs<IInputElement> e)
@@ -160,9 +164,6 @@ namespace CoordAnimation
             }
         }
 
-        private void DoubleEditor_ValueChanged(object sender, PropertyChangedExtendedEventArgs<double> e)
-        {
-            if (!(sender as DoubleEditor).IsActivated) Point = GetPointFromText();
-        }
+        private void DoubleEditor_ValueChanged(object sender, PropertyChangedExtendedEventArgs<double> e) { if (!m_settingText && !(sender as DoubleEditor).IsActivated) Point = GetPointFromText(); }
     }
 }
