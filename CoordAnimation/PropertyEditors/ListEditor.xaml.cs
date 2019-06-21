@@ -31,7 +31,8 @@ namespace CoordAnimation
                 ClearProperties();
                 if (e.OldValue is INotifyCollectionChanged oldNotifyCollectionChanged) oldNotifyCollectionChanged.CollectionChanged -= OnCollectionChanged;
                 if (e.NewValue is INotifyCollectionChanged newNotifyCollectionChanged) newNotifyCollectionChanged.CollectionChanged += OnCollectionChanged;
-                if (e.NewValue is IList newList) for (int i = 0; i < newList.Count; i++) await AddEditor(new ListElement(newList, i));
+                try { if (e.NewValue is IList newList) for (int i = 0; i < newList.Count; i++) await AddEditor(new ListElement(newList, i)); }
+                catch (OperationCanceledException) { }
             }
             base.OnPropertyChanged(e);
         }
@@ -81,7 +82,7 @@ namespace CoordAnimation
         }
     }
 
-    public class ListElement : DependencyObject, IPropertyEditorContainer, INotifyPropertyChanged
+    public class ListElement : DependencyObject, IPropertyEditorContainer
     {
         public IList List { get; }
 
@@ -96,7 +97,16 @@ namespace CoordAnimation
             }
         }
 
-        public FrameworkElement Editor { get; }
+        private FrameworkElement m_editor;
+        public FrameworkElement Editor
+        {
+            get => m_editor;
+            set
+            {
+                m_editor = value;
+                NotifyPropertyChanged("Editor");
+            }
+        }
 
         public object Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(object), typeof(ListElement));

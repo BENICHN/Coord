@@ -6,8 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,6 +22,7 @@ namespace CoordAnimation
 {
     public class PropertiesEditorBase : UserControl, IDisposable
     {
+        private CancellationTokenSource m_cts = new CancellationTokenSource();
         public ObservableCollection<DataGridColumn> Columns => Editors.Columns;
 
         public bool IsAnimatable { get => (bool)GetValue(IsAnimatableProperty); set => SetValue(IsAnimatableProperty, value); }
@@ -46,18 +49,33 @@ namespace CoordAnimation
         protected Task AddEditor(IPropertyEditorContainer container) => InsertEditor(Properties.Count, container);
         protected Task InsertEditor(int index, IPropertyEditorContainer container)
         {
+            CancellationTokenRegistration reg = default;
             var tcs = new TaskCompletionSource<object>();
             if (container.Editor != null) Properties.Insert(index, container);
 
             if (container.Editor == null || container.Editor.IsLoaded) tcs.TrySetResult(null);
-            else container.Editor.Loaded += Result_Loaded;
+            else
+            {
+                container.Editor.Loaded += Result_Loaded;
+                reg = m_cts.Token.Register(() =>
+                {
+                    End();
+                    tcs.TrySetCanceled(m_cts.Token);
+                });
+            }
 
             return tcs.Task;
 
             void Result_Loaded(object sender, RoutedEventArgs e)
             {
-                container.Editor.Loaded -= Result_Loaded;
+                End();
                 tcs.TrySetResult(null);
+            }
+
+            void End()
+            {
+                container.Editor.Loaded -= Result_Loaded;
+                reg.Dispose();
             }
         }
 
@@ -69,6 +87,7 @@ namespace CoordAnimation
             var p = properties[index];
             p.Editor.ClearAllBindings();
             if (p.Editor is IDisposable disposable) disposable.Dispose();
+            p.Editor = null;
             properties.RemoveAt(index);
         }
 
@@ -263,14 +282,18 @@ namespace CoordAnimation
 
         protected void ClearProperties()
         {
+            m_cts.Cancel();
+            m_cts = new CancellationTokenSource();
             if (ContainsEditor(CurrentEditor)) CurrentEditor = default;
             var properties = Properties;
             int count;
             while ((count = properties.Count - 1) > -1)
             {
                 var p = properties[count];
-                p.Editor.ClearAllBindings();
-                if (p.Editor is IDisposable disposable) disposable.Dispose();
+                var e = p.Editor;
+                p.Editor = null;
+                e.ClearAllBindings();
+                if (e is IDisposable disposable) disposable.Dispose();
                 properties.RemoveAt(count);
             }
         }
@@ -327,5 +350,5 @@ namespace CoordAnimation
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value;
     }
 
-    public interface IPropertyEditorContainer { FrameworkElement Editor { get; } }
+    public interface IPropertyEditorContainer : INotifyPropertyChanged { FrameworkElement Editor { get; set; } }
 }

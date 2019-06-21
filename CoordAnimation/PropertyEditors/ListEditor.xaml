@@ -15,7 +15,7 @@
         <DataGridTemplateColumn Width="*">
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate DataType="{x:Type local:ListElement}">
-                    <ContentPresenter Content="{Binding Editor, Mode=OneTime}"/>
+                    <ContentPresenter Content="{Binding Editor}"/>
                 </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>

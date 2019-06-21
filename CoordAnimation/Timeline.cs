@@ -106,7 +106,7 @@ namespace CoordAnimation
 
         protected override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest)
         {
-            if (clickHitTest.Data.Equals(1))
+            if ((int)clickHitTest.Data == 1)
             {
                 if (totalInOffset == inOffset) m_baseValue = PropertiesAnimation.GeneralTime;
                 PropertiesAnimation.GeneralTime = (m_baseValue + totalInOffset.X).TrimToLong().Trim(0, long.MaxValue);
@@ -130,7 +130,7 @@ namespace CoordAnimation
                 c.Transform.Translate(ot, HeaderHeight);
                 yield return c;
                 yield return Character.Line(new Point(ot, HeaderHeight), new Point(ot, coordinatesSystemManager.OutputRange.Bottom)).Color(new Pen(FlatBrushes.BelizeHole, 1)).WithData(0).HideSelection();
-                yield return Character.Ellipse(TimelineCurveSeries<object>.ArrangeProgress(new[] { coordinatesSystemManager.ComputeOutCoordinates(InCurrentPoint) }, coordinatesSystemManager).First(), 5, 5).Color(Brushes.Black, new Pen(Brushes.White, 1));
+                yield return Character.Ellipse(TimelineCurveSeries<object>.ArrangeProgress(new[] { coordinatesSystemManager.ComputeOutCoordinates(InCurrentPoint) }, coordinatesSystemManager).First(), 5, 5).Color(Brushes.Black, new Pen(Brushes.White, 1)).WithData(0).HideSelection();
             }
         }
     }

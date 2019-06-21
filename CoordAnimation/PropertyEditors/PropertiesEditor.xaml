@@ -11,7 +11,7 @@
         <DataGridTemplateColumn Width="*">
             <DataGridTemplateColumn.CellTemplate>
                 <DataTemplate>
-                    <ContentPresenter Content="{Binding Editor, Mode=OneTime}"/>
+                    <ContentPresenter Content="{Binding Editor}"/>
                 </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>

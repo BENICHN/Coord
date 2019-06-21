@@ -2,9 +2,9 @@
 using BenLib.WPF;
 using Coord;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -52,7 +52,12 @@ namespace CoordAnimation
 
         protected override async void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property == AreEditorsVisibleProperty) SetVisibility(Type, Object);
+            if (e.Property == AreEditorsVisibleProperty)
+            {
+                SetVisibility(Type, Object);
+                if ((bool)e.NewValue && Object is DependencyObject dependencyObject) await LoadEditors(dependencyObject);
+                else ClearProperties();
+            }
             else if (e.Property == TypeProperty)
             {
                 var newValue = (Type)e.NewValue;
@@ -84,18 +89,7 @@ namespace CoordAnimation
 
                 ClearProperties();
 
-                if (newValue != null)
-                {
-                    bool isAnimatable = IsAnimatable;
-                    var properties = newValue is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : newValue.GetType().GetAllDependencyProperties().Select(fi =>
-                    {
-                        var dp = (DependencyProperty)fi.GetValue(null);
-                        var metadata = dp.GetMetadata(newValue);
-                        return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
-                    });
-
-                    foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, property, GetEditorFromProperty(newValue, property, metadata, isAnimatable)));
-                }
+                if (newValue != null && AreEditorsVisible) await LoadEditors(newValue);
 
                 NotifyPropertyChanged("CanFreeze");
                 NotifyPropertyChanged("IsFrozen");
@@ -103,6 +97,20 @@ namespace CoordAnimation
                 ObjectChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<DependencyObject>("Object", oldValue, newValue));
             }
             base.OnPropertyChanged(e);
+        }
+
+        private async Task LoadEditors(DependencyObject dependencyObject)
+        {
+            bool isAnimatable = IsAnimatable;
+            var properties = dependencyObject is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : dependencyObject.GetType().GetAllDependencyProperties().Select(fi =>
+            {
+                var dp = (DependencyProperty)fi.GetValue(null);
+                var metadata = dp.GetMetadata(dependencyObject);
+                return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
+            });
+
+            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, property, GetEditorFromProperty(dependencyObject, property, metadata, isAnimatable))); }
+            catch (OperationCanceledException) { }
         }
 
         private void Types_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -150,7 +158,7 @@ namespace CoordAnimation
         private void NullButton_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e) { if (CurrentEditor != this && this.FindParent<PropertiesEditorBase>() is PropertiesEditorBase propertiesEditorBase) propertiesEditorBase.CancelCellChange = true; }
     }
 
-    public readonly struct EditableProperty : IPropertyEditorContainer, IEquatable<EditableProperty>
+    public class EditableProperty : IPropertyEditorContainer
     {
         public EditableProperty(string description, DependencyProperty property, FrameworkElement editor)
         {
@@ -161,14 +169,20 @@ namespace CoordAnimation
 
         public string Description { get; }
         public DependencyProperty Property { get; }
-        public FrameworkElement Editor { get; }
 
-        public override bool Equals(object obj) => obj is EditableProperty property && Equals(property);
-        public bool Equals(EditableProperty other) => EqualityComparer<FrameworkElement>.Default.Equals(Editor, other.Editor);
-        public override int GetHashCode() => 517744472 + EqualityComparer<FrameworkElement>.Default.GetHashCode(Editor);
+        private FrameworkElement m_editor;
+        public FrameworkElement Editor
+        {
+            get => m_editor;
+            set
+            {
+                m_editor = value;
+                NotifyPropertyChanged("Editor");
+            }
+        }
 
-        public static bool operator ==(EditableProperty left, EditableProperty right) => left.Equals(right);
-        public static bool operator !=(EditableProperty left, EditableProperty right) => !(left == right);
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public override string ToString() => Description;
     }
