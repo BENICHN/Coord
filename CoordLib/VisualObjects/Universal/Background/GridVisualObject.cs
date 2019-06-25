@@ -50,7 +50,9 @@ namespace Coord
 
             if (Secondary)
             {
+                var secondaryStroke = SecondaryStroke;
                 int secondaryDensity = SecondaryDensity;
+
                 int horizontalStepProgress = 0;
                 double smallHorizontalStep = horizontalStep / secondaryDensity;
 
@@ -63,7 +65,7 @@ namespace Coord
                         continue;
                     }
 
-                    yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Top))).Color(SecondaryStroke);
+                    yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Top))).Color(secondaryStroke);
                 }
 
                 int verticalStepProgress = 0;
@@ -78,14 +80,16 @@ namespace Coord
                         continue;
                     }
 
-                    yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, i)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, i))).Color(SecondaryStroke);
+                    yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, i)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, i))).Color(secondaryStroke);
                 }
             }
 
             if (Primary)
             {
-                for (double i = horizontalStart; i < horizontalEnd; i += horizontalStep) yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Top))).Color(Stroke);
-                for (double i = verticalStart; i < verticalEnd; i += verticalStep) yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, i)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, i))).Color(Stroke);
+                var stroke = Stroke;
+
+                for (double i = horizontalStart; i < horizontalEnd; i += horizontalStep) yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Bottom)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, inRange.Top))).Color(stroke);
+                for (double i = verticalStart; i < verticalEnd; i += verticalStep) yield return Character.Line(coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Left, i)), coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(inRange.Right, i))).Color(stroke);
             }
         }
     }

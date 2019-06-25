@@ -180,7 +180,7 @@ namespace Coord
             VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
 
             AxesNumbers = new AxesNumbers { Direction = AxesDirection.Both, Fill = Brushes.White };
-            Axes = new AxesVisualObject { Direction = AxesDirection.Both, Numbers = AxesNumbers, Stroke = new Pen(Brushes.White, 2.0) };
+            Axes = new AxesVisualObject { Direction = AxesDirection.Both, Stroke = new Pen(Brushes.White, 2.0) };
             Grid = new GridVisualObject { Primary = true, Secondary = true, Fill = Brushes.Black, Stroke = new Pen(Brushes.DeepSkyBlue, 1.0).GetAsTypedFrozen(), SecondaryStroke = new Pen(new SolidColorBrush(Color.FromRgb(0, 53, 72)), 1.0).GetAsTypedFrozen() };
             m_backgroundVisualObject = Renderer(Grid, Axes);
 

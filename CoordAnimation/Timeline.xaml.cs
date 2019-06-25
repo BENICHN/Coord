@@ -17,7 +17,6 @@ namespace CoordAnimation
         private readonly TimelineCursor m_cursor = new TimelineCursor();
         private IAbsoluteKeyFrameCollection m_keyFrames;
         private bool m_setting;
-        private Action<PropertyChangedExtendedEventArgs<DependencyObject>> m_keyFrameSetter;
 
         public VisualObject Curves { get; private set; }
         public VisualObject KeyFrames { get; private set; }
@@ -43,7 +42,6 @@ namespace CoordAnimation
 
             if (keyFrames == null)
             {
-                m_keyFrameSetter = null;
                 Curves = null;
                 KeyFrames = null;
             }
@@ -68,20 +66,6 @@ namespace CoordAnimation
                     plane.RenderdWithoutCache(t);
                     plane.RenderdWithoutCache(curves);
                     UpdateCursorPoint(PropertiesAnimation.GeneralTime);
-                };
-
-                m_keyFrameSetter = e =>
-                {
-                    if (!m_setting && e.OldValue is AbsoluteKeyFrame<T> oldValue)
-                    {
-                        if (e.NewValue is AbsoluteKeyFrame<T> newValue)
-                        {
-                            newValue.FramesCount = oldValue.FramesCount;
-                            newValue.Value = oldValue.Value;
-                            keyFrames[keyFrames.IndexOf(oldValue)] = newValue;
-                        }
-                        else keyFrames[keyFrames.IndexOf(oldValue)] = null;
-                    }
                 };
 
                 plane.VisualObjects.Insert(1, curves);
@@ -121,6 +105,18 @@ namespace CoordAnimation
             plane.Render(m_cursor);
         }
 
-        private void KeyFramesEditor_ObjectChanged(object sender, PropertyChangedExtendedEventArgs<DependencyObject> e) => m_keyFrameSetter?.Invoke(e);
+        private void KeyFramesEditor_ObjectChanged(object sender, PropertyChangedExtendedEventArgs<DependencyObject> e)
+        {
+            if (!m_setting && m_keyFrames is IAbsoluteKeyFrameCollection keyFrames && e.OldValue is IAbsoluteKeyFrame oldValue)
+            {
+                if (e.NewValue is IAbsoluteKeyFrame newValue)
+                {
+                    newValue.FramesCount = oldValue.FramesCount;
+                    newValue.Value = oldValue.Value;
+                    keyFrames[keyFrames.IndexOf(oldValue)] = newValue;
+                }
+                else keyFrames[keyFrames.IndexOf(oldValue)] = null;
+            }
+        }
     }
 }

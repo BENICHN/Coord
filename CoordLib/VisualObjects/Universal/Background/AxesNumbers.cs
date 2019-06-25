@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
@@ -39,19 +38,27 @@ namespace Coord
 
         protected override IEnumerable<Character> GetCharactersCore(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
+            double horizontalStep = HorizontalStep;
+            double verticalStep = VerticalStep;
+            var fill = Fill;
+            var stroke = Stroke;
+            double fontSize = FontSize;
+            var typeface = Typeface;
+            bool onlyIntegers = OnlyIntegers;
             var direction = Direction;
+
             var outRange = coordinatesSystemManager.OutputRange;
 
             var center = coordinatesSystemManager.OrthonormalOrigin;
-            double demiThickness = FontSize + NumbersOffset;
+            double demiThickness = fontSize + NumbersOffset;
 
             if ((direction == AxesDirection.Horizontal || direction == AxesDirection.Both) && outRange.HeightContainsRange(center.Y - demiThickness, center.Y + demiThickness, false))
             {
-                foreach (double i in coordinatesSystemManager.GetHorizontalSteps(HorizontalStep > 0 ? HorizontalStep : coordinatesSystemManager.GetHorizontalStep()))
+                foreach (double i in coordinatesSystemManager.GetHorizontalSteps(horizontalStep > 0 ? horizontalStep : coordinatesSystemManager.GetHorizontalStep()))
                 {
-                    if (i == 0.0 && direction != AxesDirection.Horizontal || OnlyIntegers && Math.Truncate(i) != i) continue;
+                    if (i == 0.0 && direction != AxesDirection.Horizontal || onlyIntegers && Math.Truncate(i) != i) continue;
 
-                    var formattedText = new FormattedText(FormatAxisNumber(i), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface, FontSize, null, 1) { TextAlignment = TextAlignment.Center };
+                    var formattedText = new FormattedText(FormatAxisNumber(i), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, fontSize, fill, 1) { TextAlignment = TextAlignment.Center };
 
                     var point = coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(i, 0.0));
                     if (i == 0.0)
@@ -61,23 +68,23 @@ namespace Coord
                     }
                     point.Y += NumbersOffset;
 
-                    yield return formattedText.BuildGeometry(point).ToCharacter(Fill, Stroke);
+                    yield return formattedText.BuildGeometry(point).ToCharacter(fill, stroke);
                 }
             }
 
-            if ((direction == AxesDirection.Vertical || direction == AxesDirection.Both) && outRange.WidthContainsRange(center.X - demiThickness, center.X + demiThickness + MaxAxisTextWidth * FontSize, false))
+            if ((direction == AxesDirection.Vertical || direction == AxesDirection.Both) && outRange.WidthContainsRange(center.X - demiThickness, center.X + demiThickness + MaxAxisTextWidth * fontSize, false))
             {
-                foreach (double i in coordinatesSystemManager.GetVerticalSteps(VerticalStep > 0 ? VerticalStep : coordinatesSystemManager.GetVerticalStep()))
+                foreach (double i in coordinatesSystemManager.GetVerticalSteps(verticalStep > 0 ? verticalStep : coordinatesSystemManager.GetVerticalStep()))
                 {
-                    if (OnlyIntegers && Math.Truncate(i) != i) continue;
+                    if (onlyIntegers && Math.Truncate(i) != i) continue;
 
-                    var formattedText = new FormattedText(FormatAxisNumber(i), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface, FontSize, Fill, 1.0) { TextAlignment = TextAlignment.Left };
+                    var formattedText = new FormattedText(FormatAxisNumber(i), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, fontSize, fill, 1.0) { TextAlignment = TextAlignment.Left };
 
                     var point = coordinatesSystemManager.ComputeOutOrthonormalCoordinates(new Point(0.0, i));
                     point.X += NumbersOffset;
                     if (i == 0.0) point.Y += NumbersOffset;
 
-                    yield return formattedText.BuildGeometry(point).ToCharacter(Fill, Stroke);
+                    yield return formattedText.BuildGeometry(point).ToCharacter(fill, stroke);
                 }
             }
         }
