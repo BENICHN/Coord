@@ -14,21 +14,23 @@
         <ItemsControl ItemsSource="{Binding VisualObjects, ElementName=this}">
             <ItemsControl.Resources>
                 <DataTemplate DataType="{x:Type coord:VisualObject}">
-                    <DockPanel Height="25">
+                    <DockPanel Height="25" VerticalAlignment="Center">
                         <local:VisualObjectControl ObjectName="{Binding (local:VisualObjectElement.Name), Mode=TwoWay}" ObjectType="{Binding Type, Mode=OneTime}"/>
                         <TextBlock Text=" | " VerticalAlignment="Center" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                        <local:IntervalEditor IntervalType="Int" IntInterval="{Binding Selection, Mode=TwoWay}" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <local:IntervalEditor VerticalAlignment="Center" IntervalType="Int" IntInterval="{Binding Selection, Mode=TwoWay}" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </DockPanel>
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type local:VisualObjectPart}">
                     <DockPanel Height="25">
                         <local:VisualObjectControl ObjectName="{Binding VisualObject.(local:VisualObjectElement.Name), Mode=TwoWay}" ObjectType="{Binding VisualObject.Type, Mode=OneTime}"/>
                         <TextBlock Text=" | " VerticalAlignment="Center" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                        <local:IntervalEditor IntervalType="Int" IntInterval="{Binding Interval, Mode=TwoWay}" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        <local:IntervalEditor VerticalAlignment="Center" IntervalType="Int" IntInterval="{Binding Interval, Mode=TwoWay}" Visibility="{Binding IsSelectionVisible, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </DockPanel>
                 </DataTemplate>
             </ItemsControl.Resources>
         </ItemsControl>
-        <ToggleButton Grid.Column="1" Height="25" VerticalAlignment="Top" IsChecked="{Binding IsSelecting, ElementName=this}" Content="{DynamicResource SelectRect}"/>
+        <ToggleButton Grid.Column="1" Height="25" VerticalAlignment="Top" IsChecked="{Binding IsSelecting, ElementName=this}">
+            <Image Source="{StaticResource DI_SelectRect}" Width="14" Height="14"/>
+        </ToggleButton>
     </Grid>
 </UserControl>

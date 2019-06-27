@@ -27,7 +27,7 @@ namespace Coord
 
             var chars = characters.SubCollection(BoundsInterval.IsNullOrEmpty() ? interval : BoundsInterval, true).ToArray();
 
-            var (from, to) = (chars.Geometry().Bounds.Size, VisualObject.GetTransformedCharacters(coordinatesSystemManager).Geometry().Bounds.Size);
+            var (from, to) = (chars.Bounds().Size, VisualObject.GetTransformedCharacters(coordinatesSystemManager).Bounds().Size);
 
             double scaleX = ScaleX ? to.Width / from.Width : 0;
             double scaleY = ScaleY ? to.Height / from.Height : 0;

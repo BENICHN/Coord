@@ -45,7 +45,10 @@
                 <Menu>
                     <MenuItem Name="menuPP" Header="PP" HorizontalAlignment="Left" Click="MenuPP_Click"/>
                     <MenuItem Name="menuGC" Header="GC" HorizontalAlignment="Left" Click="MenuGC_Click"/>
-                    <MenuItem Name="menuAddVisualObject" Header="{DynamicResource Add}" HorizontalAlignment="Left" MenuItem.Click="MenuAddVisualObject_Click">
+                    <MenuItem Name="menuAddVisualObject" HorizontalAlignment="Left" MenuItem.Click="MenuAddVisualObject_Click">
+                        <MenuItem.Header>
+                            <Image Source="{StaticResource DI_Add}" Width="10" Height="10"/>
+                        </MenuItem.Header>
                         <MenuItem.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -55,7 +58,6 @@
                 </Menu>
                 <TreeView Name="VisualObjectsTreeView" Grid.Row="1" ItemsSource="{Binding Elements.Nodes}" SelectedItemChanged="VisualObjectsTreeView_SelectedItemChanged" TreeViewItem.Selected="VisualObjectsTreeView_Selected">
                     <TreeView.Resources>
-
                         <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                         </Style>
@@ -70,9 +72,15 @@
                             <Border Opacity="{Binding Opacity}" Background="{Binding Background}">
                                 <DockPanel Margin="0,2">
                                     <Border Width="16" Height="16" BorderBrush="White" BorderThickness="1" Focusable="False">
-                                        <Viewbox Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                            <Path Data="{Binding Character.Geometry}" Stretch="Uniform" Fill="{Binding Character.Fill}" Stroke="{Binding Character.Stroke.Brush}" StrokeThickness="{Binding Character.Stroke.Thickness}"/>
-                                        </Viewbox>
+                                        <Image Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Image.Source>
+                                                <DrawingImage>
+                                                    <DrawingImage.Drawing>
+                                                        <GeometryDrawing Geometry="{Binding Character.Geometry}" Brush="{Binding Character.Fill}" Pen="{Binding Character.Stroke}"/>
+                                                    </DrawingImage.Drawing>
+                                                </DrawingImage>
+                                            </Image.Source>
+                                        </Image>
                                     </Border>
                                     <TextBlock Margin="5,0,0,0" Text="{Binding Character.Index}" VerticalAlignment="Center" FontWeight="Bold"/>
                                     <TextBlock Text=" : " VerticalAlignment="Center" Foreground="White"/>

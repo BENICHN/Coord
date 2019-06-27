@@ -5,96 +5,34 @@ using Coord;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
-using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CoordAnimation
 {
-    public class PropertiesEditorBase : UserControl, IDisposable
+    public class PropertiesEditor : PropertiesEditorBase
     {
-        private CancellationTokenSource m_cts = new CancellationTokenSource();
-        public ObservableCollection<DataGridColumn> Columns => Editors.Columns;
-
-        public bool IsAnimatable { get => (bool)GetValue(IsAnimatableProperty); set => SetValue(IsAnimatableProperty, value); }
-        public static readonly DependencyProperty IsAnimatableProperty = DependencyProperty.Register("IsAnimatable", typeof(bool), typeof(PropertiesEditorBase), new PropertyMetadata(true));
-
-        public ObservableCollection<IPropertyEditorContainer> Properties { get; } = new ObservableCollection<IPropertyEditorContainer>();
-        public DataGrid Editors { get; private set; } = new DataGrid { SelectionMode = DataGridSelectionMode.Single, AutoGenerateColumns = false, CanUserSortColumns = false, CanUserReorderColumns = false, HeadersVisibility = DataGridHeadersVisibility.None, GridLinesVisibility = DataGridGridLinesVisibility.All };
-
-        private static FrameworkElement s_currentEditor;
-        internal bool? CancelCellChange = false;
-
-        public PropertiesEditorBase()
+        protected override async void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            Editors.ItemsSource = Properties;
-            ScrollViewer.SetCanContentScroll(Editors, false);
-            Editors.SelectedCellsChanged += Editors_SelectedCellsChanged;
-            Editors.PreviewKeyDown += Editors_PreviewKeyDown;
-            CurrentEditorChanged += OnCurrentEditorChanged;
-        }
-
-        private void OnCurrentEditorChanged(object sender, PropertyChangedExtendedEventArgs<FrameworkElement> e) { if (!ContainsEditor(e.NewValue)) Editors.SelectedItem = null; }
-        public bool ContainsEditor(FrameworkElement editor) => Properties.Any(p => p.Editor == editor || p.Editor is PropertiesEditorBase propertiesEditorBase && propertiesEditorBase.ContainsEditor(editor));
-
-        protected Task AddEditor(IPropertyEditorContainer container) => InsertEditor(Properties.Count, container);
-        protected Task InsertEditor(int index, IPropertyEditorContainer container)
-        {
-            CancellationTokenRegistration reg = default;
-            var tcs = new TaskCompletionSource<object>();
-            if (container.Editor != null) Properties.Insert(index, container);
-
-            if (container.Editor == null || container.Editor.IsLoaded) tcs.TrySetResult(null);
-            else
+            base.OnPropertyChanged(e);
+            if (e.Property == ObjectProperty)
             {
-                container.Editor.Loaded += Result_Loaded;
-                reg = m_cts.Token.Register(() =>
-                {
-                    End();
-                    tcs.TrySetCanceled(m_cts.Token);
-                });
-            }
-
-            return tcs.Task;
-
-            void Result_Loaded(object sender, RoutedEventArgs e)
-            {
-                End();
-                tcs.TrySetResult(null);
-            }
-
-            void End()
-            {
-                container.Editor.Loaded -= Result_Loaded;
-                reg.Dispose();
+                if (e.OldValue == e.NewValue) return;
+                if (e.NewValue is DependencyObject dependencyObject) await LoadEditors(dependencyObject);
             }
         }
 
-        protected void RemovePropertyAt(int index)
-        {
-            var properties = Properties;
-            if (properties[index] == CurrentEditor || properties[index] is PropertiesEditorBase propertiesEditorBase && propertiesEditorBase.ContainsEditor(CurrentEditor)) CurrentEditor = default;
-
-            var p = properties[index];
-            p.Editor.ClearAllBindings();
-            if (p.Editor is IDisposable disposable) disposable.Dispose();
-            p.Editor = null;
-            properties.RemoveAt(index);
-        }
+        public PropertiesEditor() => Editors.Columns.Insert(0, new DataGridTextColumn { Binding = new Binding("Description") { Mode = BindingMode.OneTime }, IsReadOnly = true });
 
         public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, NotifyObjectPropertyMetadata metadata, bool isAnimatable)
         {
             var type = property.PropertyType;
-            var binding = new Binding(property.Name) { Source = owner, Mode = (((owner as Freezable)?.IsFrozen ?? false) || property.ReadOnly) ? BindingMode.OneTime : BindingMode.TwoWay, Converter = new VariantConverter() };
+            var binding = new Binding(property.Name) { Source = owner, Mode = (((owner as Freezable)?.IsFrozen ?? false) || property.ReadOnly) ? BindingMode.OneTime : BindingMode.TwoWay };
             if (type == typeof(string))
             {
                 var editor = new SwitchableTextBox();
@@ -268,7 +206,7 @@ namespace CoordAnimation
             else if (typeof(DependencyObject).IsAssignableFrom(type) || type.IsInterface && App.DependencyObjectTypes.Contains(type))
             {
                 var editor = new PropertiesEditor { IsAnimatable = isAnimatable, Type = type };
-                editor.SetBinding(PropertiesEditor.ObjectProperty, binding);
+                editor.SetBinding(ObjectProperty, binding);
                 return editor;
             }
             else return owner.GetValue(property) is DependencyObject dependencyObject ? new PropertiesEditor { IsAnimatable = isAnimatable, Object = dependencyObject } : null;
@@ -280,75 +218,35 @@ namespace CoordAnimation
             return result;
         }
 
-        protected void ClearProperties()
+        private async Task LoadEditors(DependencyObject dependencyObject)
         {
-            m_cts.Cancel();
-            m_cts = new CancellationTokenSource();
-            if (ContainsEditor(CurrentEditor)) CurrentEditor = default;
-            var properties = Properties;
-            int count;
-            while ((count = properties.Count - 1) > -1)
+            bool isAnimatable = IsAnimatable;
+            var properties = dependencyObject is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : dependencyObject.GetType().GetAllDependencyProperties().Select(fi =>
             {
-                var p = properties[count];
-                var e = p.Editor;
-                p.Editor = null;
-                e.ClearAllBindings();
-                if (e is IDisposable disposable) disposable.Dispose();
-                properties.RemoveAt(count);
-            }
+                var dp = (DependencyProperty)fi.GetValue(null);
+                var metadata = dp.GetMetadata(dependencyObject);
+                return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
+            });
+
+            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, property, GetEditorFromProperty(dependencyObject, property, metadata, isAnimatable))); }
+            catch (OperationCanceledException) { }
         }
-
-        private void Editors_PreviewKeyDown(object sender, KeyEventArgs e) { if (e.Key == Key.Enter) CancelCellChange = true; }
-        private void Editors_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
-        {
-            var editors = (DataGrid)sender;
-            if (CancelCellChange != false)
-            {
-                if (CancelCellChange == true)
-                {
-                    CancelCellChange = null;
-                    editors.SelectedItem = e.RemovedCells.Count > 0 ? e.RemovedCells[0].Item : null;
-                }
-                else CancelCellChange = false;
-            }
-            else
-            {
-                var editor = ((IPropertyEditorContainer)editors.SelectedItem)?.Editor;
-                if (IsAnimatable && editor != null && !(editor is PropertiesEditorBase propertiesEditorBase && propertiesEditorBase.ContainsEditor(CurrentEditor))) CurrentEditor = ((IPropertyEditorContainer)editors.SelectedItem).Editor;
-            }
-        }
-
-        public void Dispose()
-        {
-            CurrentEditorChanged -= OnCurrentEditorChanged;
-            ClearProperties();
-        }
-
-        public static FrameworkElement CurrentEditor
-        {
-            get => s_currentEditor;
-            set
-            {
-                if (value is AnimatablePropertyEditor animatablePropertyEditor) animatablePropertyEditor.DataContext.DataFocus();
-                else App.Scene.Timeline.SetKeyFrames<object>(null);
-
-                var old = s_currentEditor;
-                if (value != old)
-                {
-                    s_currentEditor = value;
-                    CurrentEditorChanged?.Invoke(null, new PropertyChangedExtendedEventArgs<FrameworkElement>("CurrentEditor", old, value));
-                }
-            }
-        }
-
-        public static event PropertyChangedExtendedEventHandler<FrameworkElement> CurrentEditorChanged;
     }
 
-    public class VariantConverter : IValueConverter
+    public class EditableProperty : PropertyEditorContainer
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value;
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value;
-    }
+        public EditableProperty(string description, DependencyProperty property, FrameworkElement editor)
+        {
+            Description = description;
+            Property = property;
+            Editor = editor;
+        }
 
-    public interface IPropertyEditorContainer : INotifyPropertyChanged { FrameworkElement Editor { get; set; } }
+        public string Description { get => (string)GetValue(DescriptionProperty); set => SetValue(DescriptionProperty, value); }
+        public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register("Description", typeof(string), typeof(EditableProperty));
+
+        public DependencyProperty Property { get; }
+
+        public override string ToString() => Description;
+    }
 }

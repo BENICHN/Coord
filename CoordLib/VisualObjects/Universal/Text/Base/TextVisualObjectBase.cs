@@ -47,7 +47,7 @@ namespace Coord
         {
             var characters = GetCharacters().Color(Fill, Stroke);
             var outAnchorPoint = coordinatesSystemManager.ComputeOutCoordinates(InAnchorPoint);
-            var outVector = RectPoint.IsNaN ? (Vector)outAnchorPoint : outAnchorPoint - RectPoint.GetPoint(characters.Geometry().Bounds);
+            var outVector = RectPoint.IsNaN ? (Vector)outAnchorPoint : outAnchorPoint - RectPoint.GetPoint(characters.Bounds());
             characters.Translate(outVector, 1).Enumerate();
             return In ? characters.ScaleAt(coordinatesSystemManager.WidthRatio, coordinatesSystemManager.HeightRatio, outAnchorPoint, 1).ToArray() : characters.ToArray();
         }
@@ -62,7 +62,7 @@ namespace Coord
         /// Obtient les dimensions du <see cref="GeometryGroup"/> composé de toutes les <see cref="Character.Geometry"/> de ce <see cref="TextVisualObjectBase"/>
         /// </summary>
         /// <returns>Dimensions du <see cref="GeometryGroup"/> composé de toutes les <see cref="Character.Geometry"/> de ce <see cref="TextVisualObjectBase"/></returns>
-        public Size Size() => GetCharacters().Geometry().Bounds.Size;
+        public Size Size() => GetCharacters().Bounds().Size;
         public Size SizeX() => new Size(Size().Width, 0);
         public Size SizeY() => new Size(0, Size().Height);
 
@@ -74,7 +74,7 @@ namespace Coord
         {
             var characters = GetCharacters();
             foreach (var character in characters) character.ApplyTransforms();
-            return characters.Geometry().Bounds.Size;
+            return characters.Bounds().Size;
         }
     }
 }

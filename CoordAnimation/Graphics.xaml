@@ -1,54 +1,74 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:CoordAnimation">
-    <Viewbox x:Key="Lock" x:Shared="False" Stretch="Uniform" Width="14" Height="14">
-        <Canvas Width="16" Height="16">
-            <Path Fill="White" Data="M12.4 5.9h-0.8V3.3C11.6 1.5 10 0 8.2 0S4.8 1.5 4.8 3.3v2.6H4c-1 0-1.9 0.8-1.9 1.9v6.4C2.1 15.2 3 16 4 16h8.4    c1 0 1.9-0.8 1.9-1.9V7.8C14.2 6.7 13.4 5.9 12.4 5.9z M6.1 3.3c0-1.1 1-2.1 2.1-2.1s2.1 0.9 2.1 2.1v2.6H6.1L6.1 3.3L6.1 3.3z     M13 14.1c0 0.3-0.3 0.6-0.6 0.6H4c-0.3 0-0.6-0.3-0.6-0.6V7.8c0-0.3 0.3-0.6 0.6-0.6h8.4c0.3 0 0.6 0.3 0.6 0.6V14.1z"/>
-            <Path Fill="White" Data="M8.2 8.9C7.5 8.9 7 9.5 7 10.1c0 0.4 0.2 0.8 0.5 1v1.4c0 0.3 0.3 0.6 0.6 0.6c0.3 0 0.6-0.3 0.6-0.6v-1.4    c0.3-0.2 0.5-0.6 0.5-1C9.3 9.5 8.8 8.9 8.2 8.9z"/>
-        </Canvas>
-    </Viewbox>
-    <Viewbox x:Key="Remove" x:Shared="False" Stretch="Uniform" Width="10" Height="10">
-        <Canvas Width="16" Height="16">
-            <Line X1="15" Y1="1" X2="1" Y2="15" Stroke="White" StrokeEndLineCap="Round" StrokeStartLineCap="Round" StrokeThickness="2"/>
-            <Line X1="1" Y1="1" X2="15" Y2="15" Stroke="White" StrokeEndLineCap="Round" StrokeStartLineCap="Round" StrokeThickness="2"/>
-        </Canvas>
-    </Viewbox>
-    <Viewbox x:Key="Add" x:Shared="False" Stretch="Uniform" Width="10" Height="10">
-        <Canvas Width="16" Height="16">
-            <Line X1="1" Y1="8" X2="15" Y2="8" Stroke="White" StrokeEndLineCap="Round" StrokeStartLineCap="Round" StrokeThickness="2"/>
-            <Line X1="8" Y1="1" X2="8" Y2="15" Stroke="White" StrokeEndLineCap="Round" StrokeStartLineCap="Round" StrokeThickness="2"/>
-        </Canvas>
-    </Viewbox>
-    <Viewbox x:Key="SelectRect" x:Shared="False"  Stretch="Uniform" Width="14" Height="14">
-        <Canvas Width="16" Height="16">
-            <Path Fill="White" Data="M1 3.3C0.6 3.3 0.3 3 0.3 2.7V2c0-1.1 0.9-2 2-2H3c0.4 0 0.7 0.3 0.7 0.7C3.7 1 3.4 1.3 3 1.3H2.3C2 1.3 1.7 1.6 1.7 2v0.7  C1.7 3 1.4 3.3 1 3.3z"/>
-            <Path Fill="White" Data="M13 3.3c-0.4 0-0.7-0.3-0.7-0.7V2c0-0.4-0.3-0.7-0.7-0.7H11c-0.4 0-0.7-0.3-0.7-0.7C10.3 0.3 10.6 0 11 0h0.7  c1.1 0 2 0.9 2 2v0.7C13.7 3 13.4 3.3 13 3.3z"/>
-            <Path Fill="White" Data="M8.3 1.3H5.7C5.3 1.3 5 1 5 0.7C5 0.3 5.3 0 5.7 0h2.7C8.7 0 9 0.3 9 0.7C9 1 8.7 1.3 8.3 1.3z"/>
-            <Path Fill="White" Data="M7 13.3H5.7C5.3 13.3 5 13 5 12.7C5 12.3 5.3 12 5.7 12H7c0.4 0 0.7 0.3 0.7 0.7C7.7 13 7.4 13.3 7 13.3z"/>
-            <Path Fill="White" Data="M3 13.3H2.3c-1.1 0-2-0.9-2-2v-0.7C0.3 10.3 0.6 10 1 10c0.4 0 0.7 0.3 0.7 0.7v0.7C1.7 11.7 2 12 2.3 12H3  c0.4 0 0.7 0.3 0.7 0.7C3.7 13 3.4 13.3 3 13.3z"/>
-            <Path Fill="White" Data="M1 8.7C0.6 8.7 0.3 8.4 0.3 8V5.3C0.3 5 0.6 4.7 1 4.7c0.4 0 0.7 0.3 0.7 0.7V8C1.7 8.4 1.4 8.7 1 8.7z"/>
-            <Path Fill="White" Data="M13 7.3c-0.4 0-0.7-0.3-0.7-0.7V5.3c0-0.4 0.3-0.7 0.7-0.7c0.4 0 0.7 0.3 0.7 0.7v1.3C13.7 7 13.4 7.3 13 7.3z"/>
-            <Path Stroke="White" Data="M15.5 11.3L9.6 5.4c-0.3-0.2-0.7 0-0.7 0.3v8c0 0.2 0.2 0.4 0.4 0.4c0.1 0 0.2 0 0.3-0.1l1.5-1.3l1.3 3  c0 0.1 0.1 0.1 0.2 0.2c0 0 0.1 0 0.1 0c0 0 0.1 0 0.1 0l1.4-0.6c0.2-0.1 0.2-0.3 0.2-0.4l-1.2-2.8h2c0.2 0 0.4-0.2 0.4-0.4  C15.7 11.5 15.6 11.4 15.5 11.3z"/>
-        </Canvas>
-    </Viewbox>
-    
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DrawingImage x:Key="DI_Lock">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="White" Geometry="F1 M16,16z M0,0z M12.4,5.9L11.6,5.9 11.6,3.3C11.6,1.5 10,0 8.2,0 6.4,0 4.8,1.5 4.8,3.3L4.8,5.9 4,5.9C3,5.9,2.1,6.7,2.1,7.8L2.1,14.2C2.1,15.2,3,16,4,16L12.4,16C13.4,16,14.3,15.2,14.3,14.1L14.3,7.8C14.2,6.7,13.4,5.9,12.4,5.9z M6.1,3.3C6.1,2.2 7.1,1.2 8.2,1.2 9.3,1.2 10.3,2.1 10.3,3.3L10.3,5.9 6.1,5.9 6.1,3.3 6.1,3.3z M13,14.1C13,14.4,12.7,14.7,12.4,14.7L4,14.7C3.7,14.7,3.4,14.4,3.4,14.1L3.4,7.8C3.4,7.5,3.7,7.2,4,7.2L12.4,7.2C12.7,7.2,13,7.5,13,7.8L13,14.1z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M16,16z M0,0z M8.2,8.9C7.5,8.9 7,9.5 7,10.1 7,10.5 7.2,10.9 7.5,11.1L7.5,12.5C7.5,12.8 7.8,13.1 8.1,13.1 8.4,13.1 8.7,12.8 8.7,12.5L8.7,11.1C9,10.9 9.2,10.5 9.2,10.1 9.3,9.5 8.8,8.9 8.2,8.9z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    <DrawingImage x:Key="DI_Add">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Geometry="M1,8 H15 M8,1 V15">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="White" StartLineCap="Round" EndLineCap="Round" Thickness="2"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    <DrawingImage x:Key="DI_Remove">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Geometry="M15,1 L1,15 M1,1 L15,15">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="White" StartLineCap="Round" EndLineCap="Round" Thickness="2"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+    <DrawingImage x:Key="DI_SelectRect">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="White" Geometry="F1 M1,3.3C0.6,3.3,0.3,3,0.3,2.7L0.3,2C0.3,0.9,1.2,0,2.3,0L3,0C3.4,0 3.7,0.3 3.7,0.7 3.7,1 3.4,1.3 3,1.3L2.3,1.3C2,1.3,1.7,1.6,1.7,2L1.7,2.7C1.7,3,1.4,3.3,1,3.3z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M13,3.3C12.6,3.3,12.3,3,12.3,2.6L12.3,2C12.3,1.6,12,1.3,11.6,1.3L11,1.3C10.6,1.3 10.3,1 10.3,0.6 10.3,0.3 10.6,0 11,0L11.7,0C12.8,0,13.7,0.9,13.7,2L13.7,2.7C13.7,3,13.4,3.3,13,3.3z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M8.3,1.3L5.7,1.3C5.3,1.3 5,1 5,0.7 5,0.3 5.3,0 5.7,0L8.4,0C8.7,0 9,0.3 9,0.7 9,1 8.7,1.3 8.3,1.3z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M7,13.3L5.7,13.3C5.3,13.3 5,13 5,12.7 5,12.3 5.3,12 5.7,12L7,12C7.4,12 7.7,12.3 7.7,12.7 7.7,13 7.4,13.3 7,13.3z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M3,13.3L2.3,13.3C1.2,13.3,0.3,12.4,0.3,11.3L0.3,10.6C0.3,10.3 0.6,10 1,10 1.4,10 1.7,10.3 1.7,10.7L1.7,11.4C1.7,11.7,2,12,2.3,12L3,12C3.4,12 3.7,12.3 3.7,12.7 3.7,13 3.4,13.3 3,13.3z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M1,8.7C0.6,8.7,0.3,8.4,0.3,8L0.3,5.3C0.3,5 0.6,4.7 1,4.7 1.4,4.7 1.7,5 1.7,5.4L1.7,8C1.7,8.4,1.4,8.7,1,8.7z" />
+                <GeometryDrawing Brush="White" Geometry="F1 M13,7.3C12.6,7.3,12.3,7,12.3,6.6L12.3,5.3C12.3,4.9 12.6,4.6 13,4.6 13.4,4.6 13.7,4.9 13.7,5.3L13.7,6.6C13.7,7,13.4,7.3,13,7.3z" />
+                <GeometryDrawing Geometry="F1 M16,16z M0,0z M15.5,11.3L9.6,5.4C9.3,5.2,8.9,5.4,8.9,5.7L8.9,13.7C8.9,13.9 9.1,14.1 9.3,14.1 9.4,14.1 9.5,14.1 9.6,14L11.1,12.7 12.4,15.7C12.4,15.8 12.5,15.8 12.6,15.9 12.6,15.9 12.7,15.9 12.7,15.9 12.7,15.9 12.8,15.9 12.8,15.9L14.2,15.3C14.4,15.2,14.4,15,14.4,14.9L13.2,12.1 15.2,12.1C15.4,12.1 15.6,11.9 15.6,11.7 15.7,11.5 15.6,11.4 15.5,11.3z">
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="White" Thickness="1" StartLineCap="Flat" EndLineCap="Flat" LineJoin="Miter" />
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
     <!--================================================== VisualObjectsIcons ==================================================-->
 
-    <Canvas x:Key="VisualObjectCanvas" x:Shared="False" Width="16" Height="16">
-        <Canvas>
-            <Path Stroke="{StaticResource VSRed}" Data="M7 10.5c-0.3 0-0.5-0.2-0.5-0.5V2c0-0.3 0.2-0.5 0.5-0.5h8c0.3 0 0.5 0.2 0.5 0.5v8c0 0.3-0.2 0.5-0.5 0.5H7z"/>
-            <Path Stroke="{StaticResource VSRed}" Data="M15 2L15 2v8l-8 0l0-8H15 M15 1H7C6.4 1 6 1.4 6 2v8c0 0.6 0.4 1 1 1h8c0.6 0 1-0.4 1-1V2C16 1.4 15.6 1 15 1L15 1z"/>
-        </Canvas>
-        <Canvas>
-            <Ellipse Canvas.Left="0.5" Canvas.Top="3.5" Width="9" Height="9" Stroke="{StaticResource VSGreen}"/>
-            <Path Stroke="{StaticResource VSGreen}" Data="M5 4c2.2 0 4 1.8 4 4s-1.8 4-4 4s-4-1.8-4-4S2.8 4 5 4 M5 3C2.2 3 0 5.2 0 8s2.2 5 5 5s5-2.2 5-5S7.8 3 5 3L5 3z"/>
-        </Canvas>
-        <Canvas>
-            <Path Stroke="{StaticResource VSBlue}" Data="M5.6 14.5c-0.3 0-0.4-0.2-0.4-0.3c0-0.1-0.1-0.3 0-0.5l4.6-8c0.1-0.2 0.3-0.3 0.4-0.3c0.1 0 0.3 0 0.4 0.3   l4.6 8c0.1 0.2 0 0.4 0 0.5c0 0.1-0.2 0.3-0.4 0.3H5.6z"/>
-            <Path Stroke="{StaticResource VSBlue}" Data="M10.2 6L10.2 6l4.6 8l-9.2 0L10.2 6C10.2 6 10.2 6 10.2 6 M10.2 5C9.9 5 9.5 5.2 9.3 5.5l-4.6 8C4.3 14.2 4.8 15 5.6 15   h9.2c0.8 0 1.3-0.8 0.9-1.5l-4.6-8C10.9 5.2 10.5 5 10.2 5L10.2 5z"/>
-        </Canvas>
-    </Canvas>
-    <Viewbox x:Key="VisualObject" x:Shared="False" Stretch="Uniform" Width="16" Height="16" Child="{StaticResource VisualObjectCanvas}"/>
+    <DrawingGroup x:Key="VisualObjectDrawingGroup">
+        <GeometryDrawing Geometry="F1 M7 10.5c-0.3 0-0.5-0.2-0.5-0.5V2c0-0.3 0.2-0.5 0.5-0.5h8c0.3 0 0.5 0.2 0.5 0.5v8c0 0.3-0.2 0.5-0.5 0.5H7z M15 2L15 2v8l-8 0l0-8H15 M15 1H7C6.4 1 6 1.4 6 2v8c0 0.6 0.4 1 1 1h8c0.6 0 1-0.4 1-1V2C16 1.4 15.6 1 15 1L15 1z">
+            <GeometryDrawing.Pen>
+                <Pen Brush="{StaticResource VSRed}"/>
+            </GeometryDrawing.Pen>
+        </GeometryDrawing>
+        <GeometryDrawing Geometry="F1 M0.5,8 A9,9 360 1 1 0.5,8 M5 4c2.2 0 4 1.8 4 4s-1.8 4-4 4s-4-1.8-4-4S2.8 4 5 4 M5 3C2.2 3 0 5.2 0 8s2.2 5 5 5s5-2.2 5-5S7.8 3 5 3L5 3z">
+            <GeometryDrawing.Pen>
+                <Pen Brush="{StaticResource VSGreen}"/>
+            </GeometryDrawing.Pen>
+        </GeometryDrawing>
+        <GeometryDrawing Geometry="M5.6 14.5c-0.3 0-0.4-0.2-0.4-0.3c0-0.1-0.1-0.3 0-0.5l4.6-8c0.1-0.2 0.3-0.3 0.4-0.3c0.1 0 0.3 0 0.4 0.3   l4.6 8c0.1 0.2 0 0.4 0 0.5c0 0.1-0.2 0.3-0.4 0.3H5.6z M10.2 6L10.2 6l4.6 8l-9.2 0L10.2 6C10.2 6 10.2 6 10.2 6 M10.2 5C9.9 5 9.5 5.2 9.3 5.5l-4.6 8C4.3 14.2 4.8 15 5.6 15   h9.2c0.8 0 1.3-0.8 0.9-1.5l-4.6-8C10.9 5.2 10.5 5 10.2 5L10.2 5z">
+            <GeometryDrawing.Pen>
+                <Pen Brush="{StaticResource VSBlue}"/>
+            </GeometryDrawing.Pen>
+        </GeometryDrawing>
+    </DrawingGroup>
+    <DrawingImage x:Key="DI_VisualObject" Drawing="{StaticResource VisualObjectDrawingGroup}"/>
     <Viewbox x:Key="VisualObjectGroup" x:Shared="False" Stretch="Uniform" Height="16" Width="16">
         <Canvas Width="16" Height="16">
             <Path Fill="{StaticResource VSYellow}" Data="M12.9 9.7l0-1.3c0-0.5-0.2-1-0.6-1.3C12 6.6 11.5 6.4 11 6.4H6.4V6.2c0-0.5-0.2-1-0.6-1.3  C5.5 4.5 5.1 4.3 4.6 4.3H1.9c-0.5 0-1 0.2-1.3 0.6C0.2 5.2 0 5.7 0 6.2v8l1.1-0.9V6.2h0c0-0.2 0.1-0.4 0.2-0.6  c0.2-0.2 0.3-0.2 0.6-0.2h2.7c0.2 0 0.4 0.1 0.6 0.2C5.3 5.8 5.4 6 5.4 6.2v0.5c0 0.2 0.1 0.4 0.2 0.6c0.2 0.2 0.3 0.2 0.6 0.2H11  c0.2 0 0.4 0.1 0.6 0.2c0.2 0.2 0.2 0.3 0.2 0.6v1.3L12.9 9.7z"/>
@@ -57,38 +77,57 @@
         </Canvas>
     </Viewbox>
 
-    <Viewbox x:Key="PointPoint" x:Shared="False" Stretch="Uniform" Width="16" Height="16">
-        <Canvas Width="16" Height="16">
-            <Path Fill="{StaticResource VSRed}">
-                <Path.Data>
-                    <EllipseGeometry Center="8,8" RadiusX="4" RadiusY="4"/>
-                </Path.Data>
-            </Path>
-        </Canvas>
-    </Viewbox>
+    <DrawingImage x:Key="DI_PointPoint">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Geometry="M0,0 H16 V16 H0Z" Brush="Transparent"/>
+                <GeometryDrawing>
+                    <GeometryDrawing.Geometry>
+                        <EllipseGeometry Center="8,8" RadiusX="4" RadiusY="4"/>
+                    </GeometryDrawing.Geometry>
+                    <GeometryDrawing.Brush>
+                        <SolidColorBrush Color="{StaticResource VSRedColor}" Opacity="0.5"/>
+                    </GeometryDrawing.Brush>
+                    <GeometryDrawing.Pen>
+                        <Pen Brush="{StaticResource VSRed}"/>
+                    </GeometryDrawing.Pen>
+                </GeometryDrawing>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 
-    <Viewbox x:Key="InTex" x:Shared="False" Width="16" Height="16" Stretch="Uniform">
-        <TextBlock Text="𝑇𝑥" FontFamily="Cambria Math" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource VSWhite}"/>
-    </Viewbox>
+    <DrawingImage x:Key="DI_InTex">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Brush="{StaticResource VSWhite}" Geometry="F1 M16,16z M0,0z M3.8,12.9L0.8,12.9 0.9,12.5C1.1,12.5 1.2,12.4 1.3,12.4 1.4,12.4 1.5,12.3 1.5,12.2 1.6,12.1 1.6,11.9 1.7,11.7 1.8,11.5 1.9,11.2 1.9,10.7L3.4,3.6 2.6,3.6C2.3,3.6 2.1,3.6 1.9,3.7 1.7,3.8 1.5,4 1.4,4.3 1.2,4.5 1,4.9 0.7,5.4L0,5.4 0.5,3 8.1,3 7.5,5.5 6.8,5.5C6.8,5 6.8,4.7 6.8,4.4 6.8,4.1 6.7,4.1 6.7,4 6.6,3.8 6.5,3.8 6.4,3.7 6.3,3.7 6.1,3.6 5.9,3.6L4.8,3.6 3.2,10.7C3.2,10.9 3.1,11 3.1,11.1 3.1,11.2 3.1,11.3 3.1,11.5 3.1,11.6 3.1,11.7 3.1,11.8 3.1,11.9 3.1,12.1 3.2,12.2 3.2,12.3 3.3,12.3 3.4,12.4 3.5,12.4 3.7,12.5 3.9,12.5L3.8,12.9z M16,16z M0,0z M11.8,9.6C11.7,9.2 11.7,8.9 11.6,8.5 11.5,8.1 11.4,7.8 11.4,7.5 11.3,7.2 11.3,7 11.2,6.9 11.1,6.8 11,6.8 10.9,6.7 10.8,6.6 10.8,6.6 10.7,6.6 10.6,6.6 10.5,6.6 10.4,6.7 10.3,6.7 10.2,6.8 10.1,6.9 10,7 9.9,7.2 9.7,7.4L9.3,7.2C9.6,6.7 9.9,6.4 10.2,6.2 10.5,6 10.8,5.9 11.2,5.9 11.3,5.9 11.5,5.9 11.6,6 11.7,6.1 11.8,6 11.9,6 12,6.1 12,6.2 12.1,6.3 12.2,6.4 12.2,6.6 12.3,6.8 12.4,7 12.4,7.2 12.5,7.5 12.6,7.8 12.6,8.1 12.6,8.4L12.7,8.4C13.2,7.7 13.5,7.3 13.8,7 14,6.7 14.2,6.5 14.4,6.3 14.6,6.1 14.7,6 14.9,6 15.1,6 15.3,5.9 15.5,5.9 15.7,5.9 15.9,5.9 16.1,6L15.8,7.3 15.3,7.3C15.3,7.1 15.2,7 15,7 15,7 14.9,7 14.9,7 14.9,7 14.8,7 14.7,7.1 14.6,7.1 14.5,7.2 14.4,7.4 14.3,7.5 14.1,7.7 13.9,7.9 13.7,8.1 13.6,8.3 13.4,8.5L12.9,9.1C13,9.6 13.1,10 13.1,10.3 13.2,10.6 13.2,10.9 13.3,11.1 13.4,11.3 13.4,11.5 13.5,11.6 13.5,11.7 13.6,11.8 13.6,11.9 13.6,12 13.7,12 13.8,12 13.9,12 13.9,12 14,12 14.1,12 14.3,11.9 14.4,11.8 14.5,11.7 14.7,11.5 14.9,11.1L15.4,11.4C15.1,11.9 14.8,12.3 14.5,12.5 14.2,12.7 13.9,12.8 13.5,12.8 13.3,12.8 13.1,12.8 13,12.7 12.9,12.6 12.7,12.5 12.6,12.3 12.5,12.1 12.4,11.9 12.3,11.5 12.2,10.9 12.1,10.4 12,10.1L11.9,10.1C11.4,10.8 11,11.3 10.8,11.6 10.6,11.9 10.3,12.1 10.2,12.3 9.99999999999999,12.4 9.89999999999999,12.6 9.69999999999999,12.6 9.6,13 9.3,13 9.1,13 8.9,13 8.7,13 8.5,12.9L8.8,11.6 9.3,11.6C9.3,11.8 9.4,11.9 9.6,11.9 9.7,11.9 9.7,11.9 9.8,11.8 9.9,11.8 10,11.7 10.1,11.5 10.2,11.4 10.4,11.1 10.7,10.9 11,10.6 11.3,10.2 11.8,9.6z" >
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource VSWhite}"/>
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 
-    <PathGeometry x:Key="AxesGeometry" Figures="M471.6 235.8h-77.5c0-31.6-40.4-31.6-40.4 0h-77.5v-77.5c31.6 0 31.6-40.4 0-40.4V40.4c33.2 0 28.5-40.4 3.4-40.4h-47.2     c-25.6 0-29.3 40.4 3.4 40.4v77.5c-31.9 0-31.3 40.4 0 40.4v77.5h-77.5c0-31.4-40.4-31.6-40.4 0H40.4c0-33.2-40.4-28.5-40.4-3.4     v47.2c0 25.1 40.4 29.8 40.4-3.4h77.5c0 31.4 40.4 31.8 40.4 0h77.5v77.5c-31.6 0-31.6 40.4 0 40.4v77.5     c-33.2 0-28.5 40.4-3.4 40.4h47.2c25.2 0 29.8-40.4-3.4-40.4v-77.5h3.4c25.2 0 29.8-40.4-3.4-40.4v-77.5h77.5     c0 31.6 40.4 31.6 40.4 0h77.5c0 32.6 40.4 29 40.4 3.4v-47.2C512 207.3 471.6 202.6 471.6 235.8z"/>
-    <Viewbox x:Key="Axes" x:Shared="False" Stretch="Uniform" Width="16" Height="16">
-        <Canvas Width="512" Height="512">
-            <Path Fill="White" Data="{StaticResource AxesGeometry}"/>
-        </Canvas>
-    </Viewbox>
-    <Viewbox x:Key="AxesNumbers" x:Shared="False" Stretch="Uniform" Width="16" Height="16">
-        <Canvas Width="512" Height="512">
-            <Path Fill="White" Data="{StaticResource AxesGeometry}"/>
-            <Path Fill="{StaticResource VSBlue}" Data="M109.8 420.5l-16.9 80c-0.7 3.2-3.5 5.5-6.8 5.5H28.5c-4.4 0-7.7-4.1-6.8-8.4l15.7-74.3   c0.9-4.3-2.4-8.4-6.8-8.4H12.6c-3.8 0-6.9-3.1-6.9-6.9v-58.2c0-3.8 3.1-6.9 6.9-6.9h35.8c3.3 0 6.1-2.3 6.8-5.5l8.8-42.6   c0.9-4.3-2.4-8.3-6.8-8.3H12.6c-3.8 0-6.9-3.1-6.9-6.9v-57.9c0-3.8 3.1-6.9 6.9-6.9H75c3.3 0 6.1-2.3 6.8-5.5L98.7 129   c0.7-3.2 3.5-5.5 6.8-5.5h57.9c4.4 0 7.7 4.1 6.8 8.4l-15.7 74.6c-0.9 4.3 2.4 8.4 6.8 8.4h55c3.3 0 6.1-2.3 6.8-5.5l16.9-80.3   c0.7-3.2 3.5-5.5 6.8-5.5h57.6c4.4 0 7.7 4 6.8 8.3l-15.5 74.6c-0.9 4.3 2.4 8.3 6.8 8.3h18.1c3.8 0 6.9 3.1 6.9 6.9v57.9   c0 3.8-3.1 6.9-6.9 6.9h-36.1c-3.3 0-6.1 2.3-6.8 5.5l-8.8 42.6c-0.9 4.3 2.4 8.3 6.8 8.3h44.9c3.8 0 6.9 3.1 6.9 6.9V408   c0 3.8-3.1 6.9-6.9 6.9h-62.6c-3.3 0-6.1 2.3-6.8 5.5l-16.9 80c-0.7 3.2-3.5 5.5-6.8 5.5h-57.6c-4.4 0-7.7-4-6.8-8.3l15.5-74.3   c0.9-4.3-2.4-8.3-6.8-8.3h-55C113.4 415 110.5 417.3 109.8 420.5z M134.3 342.9h55.3c3.3 0 6.1-2.3 6.8-5.5l8.8-42.6   c0.9-4.3-2.4-8.3-6.8-8.3h-55.3c-3.3 0-6.1 2.3-6.8 5.5l-8.8 42.6C126.7 338.9 130 342.9 134.3 342.9z"/>
-        </Canvas>
-    </Viewbox>
-    <Viewbox x:Key="Grid" x:Shared="False" Stretch="Uniform" Width="16" Height="16">
-        <Canvas Width="513" Height="513">
-            <Line X1="19.5" Y1="138.5" X2="493.5" Y2="138.5" Stroke="White" StrokeThickness="39"/>
-            <Line X1="19.5" Y1="374.5" X2="493.5" Y2="374.5" Stroke="White" StrokeThickness="39"/>
-            <Line X1="138.5" Y1="493.5" X2="138.5" Y2="19.5" Stroke="White" StrokeThickness="39"/>
-            <Line X1="374.5" Y1="493.5" X2="374.5" Y2="19.5" Stroke="White" StrokeThickness="39"/>
-        </Canvas>
-    </Viewbox>
+    <DrawingImage x:Key="DI_Axes">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Brush="{StaticResource VSWhite}" Geometry="F1 M512,512z M0,0z M471.6,235.8L394.1,235.8C394.1,204.2,353.7,204.2,353.7,235.8L276.2,235.8 276.2,158.3C307.8,158.3,307.8,117.9,276.2,117.9L276.2,40.4C309.4,40.4,304.7,0,279.6,0L232.4,0C206.8,0,203.1,40.4,235.8,40.4L235.8,117.9C203.9,117.9,204.5,158.3,235.8,158.3L235.8,235.8 158.3,235.8C158.3,204.4,117.9,204.2,117.9,235.8L40.4,235.8C40.4,202.6,0,207.3,0,232.4L0,279.6C0,304.7,40.4,309.4,40.4,276.2L117.9,276.2C117.9,307.6,158.3,308,158.3,276.2L235.8,276.2 235.8,353.7C204.2,353.7,204.2,394.1,235.8,394.1L235.8,471.6C202.6,471.6,207.3,512,232.4,512L279.6,512C304.8,512,309.4,471.6,276.2,471.6L276.2,394.1 279.6,394.1C304.8,394.1,309.4,353.7,276.2,353.7L276.2,276.2 353.7,276.2C353.7,307.8,394.1,307.8,394.1,276.2L471.6,276.2C471.6,308.8,512,305.2,512,279.6L512,232.4C512,207.3,471.6,202.6,471.6,235.8z" />
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="DI_AxesNumbers">
+        <DrawingImage.Drawing>
+            <DrawingGroup>
+                <GeometryDrawing Brush="{StaticResource VSWhite}" Geometry="F1 M512,512z M0,0z M471.6,235.8L394.1,235.8C394.1,204.2,353.7,204.2,353.7,235.8L276.2,235.8 276.2,158.3C307.8,158.3,307.8,117.9,276.2,117.9L276.2,40.4C309.4,40.4,304.7,0,279.6,0L232.4,0C206.8,0,203.1,40.4,235.8,40.4L235.8,117.9C203.9,117.9,204.5,158.3,235.8,158.3L235.8,235.8 158.3,235.8C158.3,204.4,117.9,204.2,117.9,235.8L40.4,235.8C40.4,202.6,0,207.3,0,232.4L0,279.6C0,304.7,40.4,309.4,40.4,276.2L117.9,276.2C117.9,307.6,158.3,308,158.3,276.2L235.8,276.2 235.8,353.7C204.2,353.7,204.2,394.1,235.8,394.1L235.8,471.6C202.6,471.6,207.3,512,232.4,512L279.6,512C304.8,512,309.4,471.6,276.2,471.6L276.2,394.1 279.6,394.1C304.8,394.1,309.4,353.7,276.2,353.7L276.2,276.2 353.7,276.2C353.7,307.8,394.1,307.8,394.1,276.2L471.6,276.2C471.6,308.8,512,305.2,512,279.6L512,232.4C512,207.3,471.6,202.6,471.6,235.8z" />
+                <GeometryDrawing Brush="{StaticResource VSBlue}" Geometry="F1 M512,512z M0,0z M109.8,420.5L92.9,500.5C92.2,503.7,89.4,506,86.1,506L28.5,506C24.1,506,20.8,501.9,21.7,497.6L37.4,423.3C38.3,419,35,414.9,30.6,414.9L12.6,414.9C8.8,414.9,5.7,411.8,5.7,408L5.7,349.8C5.7,346,8.8,342.9,12.6,342.9L48.4,342.9C51.7,342.9,54.5,340.6,55.2,337.4L64,294.8C64.9,290.5,61.6,286.5,57.2,286.5L12.6,286.5C8.8,286.5,5.7,283.4,5.7,279.6L5.7,221.7C5.7,217.9,8.8,214.8,12.6,214.8L75,214.8C78.3,214.8,81.1,212.5,81.8,209.3L98.7,129C99.4,125.8,102.2,123.5,105.5,123.5L163.4,123.5C167.8,123.5,171.1,127.6,170.2,131.9L154.5,206.5C153.6,210.8,156.9,214.9,161.3,214.9L216.3,214.9C219.6,214.9,222.4,212.6,223.1,209.4L240,129.1C240.7,125.9,243.5,123.6,246.8,123.6L304.4,123.6C308.8,123.6,312.1,127.6,311.2,131.9L295.7,206.5C294.8,210.8,298.1,214.8,302.5,214.8L320.6,214.8C324.4,214.8,327.5,217.9,327.5,221.7L327.5,279.6C327.5,283.4,324.4,286.5,320.6,286.5L284.5,286.5C281.2,286.5,278.4,288.8,277.7,292L268.9,334.6C268,338.9,271.3,342.9,275.7,342.9L320.6,342.9C324.4,342.9,327.5,346,327.5,349.8L327.5,408C327.5,411.8,324.4,414.9,320.6,414.9L258,414.9C254.7,414.9,251.9,417.2,251.2,420.4L234.3,500.4C233.6,503.6,230.8,505.9,227.5,505.9L169.9,505.9C165.5,505.9,162.2,501.9,163.1,497.6L178.6,423.3C179.5,419,176.2,415,171.8,415L116.8,415C113.4,415,110.5,417.3,109.8,420.5z M134.3,342.9L189.6,342.9C192.9,342.9,195.7,340.6,196.4,337.4L205.2,294.8C206.1,290.5,202.8,286.5,198.4,286.5L143.1,286.5C139.8,286.5,137,288.8,136.3,292L127.5,334.6C126.7,338.9,130,342.9,134.3,342.9z" />
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
+    <DrawingImage x:Key="DI_Grid">
+        <DrawingImage.Drawing>
+            <GeometryDrawing Geometry="M0,4 H16 M0,12 H16 M4,16 V0 M12,16 V0">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="{StaticResource VSWhite}" Thickness="1.5" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+        </DrawingImage.Drawing>
+    </DrawingImage>
 </ResourceDictionary>

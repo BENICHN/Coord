@@ -108,15 +108,13 @@
     <Compile Include="PropertyEditors\EnumEditor.xaml.cs">
       <DependentUpon>EnumEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PropertyEditors\ListEditor.xaml.cs">
-      <DependentUpon>ListEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="PropertyEditors\PropertiesEditorBase.cs" />
+    <Compile Include="PropertyEditors\ListEditor.cs" />
+    <Compile Include="PropertyEditors\PropertiesEditor.cs" />
     <Compile Include="PropertyEditors\VectorEditor.xaml.cs">
       <DependentUpon>VectorEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PropertyEditors\PropertiesEditor.xaml.cs">
-      <DependentUpon>PropertiesEditor.xaml</DependentUpon>
+    <Compile Include="PropertyEditors\PropertiesEditorBase.xaml.cs">
+      <DependentUpon>PropertiesEditorBase.xaml</DependentUpon>
     </Compile>
     <Compile Include="PropertyEditors\RectEditor.xaml.cs">
       <DependentUpon>RectEditor.xaml</DependentUpon>
@@ -157,10 +155,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PropertyEditors\ListEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="PropertyEditors\VectorEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -170,7 +164,7 @@
       <SubType>Designer</SubType>
     </Page>
     <None Include="app.manifest" />
-    <Page Include="PropertyEditors\PropertiesEditor.xaml">
+    <Page Include="PropertyEditors\PropertiesEditorBase.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -272,6 +266,15 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Coord.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Graphics\Axes.svg" />
+    <Content Include="Graphics\AxesNumbers.svg" />
+    <Content Include="Graphics\Grid.svg" />
+    <Content Include="Graphics\InTex.svg" />
+    <Content Include="Graphics\Lock.svg" />
+    <Content Include="Graphics\VisualObject.svg" />
+    <Content Include="Graphics\VisualObjectGroup.svg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

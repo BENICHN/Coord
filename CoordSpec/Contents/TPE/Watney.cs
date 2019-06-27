@@ -98,7 +98,7 @@ namespace CoordSpec
             var bodyCanvas = (Canvas)App.Graphics["Corps"];
             var armCanvas = (Canvas)App.Graphics["Bras"];
             Body = bodyCanvas.ToCharacters().ToArray();
-            BodyGraphicBounds = bodyCanvas.ToCharacters().Take(3).Geometry().Bounds;
+            BodyGraphicBounds = bodyCanvas.ToCharacters().Take(3).Bounds();
             Arm = armCanvas.ToCharacters().ToArray();
             OverrideDefaultValue<Watney, VisualObjectChildrenRenderingMode>(ChildrenRenderingModeProperty, VisualObjectChildrenRenderingMode.Independent);
         }
@@ -152,7 +152,7 @@ namespace CoordSpec
                 //Bras---------------------------------------------------------------------------------------------------------------------------------
 
                 var armGraphic = Arm.CloneCharacters().ToArray();
-                var armGraphicBounds = armGraphic.Geometry().Bounds;
+                var armGraphicBounds = armGraphic.Bounds();
                 var armAnchor = ArmAnchor.GetPoint(armGraphicBounds);
                 var armGraphicTransform = Matrix.Identity;
 

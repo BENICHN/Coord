@@ -44,7 +44,7 @@ namespace Coord
             if (RealLength > 0)
             {
                 var chars = characters.SubCollection(interval, true);
-                var bounds = chars.Geometry().Bounds;
+                var bounds = chars.Bounds();
 
                 var scaleCenter = RectPoint.GetPoint(bounds);
                 chars.ScaleAt(1, 1, scaleCenter, progress.ChangeValue(1.0 - progress.Value)).Enumerate();

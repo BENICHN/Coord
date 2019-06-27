@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace CoordAnimation
 {
@@ -25,15 +26,20 @@ namespace CoordAnimation
         public VisualObjectControl() => InitializeComponent();
     }
 
-    public class VisualObjectIcon : ContentControl
+    public class VisualObjectIcon : Image
     {
-        public string Type
-        {
-            get => (string)GetValue(TypeProperty);
-            set => SetValue(TypeProperty, value);
-        }
-        public static readonly DependencyProperty TypeProperty = DependencyProperty.Register("Type", typeof(string), typeof(VisualObjectIcon), new PropertyMetadata(string.Empty, OnTypeChanged));
+        public string Type { get => (string)GetValue(TypeProperty); set => SetValue(TypeProperty, value); }
+        public static readonly DependencyProperty TypeProperty = DependencyProperty.Register("Type", typeof(string), typeof(VisualObjectIcon));
 
-        private static void OnTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) { if (d is ContentControl contentControl) contentControl.SetResourceReference(ContentProperty, e.NewValue == null || contentControl.TryFindResource(e.NewValue) == null ? "VisualObject" : e.NewValue); }
+        protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.Property == TypeProperty)
+            {
+                string value = $"DI_{e.NewValue}";
+                SetResourceReference(SourceProperty, TryFindResource(value) is ImageSource ? value : "DI_VisualObject");
+            }
+
+            base.OnPropertyChanged(e);
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace Coord
         {
             double progress = EasedProgress.Value;
             var chars = characters.SubCollection(interval, true);
-            var bounds = chars.Geometry().Bounds;
+            var bounds = chars.Bounds();
             var size = bounds.Size;
             var newSize = new Size(size.Width + (Size.Width - size.Width) * progress, size.Height + (Size.Height - size.Height) * progress);
 

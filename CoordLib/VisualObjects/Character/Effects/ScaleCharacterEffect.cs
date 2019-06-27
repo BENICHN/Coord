@@ -35,7 +35,7 @@ namespace Coord
         {
             var center = Center;
             var chars = characters.SubCollection(interval, true).ToArray();
-            chars.ScaleAt(ScaleX, ScaleY, double.IsNaN(center.X + center.Y) ? RectPoint.GetPoint(chars.Geometry().Bounds) : In ? coordinatesSystemManager.ComputeOutCoordinates(Center) : Center, EasedProgress).Enumerate();
+            chars.ScaleAt(ScaleX, ScaleY, double.IsNaN(center.X + center.Y) ? RectPoint.GetPoint(chars.Bounds()) : In ? coordinatesSystemManager.ComputeOutCoordinates(Center) : Center, EasedProgress).Enumerate();
         }
     }
 }

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace CoordAnimation
 {
-    /// <summary>
-    /// Logique d'interaction pour ListEditor.xaml
-    /// </summary>
     public partial class ListEditor : PropertiesEditorBase
     {
         public Type CollectionType { get => (Type)GetValue(CollectionTypeProperty); set => SetValue(CollectionTypeProperty, value); }
@@ -24,6 +20,7 @@ namespace CoordAnimation
 
         protected override async void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
+            base.OnPropertyChanged(e);
             if (e.Property == CollectionTypeProperty) SetVisibility((Type)e.NewValue, List);
             if (e.Property == ListProperty)
             {
@@ -34,7 +31,6 @@ namespace CoordAnimation
                 try { if (e.NewValue is IList newList) for (int i = 0; i < newList.Count; i++) await AddEditor(new ListElement(newList, i)); }
                 catch (OperationCanceledException) { }
             }
-            base.OnPropertyChanged(e);
         }
 
         private void SetVisibility(Type collectionType, IList list)
@@ -66,6 +62,10 @@ namespace CoordAnimation
 
         public ListEditor()
         {
+            var tb = new FrameworkElementFactory(typeof(TextBlock));
+            tb.SetBinding(TextBlock.TextProperty, new Binding("Index"));
+            tb.SetValue(HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            tb.SetValue(VerticalAlignmentProperty, VerticalAlignment.Center);
             Editors.SelectedCellsChanged += Editors_SelectedCellsChanged;
             InitializeComponent();
         }
@@ -76,51 +76,29 @@ namespace CoordAnimation
         {
             if (CancelCellChange == false)
             {
-                if (e.RemovedCells.FirstOrDefault().Item is ListElement oldListElement && oldListElement.Editor is PropertiesEditor oldPropertiesEditor) oldPropertiesEditor.AreEditorsVisible = false;
-                if (e.AddedCells.FirstOrDefault().Item is ListElement newListElement && newListElement.Editor is PropertiesEditor newPropertiesEditor) newPropertiesEditor.AreEditorsVisible = true;
+                //if (e.RemovedCells.FirstOrDefault().Item is ListElement oldListElement && oldListElement.Editor is PropertiesEditorBase oldPropertiesEditor) oldPropertiesEditor.AreEditorsVisible = false;
+                //if (e.AddedCells.FirstOrDefault().Item is ListElement newListElement && newListElement.Editor is PropertiesEditorBase newPropertiesEditor) newPropertiesEditor.AreEditorsVisible = true;
             }
         }
     }
 
-    public class ListElement : DependencyObject, IPropertyEditorContainer
+    public class ListElement : PropertyEditorContainer
     {
         public IList List { get; }
 
-        private int m_index;
-        public int Index
-        {
-            get => m_index;
-            set
-            {
-                m_index = value;
-                NotifyPropertyChanged("Index");
-            }
-        }
-
-        private FrameworkElement m_editor;
-        public FrameworkElement Editor
-        {
-            get => m_editor;
-            set
-            {
-                m_editor = value;
-                NotifyPropertyChanged("Editor");
-            }
-        }
+        public int Index { get => (int)GetValue(IndexProperty); set => SetValue(IndexProperty, value); }
+        public static readonly DependencyProperty IndexProperty = DependencyProperty.Register("Index", typeof(int), typeof(ListElement));
 
         public object Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
         public static readonly DependencyProperty ValueProperty = DependencyProperty.Register("Value", typeof(object), typeof(ListElement));
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         public ListElement(IList list, int index)
         {
             Value = list[index];
             List = list;
             Index = index;
-            Editor = PropertiesEditorBase.GetEditorFromProperty(this, ValueProperty, null, true);
-            if (Editor is PropertiesEditor propertiesEditor) propertiesEditor.AreEditorsVisible = false;
+            Editor = PropertiesEditor.GetEditorFromProperty(this, ValueProperty, null, true);
+            if (Editor is PropertiesEditorBase propertiesEditor) propertiesEditor.IsExpanded = false;
         }
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)

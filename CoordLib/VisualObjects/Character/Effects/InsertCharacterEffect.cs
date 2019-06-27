@@ -48,7 +48,7 @@ namespace Coord
         {
             var chars = characters.SubCollection(BoundsInterval.IsNullOrEmpty() ? interval : BoundsInterval, true).ToArray();
 
-            var diff = RectPoint.GetPoint(VisualObject.GetTransformedCharacters(coordinatesSystemManager).Geometry().Bounds) - RectPoint.GetPoint(chars.Geometry().Bounds);
+            var diff = RectPoint.GetPoint(VisualObject.GetTransformedCharacters(coordinatesSystemManager).Bounds()) - RectPoint.GetPoint(chars.Bounds());
 
             if (!TranslateX) diff.X = 0;
             if (!TranslateY) diff.Y = 0;

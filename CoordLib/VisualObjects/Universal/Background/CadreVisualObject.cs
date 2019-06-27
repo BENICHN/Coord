@@ -49,17 +49,17 @@ namespace Coord
         protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             if (!IsEnabled) return Array.Empty<Character>();
-            var rect = Locked ? BaseRect : BaseRect = CharacterSelection.SelectMany(kvp => kvp.Key.GetTransformedCharacters(coordinatesSystemManager).SubCollection(kvp.Value, true)).Geometry().Bounds;
+            var rect = Locked ? BaseRect : BaseRect = CharacterSelection.SelectMany(kvp => kvp.Key.GetTransformedCharacters(coordinatesSystemManager).SubCollection(kvp.Value, true)).Bounds();
             var newRect = NewRect = Focused switch
             {
-                RectPoint { XProgress: 0, YProgress: 0 } => new Rect(rect.TopLeft + OutOffset, rect.BottomRight), //TopLeft
-                RectPoint { XProgress: 0.5, YProgress: 0 } => new Rect(rect.BottomLeft, rect.TopRight + OutOffsetY), //Top
-                RectPoint { XProgress: 1, YProgress: 0 } => new Rect(rect.TopRight + OutOffset, rect.BottomLeft), //TopRight
-                RectPoint { XProgress: 1, YProgress: 0.5 } => new Rect(rect.BottomLeft, rect.TopRight + OutOffsetX), //Right
-                RectPoint { XProgress: 1, YProgress: 1 } => new Rect(rect.BottomRight + OutOffset, rect.TopLeft), //BottomRight
-                RectPoint { XProgress: 0.5, YProgress: 1 } => new Rect(rect.TopLeft, rect.BottomRight + OutOffsetY), //Bottom
-                RectPoint { XProgress: 0, YProgress: 1 } => new Rect(rect.BottomLeft + OutOffset, rect.TopRight), //BottomLeft
-                RectPoint { XProgress: 0, YProgress: 0.5 } => new Rect(rect.TopRight, rect.BottomLeft + OutOffsetX), //Left
+                (0, 0) => new Rect(rect.TopLeft + OutOffset, rect.BottomRight), //TopLeft
+                (0.5, 0) => new Rect(rect.BottomLeft, rect.TopRight + OutOffsetY), //Top
+                (1, 0) => new Rect(rect.TopRight + OutOffset, rect.BottomLeft), //TopRight
+                (1, 0.5) => new Rect(rect.BottomLeft, rect.TopRight + OutOffsetX), //Right
+                (1, 1) => new Rect(rect.BottomRight + OutOffset, rect.TopLeft), //BottomRight
+                (0.5, 1) => new Rect(rect.TopLeft, rect.BottomRight + OutOffsetY), //Bottom
+                (0, 1) => new Rect(rect.BottomLeft + OutOffset, rect.TopRight), //BottomLeft
+                (0, 0.5) => new Rect(rect.TopRight, rect.BottomLeft + OutOffsetX), //Left
                 _ => rect.IsEmpty ? Rect.Empty : new Rect(rect.X + OutOffset.X, rect.Y + OutOffset.Y, rect.Width, rect.Height)
             };
 

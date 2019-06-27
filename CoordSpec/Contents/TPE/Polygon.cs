@@ -32,7 +32,7 @@ namespace CoordSpec
 
         public Polygon ComputeOutCoordinates(ReadOnlyCoordinatesSystemManager coordinatesSystemManager) => new Polygon(Points.Select(point => coordinatesSystemManager.ComputeOutCoordinates(point)).ToArray());
 
-        public PathGeometry ToGeometry() => GeometryHelper.GetCurve(Points, true, false);
+        public StreamGeometry ToGeometry() => GeometryHelper.GetCurve(Points, true, false);
 
         public Point this[int index] => Points[index];
     }

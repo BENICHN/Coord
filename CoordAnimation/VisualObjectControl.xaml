@@ -7,7 +7,7 @@
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
              mc:Ignorable="d" Name="this">
     <DockPanel>
-        <local:VisualObjectIcon Type="{Binding ObjectType, ElementName=this}" VerticalAlignment="Center"/>
+        <local:VisualObjectIcon Type="{Binding ObjectType, ElementName=this}" VerticalAlignment="Center" Width="16" Height="16"/>
         <benlib:SwitchableTextBox Margin="5,0,0,0" Text="{Binding ObjectName, ElementName=this, Mode=TwoWay}" VerticalAlignment="Center" Resistant="True"/>
     </DockPanel>
 </UserControl>
