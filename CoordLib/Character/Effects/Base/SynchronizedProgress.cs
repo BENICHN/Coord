@@ -27,7 +27,7 @@ namespace Coord
             set
             {
                 m_progress = value;
-                if (!Objects.IsNullOrEmpty()) foreach (var characterEffect in Objects) characterEffect.Progress = characterEffect.Progress.ChangeValue(value);
+                if (Objects != null) foreach (var characterEffect in Objects) characterEffect.Progress = characterEffect.Progress.ChangeValue(value);
             }
         }
 

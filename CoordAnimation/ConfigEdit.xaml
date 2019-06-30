@@ -18,6 +18,6 @@
                 </DockPanel>
             </Grid>
         </Border>
-        <c:Plane DockPanel.Dock="Top" x:Name="plane" EnableCharactersManipulating="False" EnableSelectionRect="True" EnableSelection="True" MouseDown="Plane_MouseDown" MouseMove="Plane_MouseMove" MouseUp="Plane_MouseUp"/>
+        <c:Plane DockPanel.Dock="Top" x:Name="plane" EnableCharactersManipulating="False" EnableSelectionRect="True" EnableSelection="True" PreviewMouseDown="Plane_PreviewMouseDown" MouseMove="Plane_MouseMove" MouseUp="Plane_MouseUp"/>
     </DockPanel>
 </UserControl>

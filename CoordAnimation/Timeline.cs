@@ -52,7 +52,7 @@ namespace CoordAnimation
         protected override Freezable CreateInstanceCore() => new TimelineHeader();
         public override string Type => "TimelineHeader";
 
-        static TimelineHeader() => OverrideDefaultValue<TimelineHeader, bool>(IsSelectableProperty, false);
+        public TimelineHeader() => IsSelectable = false;
 
         protected override IEnumerable<Character> GetCharactersCore(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
@@ -74,7 +74,7 @@ namespace CoordAnimation
         public override string Type => "TimelineLimits";
         protected override Freezable CreateInstanceCore() => new TimelineLimits();
 
-        static TimelineLimits() => OverrideDefaultValue<TimelineLimits, bool>(IsSelectableProperty, false);
+        public TimelineLimits() => IsSelectable = false;
 
         protected override IReadOnlyCollection<Character> GetCharacters(ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
@@ -101,8 +101,11 @@ namespace CoordAnimation
         public long Time { get => (long)GetValue(TimeProperty); set => SetValue(TimeProperty, value); }
         public static readonly DependencyProperty TimeProperty = CreateProperty<TimelineCursor, long>(true, true, true, "Time");
 
-        static TimelineCursor() => OverrideDefaultValue<TimelineCursor, bool>(IsSelectableProperty, false);
-        public TimelineCursor() => PropertiesAnimation.GeneralTimeChanged += (sender, e) => Time = e.NewValue;
+        public TimelineCursor()
+        {
+            IsSelectable = false;
+            PropertiesAnimation.GeneralTimeChanged += (sender, e) => Time = e.NewValue;
+        }
 
         protected override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest)
         {
@@ -232,7 +235,6 @@ namespace CoordAnimation
         public override string Type => "TimelineKeyFrame";
         protected override Freezable CreateInstanceCore() => new TimelineKeyFrame<T>();
 
-        private long m_baseFramescount;
         private Matrix m_cpMatrixInvert;
 
         public AbsoluteKeyFrame<T> KeyFrame { get => (AbsoluteKeyFrame<T>)GetValue(KeyFrameProperty); set => SetValue(KeyFrameProperty, value); }
@@ -243,27 +245,22 @@ namespace CoordAnimation
 
         public int Focus { get; private set; } = -1;
 
-        protected override void OnMouseEnter(Point inPosition, Character hitTest)
-        {
-            Focus = (int)hitTest.Data;
-            base.OnMouseEnter(inPosition, hitTest);
-        }
-
-        protected override void OnMouseLeave(Point inPosition, Character hitTest)
-        {
-            Focus = -1;
-            base.OnMouseLeave(inPosition, hitTest);
-        }
+        protected override void OnMouseEnter(Point inPosition, Character hitTest) => Focus = (int)hitTest.Data;
+        protected override void OnMouseLeave(Point inPosition, Character hitTest) => Focus = -1;
 
         protected override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest)
         {
-            int d = (int)clickHitTest.Data;
-            if (d == 1) ((SplineAbsoluteKeyFrame<T>)NextKeyFrame).KeySpline.ControlPoint1 += m_cpMatrixInvert.Transform(inOffset);
-            else if (d == 2) ((SplineAbsoluteKeyFrame<T>)NextKeyFrame).KeySpline.ControlPoint2 += m_cpMatrixInvert.Transform(inOffset);
-            else if (d == 0)
+            switch (clickHitTest.Data)
             {
-                if (totalInOffset == inOffset) m_baseFramescount = KeyFrame.FramesCount;
-                KeyFrame.FramesCount = m_baseFramescount + (long)totalInOffset.X;
+                case 0:
+                    KeyFrame.FramesCount = (long)inPosition.X;
+                    break;
+                case 1:
+                    ((SplineAbsoluteKeyFrame<T>)NextKeyFrame).KeySpline.ControlPoint1 += m_cpMatrixInvert.Transform(inOffset);
+                    break;
+                case 2:
+                    ((SplineAbsoluteKeyFrame<T>)NextKeyFrame).KeySpline.ControlPoint2 += m_cpMatrixInvert.Transform(inOffset);
+                    break;
             }
         }
 
@@ -294,14 +291,14 @@ namespace CoordAnimation
                         var p0 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(new Point(0, 0))) + v;
                         var p1 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(cp1)) + v;
                         yield return Character.Line(p0, p1).Color(new Pen(FlatBrushes.SunFlower, 1)).WithData(-1).HideSelection();
-                        yield return Character.Ellipse(p1, 5, 5).Color(Focus == 1 ? FlatBrushes.Carrot : FlatBrushes.SunFlower).WithData(1).HideSelection();
+                        yield return Character.Ellipse(p1, 5, 5).Color(/*Focus == 1 ? FlatBrushes.Carrot : */FlatBrushes.SunFlower).WithData(1).HideSelection();
                     }
                     if (cp2.X != 1 || cp2.Y != 1)
                     {
                         var p2 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(cp2)) + v;
                         var p3 = coordinatesSystemManager.ComputeOutCoordinates(m.Transform(new Point(1, 1))) + v;
                         yield return Character.Line(p2, p3).Color(new Pen(FlatBrushes.SunFlower, 1)).WithData(-1).HideSelection();
-                        yield return Character.Ellipse(p2, 5, 5).Color(Focus == 2 ? FlatBrushes.Carrot : FlatBrushes.SunFlower).WithData(2).HideSelection();
+                        yield return Character.Ellipse(p2, 5, 5).Color(/*Focus == 2 ? FlatBrushes.Carrot : */FlatBrushes.SunFlower).WithData(2).HideSelection();
                     }
 
                     m_cpMatrixInvert = m;

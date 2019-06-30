@@ -105,7 +105,7 @@ namespace CoordAnimation
             plane.Render(m_cursor);
         }
 
-        private void KeyFramesEditor_ObjectChanged(object sender, PropertyChangedExtendedEventArgs<DependencyObject> e)
+        private void KeyFramesEditor_ObjectChanged(object sender, PropertyChangedExtendedEventArgs<object> e)
         {
             if (!m_setting && m_keyFrames is IAbsoluteKeyFrameCollection keyFrames && e.OldValue is IAbsoluteKeyFrame oldValue)
             {

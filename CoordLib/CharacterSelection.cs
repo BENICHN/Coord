@@ -1,4 +1,5 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -113,11 +114,7 @@ namespace Coord
             plane.AxesNumbers.SelectionChanged += VisualObjects_SelectionChanged;
             plane.VisualObjects.SelectionChanged += VisualObjects_SelectionChanged;
             plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
-            Changed = (sender, e) =>
-            {
-                if (IsPointing && !e.NewValue.IsNullOrEmpty()) ObjectPointed?.Invoke(this, EventArgsHelper.Create(e.OriginalSource));
-                NotifyChanged();
-            };
+            Changed += (sender, e) => NotifyChanged();
         }
 
         public bool EnablePointing(Type type)
@@ -170,7 +167,56 @@ namespace Coord
 
         public void ClearSelection() { while (VisualObjects.Count > 0) VisualObjects[0].ClearSelection(); }
 
-        public void PushEffect(CharacterEffect effect) { foreach (var kvp in Selection) kvp.Key.Effects.Add(effect, kvp.Value); }
+        public void PushEffect(CharacterEffect effect) { foreach (var kvp in Selection) kvp.Key.Effects.Add((effect, kvp.Value)); }
+        public void PushTransform(Transform transform)
+        {
+            foreach (var kvp in Selection)
+            {
+                var transforms = kvp.Key.Transforms;
+                /*var lastTransform = transforms.LastOrDefault()?.Object;
+                switch (transform)
+                {
+                    case TranslateTransform translateTransform:
+                        if (lastTransform is TranslateTransform lastTranslateTransform)
+                        {
+                            lastTranslateTransform.Offset += translateTransform.Offset;
+                            return;
+                        }
+                        break;
+                    case ScaleTransform scaleTransform:
+                        if (lastTransform is ScaleTransform lastScaleTransform && lastScaleTransform.Center == scaleTransform.Center && (lastScaleTransform.RectPoint == scaleTransform.RectPoint || !scaleTransform.Center.IsNaN()))
+                        {
+                            lastScaleTransform.ScaleX *= scaleTransform.ScaleX;
+                            lastScaleTransform.ScaleY *= scaleTransform.ScaleY;
+                            return;
+                        }
+                        break;
+                    case RotateTransform rotateTransform:
+                        if (lastTransform is RotateTransform lastRotateTransform && lastRotateTransform.Center == rotateTransform.Center && (lastRotateTransform.RectPoint == rotateTransform.RectPoint || !rotateTransform.Center.IsNaN()))
+                        {
+                            lastRotateTransform.Angle *= rotateTransform.Angle;
+                            return;
+                        }
+                        break;
+                    case SkewTransform skewTransform:
+                        if (lastTransform is SkewTransform lastSkewTransform)
+                        {
+                            lastSkewTransform.SkewX += skewTransform.SkewX;
+                            lastSkewTransform.SkewY += skewTransform.SkewY;
+                            return;
+                        }
+                        break;
+                    case MatrixTransform matrixTransform:
+                        if (lastTransform is MatrixTransform lastMatrixTransform)
+                        {
+                            lastMatrixTransform.Matrix *= matrixTransform.Matrix;
+                            return;
+                        }
+                        break;
+                }*/
+                transforms.Add((transform, kvp.Value));
+            }
+        }
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
@@ -225,6 +271,7 @@ namespace Coord
                 if (!AllowMultiple) ClearSelection();
                 Selection.Add(visualObject, e.NewValue);
                 VisualObjects.Add(visualObject);
+                if (IsPointing) ObjectPointed?.Invoke(this, EventArgsHelper.Create(e.OriginalSource));
             }
             Changed?.Invoke(this, e);
         }

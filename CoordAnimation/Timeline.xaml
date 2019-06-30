@@ -23,6 +23,6 @@
             <ColumnDefinition Width="300"/>
         </Grid.ColumnDefinitions>
         <coord:Plane Name="plane" ZoomDirection="Horizontal" MoveDirection="Horizontal" EnableSelection="True" PreviewMouseDown="UpdatePlaneDirection" PreviewKeyDown="UpdatePlaneDirection" PreviewKeyUp="UpdatePlaneDirection"/>
-        <local:PropertiesEditor x:Name="keyFramesEditor" Grid.Column="1" IsAnimatable="False" ObjectChanged="KeyFramesEditor_ObjectChanged"/>
+        <local:PropertiesEditor x:Name="keyFramesEditor" Grid.Column="1" IsAnimatable="False" IsExpanded="True" ObjectChanged="KeyFramesEditor_ObjectChanged"/>
     </Grid>
 </UserControl>

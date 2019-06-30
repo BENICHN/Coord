@@ -109,7 +109,7 @@ namespace Coord
 
         public static IEnumerable<(MorphingCharacter From, MorphingCharacter To)> ComputeCorrespondances(MorphingCharacter[] from, MorphingCharacter[] to, CorrespondanceDictionary correspondances)
         {
-            var enumerator = (correspondances.IsNullOrEmpty() ? new CorrespondanceDictionary() : correspondances).GetKeyValuePairs(from.Length, to.Length).GetEnumerator();
+            var enumerator = (correspondances ?? new CorrespondanceDictionary()).GetKeyValuePairs(from.Length, to.Length).GetEnumerator();
             enumerator.MoveNext();
 
             while (true)

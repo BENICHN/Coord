@@ -1,107 +1,120 @@
-﻿using BenLib.Standard;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Windows;
 
 namespace Coord
 {
-    public interface INotifyItemChanged { event EventHandler ItemChanged; }
-
-    public class NotifyObjectCollection<T> : ObservableRangeCollection<T>, INotifyItemChanged where T : NotifyObject
+    public class NotifyObjectCollection<T> : NotifyObject, IList<T>, IList, IReadOnlyList<T>, INotifyCollectionChanged, INotifyPropertyChanged
     {
-        public event EventHandler ItemChanged;
+        protected override Freezable CreateInstanceCore() => new NotifyObjectCollection<T>();
+        protected ObservableCollection<T> Items { get; }
 
-        public NotifyObjectCollection() { }
-        public NotifyObjectCollection(IEnumerable<T> collection) : base(collection) { foreach (var item in Items) Register(item); }
-        public NotifyObjectCollection(List<T> list) : base(list) { foreach (var item in Items) Register(item); }
+        public NotifyObjectCollection()
+        {
+            Items = new ObservableCollection<T>();
+            CollectionChanged += (sender, e) => NotifyChanged();
+        }
+        public NotifyObjectCollection(List<T> list)
+        {
+            Items = new ObservableCollection<T>(list);
+            CollectionChanged += (sender, e) => NotifyChanged();
+        }
+        public NotifyObjectCollection(IEnumerable<T> collection)
+        {
+            Items = new ObservableCollection<T>(collection);
+            CollectionChanged += (sender, e) => NotifyChanged();
+        }
+
+        public T this[int index] { get => Items[index]; set => SetItem(index, value); }
+        object IList.this[int index] { get => this[index]; set => this[index] = (T)value; }
+
+        public int Count => Items.Count;
+        public bool IsReadOnly => false;
+
+        bool IList.IsFixedSize => false;
+        object ICollection.SyncRoot => ((ICollection)Items).SyncRoot;
+        bool ICollection.IsSynchronized => ((ICollection)Items).IsSynchronized;
+
+        public event NotifyCollectionChangedEventHandler CollectionChanged { add => Items.CollectionChanged += value; remove => Items.CollectionChanged -= value; }
+        event PropertyChangedEventHandler INotifyPropertyChanged.PropertyChanged { add => ((INotifyPropertyChanged)Items).PropertyChanged += value; remove => ((INotifyPropertyChanged)Items).PropertyChanged -= value; }
 
         protected virtual void Register(T item)
         {
-            if (item != null)
+            if (item is NotifyObject notifyObject)
             {
-                item.Destroyed += OnItemDestroyed;
-                item.Changed += OnItemChanged;
+                notifyObject.Destroyed += OnItemDestroyed;
+                notifyObject.Changed += OnItemChanged;
             }
         }
         protected virtual void UnRegister(T item)
         {
-            if (item != null)
+            if (item is NotifyObject notifyObject)
             {
-                item.Destroyed -= OnItemDestroyed;
-                item.Changed -= OnItemChanged;
+                notifyObject.Destroyed -= OnItemDestroyed;
+                notifyObject.Changed -= OnItemChanged;
             }
         }
 
         private void OnItemDestroyed(object sender, EventArgs e) => Remove((T)sender);
-        private void OnItemChanged(object sender, EventArgs e) => ItemChanged?.Invoke(sender, e);
+        private void OnItemChanged(object sender, EventArgs e) => NotifyChanged();
 
-        protected override void ClearItems()
+        protected virtual void ClearItems()
         {
             foreach (var item in Items) UnRegister(item);
-            base.ClearItems();
+            Items.Clear();
         }
-        protected override void InsertItem(int index, T item)
+        protected virtual void InsertItem(int index, T item)
         {
             Register(item);
-            base.InsertItem(index, item);
+            Items.Insert(index, item);
         }
-        protected override void RemoveItem(int index)
+        protected virtual void RemoveItem(int index)
         {
             UnRegister(Items[index]);
-            base.RemoveItem(index);
+            Items.RemoveAt(index);
         }
-        protected override void SetItem(int index, T item)
+        protected virtual void SetItem(int index, T item)
         {
             UnRegister(Items[index]);
             Register(item);
-            base.SetItem(index, item);
+            Items[index] = item;
         }
-    }
+        protected virtual void MoveItem(int oldIndex, int newIndex) => Items.Move(oldIndex, newIndex);
 
-    public class CharacterEffectDictionary : ObservableDictionary<CharacterEffect, Interval<int>>, INotifyItemChanged
-    {
-        public event EventHandler ItemChanged;
-
-        public CharacterEffectDictionary() { }
-        public CharacterEffectDictionary(int capacity) : base(capacity) { }
-        public CharacterEffectDictionary(IEqualityComparer<CharacterEffect> comparer) : base(comparer) { }
-        public CharacterEffectDictionary(IDictionary<CharacterEffect, Interval<int>> dictionary) : base(dictionary) { }
-        public CharacterEffectDictionary(int capacity, IEqualityComparer<CharacterEffect> comparer) : base(capacity, comparer) { }
-        public CharacterEffectDictionary(IDictionary<CharacterEffect, Interval<int>> dictionary, IEqualityComparer<CharacterEffect> comparer) : base(dictionary, comparer) { }
-
-        protected virtual void Register(CharacterEffect item)
+        public void Add(T item) => InsertItem(Count, item);
+        public void Clear() => ClearItems();
+        public bool Contains(T item) => Items.Contains(item);
+        public void CopyTo(T[] array, int arrayIndex) => Items.CopyTo(array, arrayIndex);
+        public int IndexOf(T item) => Items.IndexOf(item);
+        public void Insert(int index, T item) => InsertItem(index, item);
+        public void Move(int oldIndex, int newIndex) => MoveItem(oldIndex, newIndex);
+        public bool Remove(T item)
         {
-            item.Destroyed += OnItemDestroyed;
-            item.Changed += OnItemChanged;
+            int index = IndexOf(item);
+            if (index == -1) return false;
+            RemoveItem(index);
+            return true;
         }
-        protected virtual void UnRegister(CharacterEffect item)
-        {
-            item.Destroyed -= OnItemDestroyed;
-            item.Changed -= OnItemChanged;
-        }
+        public void RemoveAt(int index) => RemoveItem(index);
 
-        private void OnItemDestroyed(object sender, EventArgs e) => Remove((CharacterEffect)sender);
-        private void OnItemChanged(object sender, EventArgs e) => ItemChanged?.Invoke(sender, e);
-
-        protected override void ClearItems()
+        int IList.Add(object value)
         {
-            foreach (var item in Dictionary.Keys) UnRegister(item);
-            base.ClearItems();
+            Add((T)value);
+            return Count - 1;
         }
+        bool IList.Contains(object value) => value is T item ? Contains(item) : false;
+        void ICollection.CopyTo(Array array, int index) => CopyTo((T[])array, index);
+        int IList.IndexOf(object value) => value is T item ? IndexOf(item) : -1;
+        void IList.Insert(int index, object value) => Insert(index, (T)value);
+        void IList.Remove(object value) { if (value is T item) Remove(item); }
 
-        protected override void AddItem(CharacterEffect key, Interval<int> value)
-        {
-            Register(key);
-            base.AddItem(key, value);
-        }
-
-        protected override bool RemoveItem(CharacterEffect key)
-        {
-            UnRegister(key);
-            return base.RemoveItem(key);
-        }
+        public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => Items.GetEnumerator();
     }
 
     public class ObservableDictionary<TKey, TValue> : IDictionary<TKey, TValue>, INotifyDictionaryChanged<TKey, TValue>

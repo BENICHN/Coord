@@ -20,7 +20,6 @@ namespace CoordAnimation
     /// </summary>
     public partial class ConfigEdit : UserControl
     {
-        private bool m_createPoint;
         private readonly List<PointVisualObject> m_createdPoints = new List<PointVisualObject>();
         private Configuration m_current;
         private PointVisualObject m_currentPoint;
@@ -45,25 +44,33 @@ namespace CoordAnimation
             if (name == "Point")
             {
                 plane.EnableSelection = false;
-                m_createPoint = true;
+                CreatePoint();
             }
             else
             {
                 m_current = configuration;
+                configuration.CurrentTypeChanged += Configuration_CurrentTypeChanged;
                 configuration.Disposed += Configuration_Disposed;
                 plane.VisualObjects.Add(configuration.VisualObject);
                 await configuration.Run();
             }
         }
 
+        private PointVisualObject CreatePoint()
+        {
+            var result = Point(plane.InMouseMagnetPosition).Style(FlatBrushes.Alizarin);
+            m_createdPoints.Add(result);
+            m_currentPoint = result;
+            return result;
+        }
+
+        private void Configuration_CurrentTypeChanged(object sender, PropertyChangedExtendedEventArgs<Type> e) { if (e.NewValue == typeof(PointVisualObject)) m_current.SetValue(CreatePoint()); }
+
         public void Cancel()
         {
-            if (m_current is Configuration current && !current.IsDisposed)
-            {
-                foreach (var point in m_createdPoints) point.Destroy();
-                current.Cancel();
-            }
-            else m_createPoint = false;
+            foreach (var point in m_createdPoints) point.Destroy();
+            m_currentPoint = null;
+            if (m_current is Configuration current && !current.IsDisposed) current.Cancel();
         }
 
         private void Configuration_Disposed(object sender, EventArgs<bool> e)
@@ -73,26 +80,16 @@ namespace CoordAnimation
             plane.RestoreCursor = null;
         }
 
-        private void Plane_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Plane_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.OnlyPressed(MouseButton.Left) && !plane.IsMoving && !plane.IsSelecting && (m_createPoint || m_current?.CurrentType == typeof(PointVisualObject) && !(plane.LastHitTestTop?.Owner is PointVisualObject)))
+            if (e.OnlyPressed(MouseButton.Left) && m_currentPoint is PointVisualObject currentPoint)
             {
-                var result = Point(plane.InMouseMagnetPosition).Style(FlatBrushes.Alizarin);
-                plane.VisualObjects.Add(result);
-                result.Selection = Interval<int>.PositiveReals;
-                m_currentPoint = result;
-                m_createdPoints.Add(result);
-            }
-
-            plane.RenderChanged();
-        }
-
-        private void Plane_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (m_currentPoint != null)
-            {
-                m_currentPoint.SetInPoint(plane.InMouseMagnetPosition);
-                plane.RenderChanged();
+                if (plane.LastHitTestTop?.Owner is PointVisualObject)
+                {
+                    m_createdPoints.Remove(currentPoint);
+                    m_currentPoint = null;
+                }
+                else plane.VisualObjects.Add(currentPoint);
             }
         }
 
@@ -100,10 +97,9 @@ namespace CoordAnimation
         {
             if (e.LeftButton == MouseButtonState.Released)
             {
-                m_currentPoint = null;
-                if (m_createPoint)
+                if (m_current?.IsDisposed ?? true)
                 {
-                    m_createPoint = false;
+                    m_currentPoint = null;
                     m_createdPoints.Clear();
                     plane.EnableSelection = true;
                     plane.RestoreCursor = null;
@@ -112,6 +108,8 @@ namespace CoordAnimation
 
             plane.RenderChanged();
         }
+
+        private void Plane_MouseMove(object sender, MouseEventArgs e) { if (m_currentPoint != null) m_currentPoint.SetInPoint(plane.InMouseMagnetPosition); }
 
         private void UserControl_KeyDown(object sender, KeyEventArgs e)
         {
@@ -130,6 +128,9 @@ namespace CoordAnimation
         private readonly TrackingCharacterSelection m_selection;
         private readonly IEnumerator<(DependencyObject Owner, DependencyProperty Property)> m_enumerator;
 
+        public Type CurrentType => Current.Property?.PropertyType;
+        public event PropertyChangedExtendedEventHandler<Type> CurrentTypeChanged;
+
         public ConfigurationEnumerator(IEnumerator<(DependencyObject, DependencyProperty)> enumerator, TrackingCharacterSelection selection)
         {
             m_enumerator = enumerator;
@@ -145,6 +146,7 @@ namespace CoordAnimation
             m_enumerator.Dispose();
             m_selection.DisablePointing();
             m_selection.ObjectPointed -= OnObjectPointed;
+            CurrentTypeChanged = null;
         }
 
         public Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)
@@ -161,16 +163,28 @@ namespace CoordAnimation
 
         public bool MoveNext()
         {
+            var oldType = CurrentType;
             m_selection.DisablePointing();
-            return m_enumerator.MoveNext() && m_selection.EnablePointing(Current.Property.PropertyType);
+            if (m_enumerator.MoveNext() && m_selection.EnablePointing(Current.Property.PropertyType))
+            {
+                CurrentTypeChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<Type>("CurrentType", oldType, CurrentType));
+                return true;
+            }
+            else if (oldType != null) CurrentTypeChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<Type>("CurrentType", oldType, null));
+            return false;
         }
 
         private void OnObjectPointed(object sender, EventArgs<VisualObject> e)
         {
-            var (owner, property) = Current;
-            owner.SetValue(property, e.Param1);
+            SetValue(e.Param1);
             m_taskCompletionSource?.TrySetResult(true);
             m_taskCompletionSource = null;
+        }
+
+        public void SetValue(VisualObject value)
+        {
+            var (owner, property) = Current;
+            owner.SetValue(property, value);
         }
 
         public void Reset()
@@ -184,15 +198,27 @@ namespace CoordAnimation
     {
         private readonly CancellationTokenSource m_cancellationTokenSource = new CancellationTokenSource();
         private readonly ConfigurationEnumerator m_enumerator;
-        public VisualObject VisualObject { get; protected set; }
 
-        public Type CurrentType => m_enumerator.Current.Property.PropertyType;
+        private VisualObject m_visualObject;
+        public VisualObject VisualObject
+        {
+            get => m_visualObject;
+            protected set
+            {
+                value.IsHitTestVisible = false;
+                m_visualObject = value;
+            }
+        }
 
+        public Type CurrentType => m_enumerator.CurrentType;
+        public event PropertyChangedExtendedEventHandler<Type> CurrentTypeChanged { add => m_enumerator.CurrentTypeChanged += value; remove => m_enumerator.CurrentTypeChanged -= value; }
         public event EventHandler<EventArgs<bool>> Disposed;
         public bool IsDisposed { get; private set; }
         protected abstract IEnumerable<(DependencyObject Owner, DependencyProperty Property)> Trame { get; }
 
         public Configuration() => m_enumerator = new ConfigurationEnumerator(Trame.GetEnumerator(), App.Scene.Plane.Selection);
+
+        public void SetValue(VisualObject value) => m_enumerator.SetValue(value);
 
         public async Task Run()
         {
@@ -201,7 +227,8 @@ namespace CoordAnimation
                 if (!IsDisposed)
                 {
                     var cancellationToken = m_cancellationTokenSource.Token;
-                    while (await m_enumerator.MoveNextAsync(cancellationToken)) ;
+                    while (await m_enumerator.MoveNextAsync(cancellationToken)) { }
+                    VisualObject.IsHitTestVisible = true;
                     Dispose(false);
                 }
             }

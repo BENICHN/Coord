@@ -152,7 +152,7 @@ namespace CoordAnimation
                 if (IsIndependent)
                 {
                     m_refreshAtChange = value;
-                    if (!Children.IsNullOrEmpty()) foreach (var element in Children.Nodes.OfType<VisualObjectElement>()) element.RefreshAtChange = value;
+                    if (Children != null) foreach (var element in Children.Nodes.OfType<VisualObjectElement>()) element.RefreshAtChange = value;
                 }
             }
         }
@@ -254,7 +254,7 @@ namespace CoordAnimation
         }
         public override void SetIsEnabled(bool value)
         {
-            if (!Children.IsNullOrEmpty()) foreach (var element in Children.Nodes) element.SetIsEnabled(value);
+            if (Children != null) foreach (var element in Children.Nodes) element.SetIsEnabled(value);
             base.SetIsEnabled(value);
         }
 

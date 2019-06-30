@@ -30,12 +30,12 @@ namespace Coord
                     double prop = (double)index / length;
                     if (LagEasingFunction != null) LagEasingFunction.Ease(prop);
                     double lf = LagFactor;
-                    return (lf * Value - (lf - 1) * prop).Trim();
+                    return (lf * Value - (lf - 1) * prop).Trim(0, 1);
 
                 case ProgressMode.OneAtATime:
                     double lower = (double)index / length;
                     double upper = (double)(index + 1) / length;
-                    return ((Value - lower) / (upper - lower)).Trim();
+                    return ((Value - lower) / (upper - lower)).Trim(0, 1);
 
                 default: return Value;
             }

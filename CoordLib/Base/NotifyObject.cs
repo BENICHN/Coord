@@ -511,7 +511,6 @@ namespace Coord
                 else if (obj is Freezable freezable && !freezable.IsFrozen) freezable.Changed += ChangedHandler;
                 if (obj is INotifyPropertyChanged notifyPropertyChanged) notifyPropertyChanged.PropertyChanged += ChangedHandler;
                 if (obj is INotifyCollectionChanged notifyCollectionChanged) notifyCollectionChanged.CollectionChanged += ChangedHandler;
-                if (obj is INotifyItemChanged notifyItemChanged) notifyItemChanged.ItemChanged += ChangedHandler;
             }
         }
         protected virtual void UnRegister(object obj)
@@ -526,7 +525,6 @@ namespace Coord
                 else if (obj is Freezable freezable && !freezable.IsFrozen) freezable.Changed -= ChangedHandler;
                 if (obj is INotifyPropertyChanged notifyPropertyChanged) notifyPropertyChanged.PropertyChanged -= ChangedHandler;
                 if (obj is INotifyCollectionChanged notifyCollectionChanged) notifyCollectionChanged.CollectionChanged -= ChangedHandler;
-                if (obj is INotifyItemChanged notifyItemChanged) notifyItemChanged.ItemChanged -= ChangedHandler;
             }
         }
 

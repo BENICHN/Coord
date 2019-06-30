@@ -15,6 +15,6 @@ namespace Coord
         public new NotifyObjectCollection<PointVisualObject> InPoints { get => (NotifyObjectCollection<PointVisualObject>)GetValue(InPointsProperty); set => SetValue(InPointsProperty, value); }
         public static readonly DependencyProperty InPointsProperty = CreateProperty<PointsPolygonDefinition, NotifyObjectCollection<PointVisualObject>>(true, true, true, "InPoints");
 
-        protected override void OnChanged() => base.InPoints = InPoints.IsNullOrEmpty() ? Array.Empty<Point>() : InPoints.Select(p => p.Definition.InPoint).ToArray();
+        protected override void OnChanged() => base.InPoints = InPoints == null ? Array.Empty<Point>() : InPoints.Select(p => p.Definition.InPoint).ToArray();
     }
 }

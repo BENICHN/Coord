@@ -126,6 +126,7 @@ namespace CoordAnimation
             //BenLib.Framework.ThreadingFramework.SetInterval(() => previewPlane.RenderChanged(), 1000.0 / 60);
             Plane.VisualObjects.Add(c);
             Plane.VisualObjects.Add(Vector(p, new Vector(2, 5)).Style(new Pen(FlatBrushes.PeterRiver, 3)));
+            Plane.VisualObjects.Add(new Koch { Start = Point(-1, 5), End = Point(3, 3), Stroke = new Pen(FlatBrushes.Nephritis, 5) });
             //Plane.VisualObjects.Add(Group(new GridVisualObject { Primary = true, Secondary = true, SecondaryDensity = 10 }));
 
             //Plane.VisualObjects.CollectionChanged += (sndr, args) => VisualObjectsTreeView.IsEnabled = false;

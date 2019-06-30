@@ -165,7 +165,7 @@ namespace CoordAnimation
                 IsPointingSB = false;
             }
         }
-        private void SetSB(Point position) => SB = ((position.X / sbselector.ActualWidth).Trim(), 1 - (position.Y / sbselector.ActualHeight).Trim());
+        private void SetSB(Point position) => SB = ((position.X / sbselector.ActualWidth).Trim(0, 1), 1 - (position.Y / sbselector.ActualHeight).Trim(0, 1));
 
         private void LoadImages(object sender, EventArgs e)
         {

@@ -75,7 +75,7 @@ namespace CoordAnimation
             double h = border.ActualHeight - 1;
             double tw = Input.IsShiftPressed() ? 0.1 * w : 0;
             double th = Input.IsShiftPressed() ? 0.1 * h : 0;
-            return new RectPoint(Math.Round((position.X.Magnet(0, tw).Magnet(w / 2, tw).Magnet(w, tw) / w).Trim(), 3), Math.Round((position.Y.Magnet(0, th).Magnet(h / 2, th).Magnet(h, th) / h).Trim(), 3));
+            return new RectPoint(Math.Round((position.X.Magnet(0, tw).Magnet(w / 2, tw).Magnet(w, tw) / w).Trim(0, 1), 3), Math.Round((position.Y.Magnet(0, th).Magnet(h / 2, th).Magnet(h, th) / h).Trim(0, 1), 3));
         }
 
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)

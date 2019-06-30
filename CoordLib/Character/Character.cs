@@ -1,4 +1,5 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
+using BenLib.Standard;
 using BenLib.WPF;
 using System;
 using System.Collections.Generic;
@@ -20,14 +21,12 @@ namespace Coord
             if (geometry.IsFrozen) IsTransformed = true;
             else geometry.Transform = null;
         }
-
         public Character(Geometry geometry, Brush fill, Pen stroke) : this(geometry)
         {
             Fill = fill;
             Stroke = stroke;
         }
-
-        private Character(VisualObject owner, VisualObject creator, int index, Geometry geometry, Brush fill, Pen stroke, Brush selectionFill, Pen selectionStroke, Matrix transform, bool isTransformed, object data)
+        private Character(VisualObject owner, VisualObject creator, int index, Geometry geometry, Brush fill, Pen stroke, Brush selectionFill, Pen selectionStroke, Matrix transform, bool isTransformed, bool isHitTestVisible, object data)
         {
             Owner = owner;
             Creator = creator;
@@ -39,11 +38,12 @@ namespace Coord
             SelectionStroke = selectionStroke;
             Transform = transform;
             IsTransformed = isTransformed;
+            IsHitTestVisible = isHitTestVisible;
             Data = data;
         }
 
-        public Character Clone() => new Character(Owner, Creator, Index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), SelectionFill?.CloneCurrentValue(), SelectionStroke?.CloneCurrentValue(), Transform, IsTransformed, Data);
-        public Character Clone(VisualObject owner, int index) => new Character(owner, Creator ?? Owner, index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), SelectionFill?.CloneCurrentValue(), SelectionStroke?.CloneCurrentValue(), Transform, IsTransformed, Data);
+        public Character Clone() => new Character(Owner, Creator, Index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), SelectionFill?.CloneCurrentValue(), SelectionStroke?.CloneCurrentValue(), Transform, IsTransformed, IsHitTestVisible, Data);
+        public Character Clone(VisualObject owner, int index) => new Character(owner, Creator ?? Owner, index, Geometry?.CloneCurrentValue(), Fill?.CloneCurrentValue(), Stroke?.CloneCurrentValue(), SelectionFill?.CloneCurrentValue(), SelectionStroke?.CloneCurrentValue(), Transform, IsTransformed, IsHitTestVisible, Data);
         public Character Attach(VisualObject owner, int index)
         {
             Owner = owner;
@@ -99,15 +99,21 @@ namespace Coord
             return this;
         }
         public Character HideSelection() => ColorSelection(null, null);
+        public Character HideHitTest()
+        {
+            IsHitTestVisible = false;
+            return this;
+        }
 
         public Brush Fill { get; set; }
-
         public Pen Stroke { get; set; }
+
+        public Brush SelectionFill { get; set; } = null;
+        public Pen SelectionStroke { get; set; } = VisualObject.SelectionStroke;
 
         public Matrix Transform;
 
         public bool IsTransformed { get; private set; }
-
         public Geometry Geometry { get; }
 
         public object Data { get; set; }
@@ -116,8 +122,8 @@ namespace Coord
         public VisualObject Creator { get; private set; }
         public int Index { get; private set; }
 
-        public Brush SelectionFill { get; set; } = null;
-        public Pen SelectionStroke { get; set; } = VisualObject.SelectionStroke;
+        private bool m_isHitTestVisible = true;
+        public bool IsHitTestVisible { get => m_isHitTestVisible && (Owner?.IsHitTestVisible ?? true); set => m_isHitTestVisible = value; }
 
         public bool IsSelected
         {
@@ -132,7 +138,7 @@ namespace Coord
         {
             if (!Geometry.IsFrozen)
             {
-                Geometry.Transform = new MatrixTransform(Transform);
+                Geometry.Transform = new System.Windows.Media.MatrixTransform(Transform);
                 IsTransformed = true;
             }
         }
@@ -174,7 +180,7 @@ namespace Coord
             return new Character(result);
         }
 
-        public static Character Path(IEnumerable<PathFigure> figures, FillRule fillRule, Transform transform) => new Character(new PathGeometry(figures, fillRule, transform));
+        public static Character Path(IEnumerable<PathFigure> figures, FillRule fillRule, System.Windows.Media.Transform transform) => new Character(new PathGeometry(figures, fillRule, transform));
         public static Character Path(params PathFigure[] figures) => new Character(new PathGeometry(figures));
     }
 
@@ -183,7 +189,7 @@ namespace Coord
         public static IEnumerable<Character> HitTest(this IEnumerable<Character> characters, Rect rect)
         {
             var rectangle = new RectangleGeometry(rect);
-            foreach (var character in characters)
+            foreach (var character in characters.Where(c => c.IsHitTestVisible))
             {
                 bool fill = character.Fill != null && character.Fill.Opacity > 0;
                 bool stroke = character.Stroke != null && character.Stroke.Thickness > 0 && character.Stroke.Brush != null && character.Stroke.Brush.Opacity > 0;
@@ -202,7 +208,7 @@ namespace Coord
 
         public static IEnumerable<Character> HitTest(this IEnumerable<Character> characters, Point point)
         {
-            foreach (var character in characters)
+            foreach (var character in characters.Where(c => c.IsHitTestVisible))
             {
                 bool fill = character.Fill != null && character.Fill.Opacity > 0;
                 bool stroke = character.Stroke != null && character.Stroke.Thickness > 0 && character.Stroke.Brush != null && character.Stroke.Brush.Opacity > 0;
@@ -301,7 +307,7 @@ namespace Coord
                 if (right < bounds.Right) right = bounds.Right;
                 if (bottom < bounds.Bottom) bottom = bounds.Bottom;
             }
-            return new Rect(left, top, right - left, bottom - top);
+            return (left + right + top + bottom).IsNaN() ? Rect.Empty : new Rect(left, top, right - left, bottom - top);
         }
 
         public static Character ToCharacter(this Geometry geometry, Brush fill, Pen stroke) => new Character(geometry, fill, stroke);
@@ -348,6 +354,7 @@ namespace Coord
         public static IEnumerable<Character> ColorSelection(this IEnumerable<Character> characters, Brush fill) => characters.Select(character => character.ColorSelection(fill));
         public static IEnumerable<Character> ColorSelection(this IEnumerable<Character> characters, Pen stroke) => characters.Select(character => character.ColorSelection(stroke));
         public static IEnumerable<Character> HideSelection(this IEnumerable<Character> characters) => characters.Select(character => character.HideSelection());
+        public static IEnumerable<Character> HideHitTest(this IEnumerable<Character> characters) => characters.Select(character => character.HideHitTest());
 
     }
 }

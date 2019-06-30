@@ -44,20 +44,15 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BenLib">
-      <HintPath>..\..\BenLib\BenLib\bin\Debug\BenLib.dll</HintPath>
+    <Reference Include="BenLib.Framework, Version=2018.9.11.1902, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\BenLib\BenLib.Framework\bin\Debug\BenLib.Framework.dll</HintPath>
     </Reference>
     <Reference Include="BenLib.Standard">
       <HintPath>..\..\BenLib\BenLib.Standard\bin\Debug\netstandard2.0\BenLib.Standard.dll</HintPath>
     </Reference>
     <Reference Include="BenLib.WPF">
       <HintPath>..\..\BenLib\BenLib.WPF\bin\Debug\BenLib.WPF.dll</HintPath>
-    </Reference>
-    <Reference Include="CoordLib">
-      <HintPath>..\CoordLib\bin\Debug\CoordLib.dll</HintPath>
-    </Reference>
-    <Reference Include="CoordSpec">
-      <HintPath>..\CoordSpec\bin\Debug\CoordSpec.exe</HintPath>
     </Reference>
     <Reference Include="MathConverter, Version=1.2.1.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathConverter.1.2.1.5\lib\net40-client\MathConverter.dll</HintPath>
@@ -139,7 +134,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Graphics.xaml">
+    <Page Include="Graphics\Graphics.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -275,6 +270,16 @@
     <Content Include="Graphics\Lock.svg" />
     <Content Include="Graphics\VisualObject.svg" />
     <Content Include="Graphics\VisualObjectGroup.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CoordLib\CoordLib.csproj">
+      <Project>{e2ca3fac-92d4-4fea-a1af-a2f04fcbddba}</Project>
+      <Name>CoordLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CoordSpec\CoordSpec.csproj">
+      <Project>{089a56cd-997a-451e-a67a-4005febcaefa}</Project>
+      <Name>CoordSpec</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

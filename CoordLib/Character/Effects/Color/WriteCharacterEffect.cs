@@ -34,7 +34,7 @@ namespace Coord
             OpacityCharacterEffect.ApplyOn(character, 0, double.NaN, colorProgress);
             StrokeThicknessCharacterEffect.ApplyOn(character, strokeThickness, colorProgress);
 
-            StrokeCharacterEffect.ApplyOn(character, reverse, strokeProgress.Trim());
+            StrokeCharacterEffect.ApplyOn(character, reverse, strokeProgress.Trim(0, 1));
         }
     }
 }

@@ -135,7 +135,7 @@ namespace CoordSpec
                 var squaresProgress = easedProgress.ChangeValue(startProgress);
                 elccharacters.Squares.Skip(1).ForEach((character, i) =>
                 {
-                    double progress = squaresProgress.Get(i, squaresCount).Trim();
+                    double progress = squaresProgress.Get(i, squaresCount).Trim(0, 1);
                     StrokeCharacterEffect.ApplyOn(character, false, new SineEase { EasingMode = EasingMode.EaseOut }.Ease(progress));
                 });
 

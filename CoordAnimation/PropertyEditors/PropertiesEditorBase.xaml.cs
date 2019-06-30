@@ -17,7 +17,7 @@ namespace CoordAnimation
     /// <summary>
     /// Logique d'interaction pour PropertiesEditor.xaml
     /// </summary>
-    public partial class PropertiesEditorBase : UserControl, INotifyPropertyChanged
+    public partial class PropertiesEditorBase : UserControl, INotifyPropertyChanged, IDisposable
     {
         #region Champs
 
@@ -26,7 +26,7 @@ namespace CoordAnimation
         internal bool? CancelCellChange = false;
 
         public static event PropertyChangedExtendedEventHandler<FrameworkElement> CurrentEditorChanged;
-        public event PropertyChangedExtendedEventHandler<DependencyObject> ObjectChanged;
+        public event PropertyChangedExtendedEventHandler<object> ObjectChanged;
         public event PropertyChangedEventHandler PropertyChanged;
         protected void NotifyPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
@@ -59,7 +59,7 @@ namespace CoordAnimation
         #region Dependency
 
         public PropertiesEditorElements ElementsVisibility { get => (PropertiesEditorElements)GetValue(ElementsVisibilityProperty); set => SetValue(ElementsVisibilityProperty, value); }
-        public static readonly DependencyProperty ElementsVisibilityProperty = DependencyProperty.Register("ElementsVisibility", typeof(PropertiesEditorElements), typeof(PropertiesEditorBase), new PropertyMetadata((PropertiesEditorElements)0b111111));
+        public static readonly DependencyProperty ElementsVisibilityProperty = DependencyProperty.Register("ElementsVisibility", typeof(PropertiesEditorElements), typeof(PropertiesEditorBase), new PropertyMetadata((PropertiesEditorElements)0b1111110));
 
         public Type Type { get => (Type)GetValue(TypeProperty); set => SetValue(TypeProperty, value); }
         public static readonly DependencyProperty TypeProperty = DependencyProperty.Register("Type", typeof(Type), typeof(PropertiesEditorBase));
@@ -76,8 +76,6 @@ namespace CoordAnimation
             {
                 SetVisibility(Type, Object);
                 if (((PropertiesEditorElements)e.OldValue ^ (PropertiesEditorElements)e.NewValue).HasFlag(PropertiesEditorElements.Editors)) NotifyPropertyChanged("IsExpanded");
-                //if ((bool)e.NewValue && Object is DependencyObject dependencyObject) await LoadEditors(dependencyObject);
-                //else ClearProperties();
             }
             else if (e.Property == TypeProperty)
             {
@@ -92,10 +90,8 @@ namespace CoordAnimation
             }
             else if (e.Property == ObjectProperty)
             {
-                if (e.OldValue == e.NewValue) return;
-
-                var oldValue = (DependencyObject)e.OldValue;
-                var newValue = (DependencyObject)e.NewValue;
+                object newValue = e.NewValue;
+                if (e.OldValue == newValue) return;
 
                 typeBlock.Text = ObjectType?.Name;
 
@@ -113,7 +109,7 @@ namespace CoordAnimation
                 NotifyPropertyChanged("CanFreeze");
                 NotifyPropertyChanged("IsFrozen");
 
-                ObjectChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<DependencyObject>("Object", oldValue, newValue));
+                ObjectChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<object>("Object", e.OldValue, newValue));
             }
             base.OnPropertyChanged(e);
         }
@@ -161,10 +157,6 @@ namespace CoordAnimation
             Editors.PreviewKeyDown += Editors_PreviewKeyDown;
             CurrentEditorChanged += OnCurrentEditorChanged;
 
-            var editor = new FrameworkElementFactory(typeof(ContentPresenter));
-            editor.SetBinding(ContentPresenter.ContentProperty, new Binding("Editor") { Mode = BindingMode.OneTime });
-            Editors.Columns.Add(new DataGridTemplateColumn { Width = new DataGridLength(1, DataGridLengthUnitType.Star), CellTemplate = new DataTemplate { VisualTree = editor } });
-
             SetVisibility(null, null);
         }
 
@@ -172,16 +164,17 @@ namespace CoordAnimation
 
         public bool ContainsEditor(FrameworkElement editor) => Properties.Any(p => p.Editor == editor || p.Editor is PropertiesEditorBase propertiesEditorBase && propertiesEditorBase.ContainsEditor(editor));
 
-        protected virtual void SetVisibility(Type type, object dependencyObject)
+        protected virtual void SetVisibility(Type type, object obj)
         {
             var elementsVisibility = ElementsVisibility;
             bool istypeSelecting = type != null && (type.IsAbstract || type.IsInterface);
-            bool typeBlockV = elementsVisibility.HasFlag(PropertiesEditorElements.TypeBlock) && dependencyObject != null && !istypeSelecting;
+            bool typeBlockV = elementsVisibility.HasFlag(PropertiesEditorElements.TypeBlock) && obj != null && !istypeSelecting;
             bool typesBoxV = elementsVisibility.HasFlag(PropertiesEditorElements.TypesBox) && istypeSelecting;
-            bool nullV = elementsVisibility.HasFlag(PropertiesEditorElements.Null) && dependencyObject != null;
-            bool lockV = elementsVisibility.HasFlag(PropertiesEditorElements.Lock) && dependencyObject != null;
-            bool editorsV = elementsVisibility.HasFlag(PropertiesEditorElements.Editors) && dependencyObject != null;
-            bool instanceButtonV = elementsVisibility.HasFlag(PropertiesEditorElements.New) && dependencyObject == null && type != null && !istypeSelecting;
+            bool nullV = elementsVisibility.HasFlag(PropertiesEditorElements.Null) && obj != null;
+            bool lockV = elementsVisibility.HasFlag(PropertiesEditorElements.Lock) && obj != null;
+            bool editorsV = elementsVisibility.HasFlag(PropertiesEditorElements.Editors) && obj != null;
+            bool instanceButtonV = elementsVisibility.HasFlag(PropertiesEditorElements.New) && obj == null && type != null && !istypeSelecting;
+            bool expanderV = elementsVisibility.HasFlag(PropertiesEditorElements.Expander) && !(istypeSelecting && obj == null);
 
             typeBlock.Visibility = typeBlockV ? Visibility.Visible : Visibility.Collapsed;
             typesBox.Visibility = typesBoxV ? Visibility.Visible : Visibility.Collapsed;
@@ -189,12 +182,19 @@ namespace CoordAnimation
             nullButton.Visibility = nullV ? Visibility.Visible : Visibility.Collapsed;
             Editors.Visibility = editorsV ? Visibility.Visible : Visibility.Collapsed;
             instanceButton.Visibility = instanceButtonV ? Visibility.Visible : Visibility.Collapsed;
+            expander.Visibility = expanderV ? Visibility.Visible : Visibility.Collapsed;
 
             Grid.SetColumnSpan(typesBox, nullV ? 1 : lockV ? 2 : 3);
             firstRow.Height = new GridLength(typesBoxV || typeBlockV ? 25 : 0);
+            firstColumn.Width = new GridLength(expanderV ? 20 : 0);
         }
 
-        protected virtual void CreateInstance(Type type) => Object = (DependencyObject)Activator.CreateInstance(type);
+        protected virtual void CreateInstance(Type type)
+        {
+            try { Object = Activator.CreateInstance(type); }
+            catch { Object = null; }
+        }
+
         protected virtual void Destroy(object obj)
         {
             (obj as NotifyObject)?.Destroy();
@@ -294,14 +294,7 @@ namespace CoordAnimation
             }
         }
 
-        private void Types_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!m_settingObject && typesBox.SelectedItem is Type type)
-            {
-                try { Object = (DependencyObject)Activator.CreateInstance(type); }
-                catch { Object = null; }
-            }
-        }
+        private void Types_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (!m_settingObject && typesBox.SelectedItem is Type type) CreateInstance(type); }
 
         private void OnCurrentEditorChanged(object sender, PropertyChangedExtendedEventArgs<FrameworkElement> e) { if (!ContainsEditor(e.NewValue)) Editors.SelectedItem = null; }
 
@@ -314,13 +307,14 @@ namespace CoordAnimation
     [Flags]
     public enum PropertiesEditorElements
     {
-        None = 0b0,
-        Editors = 0b1,
-        TypeBlock = 0b10,
-        TypesBox = 0b100,
-        Lock = 0b1000,
-        Null = 0b10000,
-        New = 0b100000,
+        None = 0,
+        Editors = 1 << 0,
+        TypeBlock = 1 << 1,
+        TypesBox = 1 << 2,
+        Lock = 1 << 3,
+        Null = 1 << 4,
+        New = 1 << 5,
+        Expander = 1 << 6
     }
 
     /*public class VariantConverter : IValueConverter

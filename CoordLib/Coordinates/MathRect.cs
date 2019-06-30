@@ -1,4 +1,5 @@
 ﻿using BenLib.Framework;
+using BenLib.Standard;
 using System;
 using System.Windows;
 using System.Windows.Media;
@@ -6,7 +7,7 @@ using System.Windows.Media;
 namespace Coord
 {
     internal class MathRectValueInterpolationHelper : ValueInterpolationHelper<MathRect> { protected override MathRect InterpolateCore(MathRect start, MathRect end, double progress) => base.InterpolateCore(start, end, progress); }
-    
+
     /// <summary>
     /// Décrit la largeur, la hauteur et l'emplacement d'un rectangle dans un repère orthonormé standard.
     /// </summary>
@@ -70,13 +71,15 @@ namespace Coord
         public Size Size => new Size(Width, Height);
         public Point Location => new Point(X, Y);
 
-        public MathRect Move(Vector vector) => new MathRect(X - vector.X, Y + vector.Y, Width, Height);
+        public MathRect Move(Vector vector) => new MathRect(X - vector.X, Y - vector.Y, Width, Height);
 
         public bool WidthContains(double value) => Left <= value && value <= Right;
         public bool HeightContains(double value) => Bottom <= value && value <= Top;
 
         public bool WidthContainsRange(double rangeBeginning, double rangeEnd, bool allRange) => allRange ? Left <= rangeBeginning && rangeEnd <= Right : Right > rangeBeginning && Left < rangeEnd;
         public bool HeightContainsRange(double rangeBeginning, double rangeEnd, bool allRange) => allRange ? Bottom <= rangeBeginning && rangeEnd <= Top : Bottom > rangeBeginning && Top < rangeEnd;
+
+        public bool Contains(Point point) => WidthContains(point.X) && HeightContains(point.Y);
 
         public override string ToString() => $"{X};{Y};{Width};{Height}";
         public override bool Equals(object obj) => obj is MathRect rect && Equals(rect);
@@ -125,5 +128,8 @@ namespace Coord
             result.ScaleAt(scaleX, scaleY, source.Left + offset.X, source.Bottom + offset.Y);
             return result;
         }
+
+        public static Point Trim(this Point point, Rect rect) => new Point(point.X.Trim(rect.Left.IsNaN() ? double.NegativeInfinity : rect.Left, rect.Right.IsNaN() ? double.PositiveInfinity : rect.Right), point.Y.Trim(rect.Top.IsNaN() ? double.NegativeInfinity : rect.Top, rect.Bottom.IsNaN() ? double.PositiveInfinity : rect.Bottom));
+        public static Point Trim(this Point point, MathRect rect) => new Point(point.X.Trim(rect.Left.IsNaN() ? double.NegativeInfinity : rect.Left, rect.Right.IsNaN() ? double.PositiveInfinity : rect.Right), point.Y.Trim(rect.Bottom.IsNaN() ? double.NegativeInfinity : rect.Bottom, rect.Top.IsNaN() ? double.PositiveInfinity : rect.Top));
     }
 }

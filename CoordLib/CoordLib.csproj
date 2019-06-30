@@ -35,8 +35,9 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BenLib">
-      <HintPath>..\..\BenLib\BenLib\bin\Debug\BenLib.dll</HintPath>
+    <Reference Include="BenLib.Framework, Version=2018.9.11.1902, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\BenLib\BenLib.Framework\bin\Debug\BenLib.Framework.dll</HintPath>
     </Reference>
     <Reference Include="BenLib.Standard">
       <HintPath>..\..\BenLib\BenLib.Standard\bin\Debug\netstandard2.0\BenLib.Standard.dll</HintPath>
@@ -68,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Character\Effects\TransformCharacterEffect.cs" />
     <Compile Include="Coordinates\CoordinatesSystemManager.cs" />
     <Compile Include="Coordinates\CoordinatesSystems\ComplexCoordinatesSystem.cs" />
     <Compile Include="Coordinates\CoordinatesSystems\CoordinatesSystem.cs" />
@@ -86,33 +88,33 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="VisualObjects\Base\Collections\NotifyObjectCollection.cs" />
-    <Compile Include="VisualObjects\Base\NotifyObject.cs" />
-    <Compile Include="VisualObjects\Base\VisualObject.cs" />
-    <Compile Include="VisualObjects\CharacterSelection.cs" />
-    <Compile Include="VisualObjects\Character\Character.cs" />
-    <Compile Include="VisualObjects\Character\Effects\AlignCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Base\CharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Base\Progress.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Base\ProgressiveCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Base\SynchronizedProgress.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Color\AutoPenCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Color\ColorCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Color\OpacityCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Color\StrokeCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Color\StrokeThicknessCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\Color\WriteCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\FitCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\InsertCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\MaskCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\RotateCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\ScaleCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\SizeCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\TranslateAlongPathCharacterEffect.cs" />
-    <Compile Include="VisualObjects\Character\Effects\TranslateCharacterEffect.cs" />
-    <Compile Include="VisualObjects\DrawingContextExtensions.cs" />
-    <Compile Include="VisualObjects\Plane.cs" />
-    <Compile Include="VisualObjects\PlanePen.cs" />
+    <Compile Include="Base\NotifyObjectCollection.cs" />
+    <Compile Include="Base\NotifyObject.cs" />
+    <Compile Include="VisualObjects\VisualObject.cs" />
+    <Compile Include="CharacterSelection.cs" />
+    <Compile Include="Character\Character.cs" />
+    <Compile Include="Character\Effects\AlignCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Base\CharacterEffect.cs" />
+    <Compile Include="Character\Effects\Base\Progress.cs" />
+    <Compile Include="Character\Effects\Base\ProgressiveCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Base\SynchronizedProgress.cs" />
+    <Compile Include="Character\Effects\Color\AutoPenCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Color\ColorCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Color\OpacityCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Color\StrokeCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Color\StrokeThicknessCharacterEffect.cs" />
+    <Compile Include="Character\Effects\Color\WriteCharacterEffect.cs" />
+    <Compile Include="Character\Effects\FitCharacterEffect.cs" />
+    <Compile Include="Character\Effects\InsertCharacterEffect.cs" />
+    <Compile Include="Character\Effects\MaskCharacterEffect.cs" />
+    <Compile Include="Character\Effects\RotateCharacterEffect.cs" />
+    <Compile Include="Character\Effects\ScaleCharacterEffect.cs" />
+    <Compile Include="Character\Effects\SizeCharacterEffect.cs" />
+    <Compile Include="Character\Effects\TranslateAlongPathCharacterEffect.cs" />
+    <Compile Include="Character\Effects\TranslateCharacterEffect.cs" />
+    <Compile Include="DrawingContextExtensions.cs" />
+    <Compile Include="Plane.cs" />
+    <Compile Include="PlanePen.cs" />
     <Compile Include="VisualObjects\Universal\Background\AxesNumbers.cs" />
     <Compile Include="VisualObjects\Universal\Background\AxisVisualObject.cs" />
     <Compile Include="VisualObjects\Universal\Background\CadreVisualObject.cs" />

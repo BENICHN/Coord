@@ -34,7 +34,7 @@ namespace Coord
         public void SetInPoint(Point inPoint) { if (Definition is PointPointDefinition definition) definition.InPoint = inPoint; }
         public void SetInPoint(double x, double y) => SetInPoint(new Point(x, y));
 
-        protected internal override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest) => SetInPoint(Definition.InPoint + inOffset);
+        protected internal override void Move(Point inPosition, Vector totalInOffset, Vector inOffset, Character clickHitTest) => SetInPoint(inPosition);
 
         public override string ToString() => Type + "{" + Definition.InPoint.ToString() + "}";
 

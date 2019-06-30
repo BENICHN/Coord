@@ -22,8 +22,8 @@ namespace Coord
 
         public static Pen SelectionStroke = new Pen(FlatBrushes.Asbestos, 2);
 
-        public bool IsSelectable { get => (bool)GetValue(IsSelectableProperty); set => SetValue(IsSelectableProperty, value); }
-        public static readonly DependencyProperty IsSelectableProperty = CreateProperty<VisualObject, bool>(true, true, false, "IsSelectable", true);
+        public bool IsSelectable { get; set; } = true;
+        public bool IsHitTestVisible { get; set; } = true;
 
         public bool? RenderAtChange { get => (bool?)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
         public static readonly DependencyProperty RenderAtChangeProperty = CreateProperty<VisualObject, bool?>(false, false, false, "RenderAtChange", (bool?)null);
@@ -43,8 +43,11 @@ namespace Coord
         public VisualObjectChildrenRenderingMode ChildrenRenderingMode { get => (VisualObjectChildrenRenderingMode)GetValue(ChildrenRenderingModeProperty); set => SetValue(ChildrenRenderingModeProperty, value); }
         public static readonly DependencyProperty ChildrenRenderingModeProperty = CreateProperty<VisualObject, VisualObjectChildrenRenderingMode>(true, true, true, "ChildrenRenderingMode");
 
-        public CharacterEffectDictionary Effects => (CharacterEffectDictionary)GetValue(EffectsProperty);
-        public static readonly DependencyProperty EffectsProperty = CreateProperty<VisualObject, CharacterEffectDictionary>(true, false, true, "Effects");
+        public NotifyObjectCollection<NotifyObjectPart<CharacterEffect>> Effects => (NotifyObjectCollection<NotifyObjectPart<CharacterEffect>>)GetValue(EffectsProperty);
+        public static readonly DependencyProperty EffectsProperty = CreateProperty<VisualObject, NotifyObjectCollection<NotifyObjectPart<CharacterEffect>>>(true, false, true, "Effects");
+
+        public NotifyObjectCollection<NotifyObjectPart<Transform>> Transforms => (NotifyObjectCollection<NotifyObjectPart<Transform>>)GetValue(TransformsProperty);
+        public static readonly DependencyProperty TransformsProperty = CreateProperty<VisualObject, NotifyObjectCollection<NotifyObjectPart<Transform>>>(true, false, true, "Transforms");
 
         private (Character[] Characters, ReadOnlyCoordinatesSystemManager CoordinatesSystemManager) m_cache;
         public virtual (Character[] Characters, ReadOnlyCoordinatesSystemManager CoordinatesSystemManager) Cache
@@ -63,7 +66,11 @@ namespace Coord
 
         private Interval<int> CoerceSelection(Interval<int> selection) => IsSelectable ? selection /*/ (Cache.Characters?.Where(c => !c.IsSelectable)?.ToSelection() ?? EmptySet)*/ : EmptySet;
 
-        public VisualObject() => SetValue(EffectsProperty, new CharacterEffectDictionary());
+        public VisualObject()
+        {
+            SetValue(EffectsProperty, new NotifyObjectCollection<NotifyObjectPart<CharacterEffect>>());
+            SetValue(TransformsProperty, new NotifyObjectCollection<NotifyObjectPart<Transform>>());
+        }
 
         protected override void OnDestroyed()
         {
@@ -111,7 +118,7 @@ namespace Coord
                 {
                     IsChanged = true;
                     SelectionChanged?.Invoke(this, e);
-                    if (e.OriginalSource == this && !Cache.Characters.IsNullOrEmpty()) { foreach (var character in Cache.Characters.SubCollection(diff, true)) character.NotifyIsSelectedChanged(); }
+                    if (e.OriginalSource == this && Cache.Characters != null) { foreach (var character in Cache.Characters.SubCollection(diff, true)) character.NotifyIsSelectedChanged(); }
                 }
                 else Selection = curr;
             }
@@ -181,12 +188,24 @@ namespace Coord
                 }
                 else
                 {
-                    if (!Effects.IsNullOrEmpty()) foreach (var kvp in Effects) kvp.Key.Apply(characters, kvp.Value, coordinatesSystemManager);
+                    if (Effects != null) foreach (var effect in Effects) effect.Object?.Apply(characters, effect.Interval, coordinatesSystemManager);
+
+                    foreach (var tr in Transforms)
+                    {
+                        if (tr.Object is Transform transform)
+                        {
+                            var chars = characters.SubCollection(tr.Interval, true).ToArray();
+                            var bounds = chars.Bounds();
+                            chars.Transform(transform.GetValue(bounds, coordinatesSystemManager), false);
+                        }
+                    }
+
                     foreach (var character in characters)
                     {
                         character.ApplyTransforms();
                         character.Stroke = character.Stroke?.GetOutPen(coordinatesSystemManager);
                     }
+
                     Cache = (characters.AttachCharacters(this).ToArray(), coordinatesSystemManager);
                 }
             }
@@ -216,6 +235,19 @@ namespace Coord
         public VisualObject OriginalSource { get; }
         public Interval<int> OldValue { get; }
         public Interval<int> NewValue { get; internal set; }
+    }
+
+    public class NotifyObjectPart<T> : NotifyObject
+    {
+        protected override Freezable CreateInstanceCore() => new NotifyObjectPart<T>();
+
+        public T Object { get => (T)GetValue(ObjectProperty); set => SetValue(ObjectProperty, value); }
+        public static readonly DependencyProperty ObjectProperty = CreateProperty<NotifyObjectPart<T>, T>(true, true, true, "Object");
+
+        public Interval<int> Interval { get => (Interval<int>)GetValue(IntervalProperty); set => SetValue(IntervalProperty, value); }
+        public static readonly DependencyProperty IntervalProperty = CreateProperty<NotifyObjectPart<T>, Interval<int>>(true, true, true, "Interval", Reals);
+
+        public static implicit operator NotifyObjectPart<T>((T obj, Interval<int> interval) content) => new NotifyObjectPart<T> { Object = content.obj, Interval = content.interval };
     }
 
     public abstract class VisualObjectRendererBase : VisualObject { static VisualObjectRendererBase() => OverrideDefaultValue<VisualObjectRendererBase, VisualObjectChildrenRenderingMode>(ChildrenRenderingModeProperty, VisualObjectChildrenRenderingMode.Independent); }

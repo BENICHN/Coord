@@ -5,19 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:CoordAnimation"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             mc:Ignorable="d" x:Name="this">
+             mc:Ignorable="d" x:Name="this" Focusable="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Name="firstRow" Height="25"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="25"/>
+            <ColumnDefinition Name="firstColumn" Width="20"/>
             <ColumnDefinition/>
             <ColumnDefinition Width="25"/>
             <ColumnDefinition Width="25"/>
         </Grid.ColumnDefinitions>
-        <ToggleButton Name="expander" IsChecked="{Binding IsExpanded, ElementName=this}" Width="20" Height="20"/>
+        <ToggleButton Name="expander" IsChecked="{Binding IsExpanded, ElementName=this}" Style="{StaticResource ExpandCollapseToggleStyle}"/>
         <ComboBox Grid.Column="1" Name="typesBox" SelectionChanged="Types_SelectionChanged">
             <ComboBox.ItemTemplate>
                 <DataTemplate DataType="{x:Type sys:Type}">
@@ -25,7 +25,7 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <TextBlock Grid.Column="1" Name="typeBlock" VerticalAlignment="Center" Margin="5,0"/>
+        <TextBlock Grid.Column="1" Name="typeBlock" VerticalAlignment="Center"/>
         <ToggleButton Name="lockButton" Grid.Column="2" IsChecked="{Binding IsFrozen, ElementName=this}" IsEnabled="{Binding CanFreeze, ElementName=this}">
             <ToggleButton.Content>
                 <Image Source="{StaticResource DI_Lock}" Width="14" Height="14"/>
@@ -36,7 +36,17 @@
                 <Image Source="{StaticResource DI_Remove}" Width="10" Height="10"/>
             </Button.Content>
         </Button>
-        <DataGrid Visibility="{Binding IsExpanded, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}" Name="Editors" Grid.Row="1" Grid.ColumnSpan="4" SelectionMode="Single" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" HeadersVisibility="None" GridLinesVisibility="All" IsEnabled="{Binding IsFrozen, ElementName=this, Converter={StaticResource MathConverter}, ConverterParameter=!x}"/>
+        <DataGrid Visibility="{Binding IsExpanded, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}" Name="Editors" Grid.Row="1" Grid.ColumnSpan="4" SelectionMode="Single" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" HeadersVisibility="None" GridLinesVisibility="All" IsEnabled="{Binding IsFrozen, ElementName=this, Converter={StaticResource MathConverter}, ConverterParameter=!x}">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="{x:Type local:PropertyEditorContainer}">
+                            <ContentPresenter Content="{Binding Editor, Mode=OneTime}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
         <Button Visibility="{Binding IsExpanded, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}" Name="instanceButton" Grid.Row="1" Grid.ColumnSpan="4" Content="Nouveau" Click="InstanceButton_Click"/>
     </Grid>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 
 namespace Coord
@@ -24,10 +25,17 @@ namespace Coord
             var center = coordinatesSystemManager.OrthonormalOrigin;
             double demiThickness = Stroke == null ? 0 : Stroke.Thickness / 2;
 
-            if ((direction == AxesDirection.Horizontal || direction == AxesDirection.Both) && outRange.HeightContainsRange(center.Y - demiThickness, center.Y + demiThickness, false)) yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(inRange.Left, 0)), coordinatesSystemManager.ComputeOutCoordinates(new Point(inRange.Right, 0))).Color(fill, stroke);
-            if ((direction == AxesDirection.Vertical || direction == AxesDirection.Both) && outRange.WidthContainsRange(center.X - demiThickness, center.X + demiThickness, false)) yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(0, inRange.Bottom)), coordinatesSystemManager.ComputeOutCoordinates(new Point(0, inRange.Top))).Color(fill, stroke);
+            if (direction.HasFlag(AxesDirection.Horizontal) && outRange.HeightContainsRange(center.Y - demiThickness, center.Y + demiThickness, false)) yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(inRange.Left, 0)), coordinatesSystemManager.ComputeOutCoordinates(new Point(inRange.Right, 0))).Color(fill, stroke);
+            if (direction.HasFlag(AxesDirection.Vertical) && outRange.WidthContainsRange(center.X - demiThickness, center.X + demiThickness, false)) yield return Character.Line(coordinatesSystemManager.ComputeOutCoordinates(new Point(0, inRange.Bottom)), coordinatesSystemManager.ComputeOutCoordinates(new Point(0, inRange.Top))).Color(fill, stroke);
         }
     }
 
-    public enum AxesDirection { None, Horizontal, Vertical, Both }
+    [Flags]
+    public enum AxesDirection
+    {
+        None = 0,
+        Horizontal = 1,
+        Vertical = 2,
+        Both = 3
+    }
 }

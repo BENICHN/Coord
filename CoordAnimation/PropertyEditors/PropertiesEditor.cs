@@ -17,17 +17,31 @@ namespace CoordAnimation
 {
     public class PropertiesEditor : PropertiesEditorBase
     {
+        private bool m_createInstance;
+
         protected override async void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
             if (e.Property == ObjectProperty)
             {
                 if (e.OldValue == e.NewValue) return;
-                if (e.NewValue is DependencyObject dependencyObject) await LoadEditors(dependencyObject);
+                if (e.NewValue is DependencyObject dependencyObject)
+                {
+                    if (m_createInstance) IsExpanded = true;
+                    await LoadEditors(dependencyObject);
+                }
+                m_createInstance = false;
             }
         }
 
         public PropertiesEditor() => Editors.Columns.Insert(0, new DataGridTextColumn { Binding = new Binding("Description") { Mode = BindingMode.OneTime }, IsReadOnly = true });
+
+        protected override void CreateInstance(Type type)
+        {
+            m_createInstance = true;
+            base.CreateInstance(type);
+            m_createInstance = false;
+        }
 
         public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, NotifyObjectPropertyMetadata metadata, bool isAnimatable)
         {
@@ -191,10 +205,10 @@ namespace CoordAnimation
             }
             else if (typeof(IList).IsAssignableFrom(type))
             {
-                var editor = new ListEditor { CollectionType = type };
+                var editor = new ListEditor { Type = type };
                 var genericIList = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>));
                 if (genericIList != null) editor.ItemType = genericIList.GenericTypeArguments[0];
-                editor.SetBinding(ListEditor.ListProperty, binding);
+                editor.SetBinding(ObjectProperty, binding);
                 return editor;
             }
             else if (typeof(VisualObject).IsAssignableFrom(type))
@@ -228,24 +242,21 @@ namespace CoordAnimation
                 return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
             });
 
-            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, property, GetEditorFromProperty(dependencyObject, property, metadata, isAnimatable))); }
+            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, GetEditorFromProperty(dependencyObject, property, metadata, isAnimatable))); }
             catch (OperationCanceledException) { }
         }
     }
 
     public class EditableProperty : PropertyEditorContainer
     {
-        public EditableProperty(string description, DependencyProperty property, FrameworkElement editor)
+        public EditableProperty(string description, FrameworkElement editor)
         {
             Description = description;
-            Property = property;
             Editor = editor;
         }
 
         public string Description { get => (string)GetValue(DescriptionProperty); set => SetValue(DescriptionProperty, value); }
         public static readonly DependencyProperty DescriptionProperty = DependencyProperty.Register("Description", typeof(string), typeof(EditableProperty));
-
-        public DependencyProperty Property { get; }
 
         public override string ToString() => Description;
     }

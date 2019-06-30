@@ -158,7 +158,7 @@ namespace Coord
         public static T Align<T>(this T vo, Interval<int> interval, VisualObject visualObject, RectPoint rectPoint, bool translateX, bool translateY, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Align(interval, new AlignCharacterEffect { VisualObject = visualObject, RectPoint = rectPoint, TranslateX = translateX, TranslateY = translateY, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Align<T>(this T vo, Interval<int> interval, AlignCharacterEffect alignCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(alignCharacterEffect, interval);
+            vo.Effects.Add((alignCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(alignCharacterEffect);
             return vo;
         }
@@ -167,7 +167,7 @@ namespace Coord
         public static T Fit<T>(this T vo, Interval<int> interval, Interval<int> boundsInterval, VisualObject visualObject, bool scaleX, bool scaleY, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Fit(interval, new FitCharacterEffect { BoundsInterval = boundsInterval, VisualObject = visualObject, ScaleX = scaleX, ScaleY = scaleY, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Fit<T>(this T vo, Interval<int> interval, FitCharacterEffect fitCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(fitCharacterEffect, interval);
+            vo.Effects.Add((fitCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(fitCharacterEffect);
             return vo;
         }
@@ -176,7 +176,7 @@ namespace Coord
         public static T Insert<T>(this T vo, Interval<int> interval, Interval<int> boundsInterval, VisualObject visualObject, RectPoint rectPoint, bool translateX, bool translateY, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Insert(interval, new InsertCharacterEffect { BoundsInterval = boundsInterval, VisualObject = visualObject, RectPoint = rectPoint, TranslateX = translateX, TranslateY = translateY, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Insert<T>(this T vo, Interval<int> interval, InsertCharacterEffect insertCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(insertCharacterEffect, interval);
+            vo.Effects.Add((insertCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(insertCharacterEffect);
             return vo;
         }
@@ -185,7 +185,7 @@ namespace Coord
         public static T Mask<T>(this T vo, Interval<int> interval, Size smallSize, Size bigSize, RectPoint rectPoint, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Mask(interval, new MaskCharacterEffect { SmallSize = smallSize, BigSize = bigSize, RectPoint = rectPoint, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Mask<T>(this T vo, Interval<int> interval, MaskCharacterEffect maskCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(maskCharacterEffect, interval);
+            vo.Effects.Add((maskCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(maskCharacterEffect);
             return vo;
         }
@@ -194,7 +194,7 @@ namespace Coord
         public static T Rotate<T>(this T vo, Interval<int> interval, Point center, bool inEffect, double angle, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Rotate(interval, new RotateCharacterEffect { Center = center, In = inEffect, Angle = angle, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Rotate<T>(this T vo, Interval<int> interval, RotateCharacterEffect rotateCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(rotateCharacterEffect, interval);
+            vo.Effects.Add((rotateCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(rotateCharacterEffect);
             return vo;
         }
@@ -205,7 +205,7 @@ namespace Coord
         public static T Scale<T>(this T vo, Interval<int> interval, double scaleX, double scaleY, RectPoint rectPoint, Point center, bool inEffect, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Scale(interval, new ScaleCharacterEffect { ScaleX = scaleX, ScaleY = scaleY, RectPoint = rectPoint, Center = center, In = inEffect, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Scale<T>(this T vo, Interval<int> interval, ScaleCharacterEffect scaleCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(scaleCharacterEffect, interval);
+            vo.Effects.Add((scaleCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(scaleCharacterEffect);
             return vo;
         }
@@ -214,7 +214,7 @@ namespace Coord
         public static T Size<T>(this T vo, Interval<int> interval, Size size, RectPoint rectPoint, bool scaleX, bool scaleY, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Size(interval, new SizeCharacterEffect { Size = size, RectPoint = rectPoint, ScaleX = scaleX, ScaleY = scaleY, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Size<T>(this T vo, Interval<int> interval, SizeCharacterEffect sizeCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(sizeCharacterEffect, interval);
+            vo.Effects.Add((sizeCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(sizeCharacterEffect);
             return vo;
         }
@@ -223,7 +223,7 @@ namespace Coord
         public static T TranslateAlongPath<T>(this T vo, Interval<int> interval, PathGeometry pathGeometry, Func<Point, Vector> translation, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.TranslateAlongPath(interval, new TranslateAlongPathCharacterEffect { PathGeometry = pathGeometry, Translation = translation, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T TranslateAlongPath<T>(this T vo, Interval<int> interval, TranslateAlongPathCharacterEffect translateAlongPathCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(translateAlongPathCharacterEffect, interval);
+            vo.Effects.Add((translateAlongPathCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(translateAlongPathCharacterEffect);
             return vo;
         }
@@ -232,7 +232,7 @@ namespace Coord
         public static T Translate<T>(this T vo, Interval<int> interval, Vector vector, bool inEffect, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Translate(interval, new TranslateCharacterEffect { Vector = vector, In = inEffect, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Translate<T>(this T vo, Interval<int> interval, TranslateCharacterEffect translateCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(translateCharacterEffect, interval);
+            vo.Effects.Add((translateCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(translateCharacterEffect);
             return vo;
         }
@@ -241,7 +241,7 @@ namespace Coord
         public static T AutoPen<T>(this T vo, Interval<int> interval, Pen template, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.AutoPen(interval, new AutoPenCharacterEffect { Template = template, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T AutoPen<T>(this T vo, Interval<int> interval, AutoPenCharacterEffect autoPenCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(autoPenCharacterEffect, interval);
+            vo.Effects.Add((autoPenCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(autoPenCharacterEffect);
             return vo;
         }
@@ -270,7 +270,7 @@ namespace Coord
         public static T Color<T>(this T vo, Interval<int> interval, Brush fill, Pen stroke, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Color(interval, new ColorCharacterEffect { Fill = fill, Stroke = stroke, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Color<T>(this T vo, Interval<int> interval, ColorCharacterEffect colorCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(colorCharacterEffect, interval);
+            vo.Effects.Add((colorCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(colorCharacterEffect);
             return vo;
         }
@@ -279,7 +279,7 @@ namespace Coord
         public static T Opacity<T>(this T vo, Interval<int> interval, double fillOpacity, double strokeOpacity, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Opacity(interval, new OpacityCharacterEffect { FillOpacity = fillOpacity, StrokeOpacity = strokeOpacity, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Opacity<T>(this T vo, Interval<int> interval, OpacityCharacterEffect opacityCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(opacityCharacterEffect, interval);
+            vo.Effects.Add((opacityCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(opacityCharacterEffect);
             return vo;
         }
@@ -288,7 +288,7 @@ namespace Coord
         public static T Stroke<T>(this T vo, Interval<int> interval, bool reverse, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Stroke(interval, new StrokeCharacterEffect { Reverse = reverse, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Stroke<T>(this T vo, Interval<int> interval, StrokeCharacterEffect strokeCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(strokeCharacterEffect, interval);
+            vo.Effects.Add((strokeCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(strokeCharacterEffect);
             return vo;
         }
@@ -297,7 +297,7 @@ namespace Coord
         public static T StrokeThickness<T>(this T vo, Interval<int> interval, double strokeThickness, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.StrokeThickness(interval, new StrokeThicknessCharacterEffect { StrokeThickness = strokeThickness, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T StrokeThickness<T>(this T vo, Interval<int> interval, StrokeThicknessCharacterEffect strokeThicknessCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(strokeThicknessCharacterEffect, interval);
+            vo.Effects.Add((strokeThicknessCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(strokeThicknessCharacterEffect);
             return vo;
         }
@@ -306,7 +306,7 @@ namespace Coord
         public static T Write<T>(this T vo, Interval<int> interval, double strokeThickness, bool reverse, bool withTransforms, Progress progress, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject => vo.Write(interval, new WriteCharacterEffect { StrokeThickness = strokeThickness, Reverse = reverse, WithTransforms = withTransforms, Progress = progress }, synchronizedProgresses);
         public static T Write<T>(this T vo, Interval<int> interval, WriteCharacterEffect writeCharacterEffect, params SynchronizedProgress[] synchronizedProgresses) where T : VisualObject
         {
-            vo.Effects.Add(writeCharacterEffect, interval);
+            vo.Effects.Add((writeCharacterEffect, interval));
             foreach (var p in synchronizedProgresses) p.Objects.Add(writeCharacterEffect);
             return vo;
         }
@@ -605,22 +605,22 @@ namespace Coord
             return characterEffect;
         }
 
-        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, IDictionary<CharacterEffect, Interval<int>> characterEffects, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, easingFunction, characterEffects, repeatBehavior, autoReverse, isCumulative, fps);
-        public static async Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, IDictionary<CharacterEffect, Interval<int>> characterEffects, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) where T : VisualObject
+        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, IEnumerable<NotifyObjectPart<CharacterEffect>> characterEffects, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, easingFunction, characterEffects, repeatBehavior, autoReverse, isCumulative, fps);
+        public static async Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, IEnumerable<NotifyObjectPart<CharacterEffect>> characterEffects, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) where T : VisualObject
         {
             var progress = characterEffects.Select(effect =>
             {
                 visualObject.Effects.Add(effect);
-                return effect.Key.Progress;
+                return effect.Object.Progress;
             }).ToArray();
 
-            await Animating.Animate(null, value => characterEffects.ForEach((effect, i) => effect.Key.Progress = progress[i].ChangeValue(value)), from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
+            await Animating.Animate(null, value => characterEffects.ForEach((effect, i) => effect.Object.Progress = progress[i].ChangeValue(value)), from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
 
-            if (destroy) characterEffects.ForEach(effect => effect.Key.Destroy());
+            if (destroy) characterEffects.ForEach(effect => effect.Object.Destroy());
             return visualObject;
         }
-        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, params (CharacterEffect, Interval<int>)[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, easingFunction, characterEffects.ToDictionary());
-        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, params (CharacterEffect, Interval<int>)[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, from, to, easingFunction, characterEffects.ToDictionary(), default, false, false, FPS);
+        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, IEasingFunction easingFunction, params NotifyObjectPart<CharacterEffect>[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, 0, 1, easingFunction, (IEnumerable<NotifyObjectPart<CharacterEffect>>)characterEffects);
+        public static Task<T> Animate<T>(this T visualObject, bool destroy, TimeSpan duration, double from, double to, IEasingFunction easingFunction, params NotifyObjectPart<CharacterEffect>[] characterEffects) where T : VisualObject => Animate(visualObject, destroy, duration, from, to, easingFunction, characterEffects, default, false, false, FPS);
 
         public static async Task ReColor(this VisualObject visualObject, Interval<int> interval, Brush fill, Pen stroke, double secondsDelay = 0.5)
         {
