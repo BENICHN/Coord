@@ -68,5 +68,27 @@ namespace Coord
             (0.5, 0.5) => "Center",
             _ => IsNaN ? "NaN" : $"{XProgress};{YProgress}",
         };
+
+        private static RectPoint FromString(string s)
+        {
+            string[] ss = s.Split(';');
+            if (ss.Length != 2) throw new FormatException();
+            return new RectPoint(double.Parse(ss[0]), double.Parse(ss[1]));
+        }
+
+        public static RectPoint Parse(string s) => s switch
+        {
+            "TopLeft" => TopLeft,
+            "TopRight" => TopRight,
+            "BottomRight" => BottomRight,
+            "BottomLeft" => BottomLeft,
+            "Left" => Left,
+            "Top" => Top,
+            "Right" => Right,
+            "Bottom" => Bottom,
+            "Center" => Center,
+            "NaN" => NaN,
+            _ => FromString(s)
+        };
     }
 }

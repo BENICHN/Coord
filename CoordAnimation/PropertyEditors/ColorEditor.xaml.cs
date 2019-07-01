@@ -124,7 +124,7 @@ namespace CoordAnimation
             colorBox.Regex = new Regex(@"^#?(\d|a|b|c|d|e|f){0,6}$", RegexOptions.IgnoreCase);
             colorBox.TextValidation = s =>
             {
-                try { m_currentColorHex = uint.Parse(s.Replace("#", string.Empty).Insert(0, "FF"), NumberStyles.HexNumber); return true; }
+                try { m_currentColorHex = uint.Parse(s, NumberStyles.HexNumber); return true; }
                 catch (FormatException) { return false; }
             };
         }

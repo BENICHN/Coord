@@ -2,6 +2,7 @@
 using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,6 +16,358 @@ using System.Windows.Media;
 
 namespace CoordAnimation
 {
+    public class EditableTypeConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType) => TypeEditionHelper.FromType(objectType) != null;
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => throw new NotImplementedException();
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            if (value is DependencyObject dependencyObject)
+            {
+                writer.WriteStartObject();
+                foreach (var property in dependencyObject is NotifyObject notifyObject ? notifyObject.AllProperties : dependencyObject.GetType().GetAllDependencyProperties())
+                {
+                    if (TypeEditionHelper.FromType(property.PropertyType) is TypeEditionHelper helper)
+                    {
+                        writer.WritePropertyName(property.Name);
+                        writer.WriteValue(helper.Serialize(dependencyObject.GetValue(property)));
+                    }
+                }
+            }
+        }
+    }
+
+    public abstract class TypeEditionHelper
+    {
+        public abstract FrameworkElement GetEditor(Dictionary<string, object> data);
+        public abstract void SetBinding(FrameworkElement editor, BindingBase binding);
+
+        public abstract object Deserialize(string data);
+        public abstract string Serialize(object obj);
+
+        public static TypeEditionHelper FromType(Type type) =>
+            type == typeof(float) ? new FloatEditionHelper() :
+            type == typeof(double) ? new DoubleEditionHelper() :
+            type == typeof(decimal) ? new DecimalEditionHelper() :
+            type == typeof(long) ? new LongEditionHelper() :
+            type == typeof(ulong) ? new ULongEditionHelper() :
+            type == typeof(int) ? new IntEditionHelper() :
+            type == typeof(uint) ? new UIntEditionHelper() :
+            type == typeof(short) ? new ShortEditionHelper() :
+            type == typeof(ushort) ? new UShortEditionHelper() :
+            type == typeof(sbyte) ? new SByteEditionHelper() :
+            type == typeof(byte) ? new ByteEditionHelper() :
+            type == typeof(Point) ? new PointEditionHelper() :
+            type == typeof(Vector) ? new VectorEditionHelper() :
+            type == typeof(Rect) ? new RectEditionHelper() :
+            type == typeof(Size) ? new SizeEditionHelper() :
+            type == typeof(Color) ? new ColorEditionHelper() :
+            type == typeof(RectPoint) ? new RectPointEditionHelper() :
+            type == typeof(bool) ? new BooleanEditionHelper() :
+            type == typeof(bool?) ? new NullableBooleanEditionHelper() :
+            typeof(Enum).IsAssignableFrom(type) ? new EnumEditionHelper(type) :
+            typeof(DependencyObject).IsAssignableFrom(type) ? new DependencyObjectEditionHelper(type) :
+            (TypeEditionHelper)null;
+    }
+
+    public class FloatEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => float.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new FloatEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is float minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is float maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(FloatEditor.ValueProperty, binding);
+    }
+
+    public class DoubleEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => double.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new DoubleEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is double minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is double maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(DoubleEditor.ValueProperty, binding);
+    }
+
+    public class DecimalEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => decimal.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new DecimalEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is decimal minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is decimal maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(DecimalEditor.ValueProperty, binding);
+    }
+
+    public class LongEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => long.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new LongEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is long minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is long maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(LongEditor.ValueProperty, binding);
+    }
+
+    public class ULongEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => ulong.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new ULongEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is ulong minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is ulong maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(ULongEditor.ValueProperty, binding);
+    }
+
+    public class IntEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => int.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new IntEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is int minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is int maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(IntEditor.ValueProperty, binding);
+    }
+
+    public class UIntEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => uint.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new UIntEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is uint minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is uint maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(UIntEditor.ValueProperty, binding);
+    }
+
+    public class ShortEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => short.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new ShortEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is short minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is short maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(ShortEditor.ValueProperty, binding);
+    }
+
+    public class UShortEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => ushort.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new UShortEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is ushort minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is ushort maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(UShortEditor.ValueProperty, binding);
+    }
+
+    public class SByteEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => sbyte.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new SByteEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is sbyte minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is sbyte maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(SByteEditor.ValueProperty, binding);
+    }
+
+    public class ByteEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => byte.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data)
+        {
+            var editor = new ByteEditor();
+            if (data != null)
+            {
+                if (data.TryGetValue("min", out object min) && min is byte minValue) editor.MinValue = minValue;
+                if (data.TryGetValue("max", out object max) && max is byte maxValue) editor.MaxValue = maxValue;
+            }
+            return editor;
+        }
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(ByteEditor.ValueProperty, binding);
+    }
+
+    public class PointEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => Point.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new PointEditor();
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(PointEditor.PointProperty, binding);
+    }
+
+    public class VectorEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => Vector.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new VectorEditor();
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(VectorEditor.VectorProperty, binding);
+    }
+
+    public class RectEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => Rect.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new RectEditor { Height = 120 };
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(RectEditor.RectProperty, binding);
+    }
+
+    public class SizeEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => Size.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new SizeEditor { Height = 120 };
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(SizeEditor.SizeProperty, binding);
+    }
+
+    public class ColorEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => Imaging.ColorFromHex(uint.Parse(data));
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new ColorEditor { Height = 180 };
+
+        public override string Serialize(object obj) => ((Color)obj).ToHex();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(ColorEditor.ColorProperty, binding);
+    }
+
+    public class RectPointEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => RectPoint.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new RectPointEditor { Height = 120 };
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(RectPointEditor.RectPointProperty, binding);
+    }
+
+    public class BooleanEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => bool.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new CheckBox();
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(ToggleButton.IsCheckedProperty, binding);
+    }
+
+    public class NullableBooleanEditionHelper : TypeEditionHelper
+    {
+        public override object Deserialize(string data) => bool.Parse(data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new CheckBox { IsThreeState = true };
+
+        public override string Serialize(object obj) => obj?.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(ToggleButton.IsCheckedProperty, binding);
+    }
+
+    public class EnumEditionHelper : TypeEditionHelper
+    {
+        public EnumEditionHelper(Type enumType) => EnumType = enumType;
+
+        public Type EnumType { get; }
+
+        public override object Deserialize(string data) => Enum.Parse(EnumType, data);
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new EnumEditor();
+
+        public override string Serialize(object obj) => obj.ToString();
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(EnumEditor.EnumerationProperty, binding);
+    }
+
+    public class DependencyObjectEditionHelper : TypeEditionHelper
+    {
+        public DependencyObjectEditionHelper(Type type) => Type = type;
+
+        public Type Type { get; }
+
+        public override object Deserialize(string data) => JsonConvert.DeserializeObject(data, Type, new EditableTypeConverter());
+        public override FrameworkElement GetEditor(Dictionary<string, object> data) => new PropertiesEditor();
+
+        public override string Serialize(object obj) => JsonConvert.SerializeObject(obj, new EditableTypeConverter());
+        public override void SetBinding(FrameworkElement editor, BindingBase binding) => editor.SetBinding(PropertiesEditorBase.ObjectProperty, binding);
+    }
+
     public class PropertiesEditor : PropertiesEditorBase
     {
         private bool m_createInstance;
@@ -45,6 +398,7 @@ namespace CoordAnimation
 
         public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable)
         {
+            string s = TypeEditionHelper.FromType(typeof(VisualObject)).Serialize(App.Scene.Plane.VisualObjects[9]);
             var type = property.PropertyType;
             var binding = new Binding(property.Name) { Source = owner, Mode = (((owner as Freezable)?.IsFrozen ?? false) || property.ReadOnly) ? BindingMode.OneTime : BindingMode.TwoWay };
             if (type == typeof(string))
@@ -290,9 +644,8 @@ namespace CoordAnimation
         private async Task LoadEditors(DependencyObject dependencyObject)
         {
             bool isAnimatable = IsAnimatable;
-            var properties = dependencyObject is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : dependencyObject.GetType().GetAllDependencyProperties().Select(fi =>
+            var properties = dependencyObject is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : dependencyObject.GetType().GetAllDependencyProperties().Select(dp =>
             {
-                var dp = (DependencyProperty)fi.GetValue(null);
                 var metadata = dp.GetMetadata(dependencyObject);
                 return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
             });
