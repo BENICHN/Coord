@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:c="clr-namespace:Coord;assembly=CoordLib"
              mc:Ignorable="d" KeyDown="UserControl_KeyDown">
-    <DockPanel>
+    <DockPanel Name="dpnl">
         <Border Background="{StaticResource VSBackground}" Panel.ZIndex="1" DockPanel.Dock="Top">
             <Grid>
                 <DockPanel HorizontalAlignment="Left">

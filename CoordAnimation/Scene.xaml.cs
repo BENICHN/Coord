@@ -6,7 +6,9 @@ using CoordSpec;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -50,6 +52,8 @@ namespace CoordAnimation
             (cm.Items[0] as MenuItem).ItemsSource = App.DependencyObjectTypes[typeof(CharacterEffect)].DerivedTypes.AllTreeItems().Select(node => new ContextMenuCharacterEffectType(node.Type)).ToArray();
             Plane.ContextMenu = cm;
             menuAddVisualObject.ItemsSource = App.DependencyObjectTypes[typeof(VisualObject)].DerivedTypes.AllTreeItems().Where(node => !node.Type.IsAbstract && !node.Type.IsGenericType).Select(node => node.Type).ToArray();
+
+            VisualObjectsTreeView.ItemsSource = Elements.Nodes;
         }
 
         private void Plane_OverAxesNumbersChanged(object sender, PropertyChangedExtendedEventArgs<VisualObject> e) => Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
@@ -220,6 +224,43 @@ namespace CoordAnimation
                 IsPlaying = true;
                 Plane.RenderAtChange = false;
             }
+        }
+
+        private void MenuRender_Click(object sender, RoutedEventArgs e)
+        {
+            int i = 0;
+            long t = PropertiesAnimation.GeneralTime;
+            var p = Plane;
+            p.EnableSelection = false;
+            p.Width = 1920;
+            p.Height = 1080;
+            configuration.dpnl.Children.Remove(p);
+            var w = new Window { Content = p, BorderThickness = default, Width = 1920, Height = 1080, WindowState = WindowState.Maximized, Topmost = true, WindowStyle = WindowStyle.None, WindowStartupLocation = WindowStartupLocation.CenterScreen, ResizeMode = ResizeMode.NoResize };
+            VisualObjectsTreeView.ItemsSource = null;
+            Elements.RefreshAtChange = false;
+
+            Directory.CreateDirectory("Render");
+
+            w.Loaded += (sender, e) => CompositionTarget.Rendering += Rendering;
+
+            void Rendering(object sender, EventArgs e)
+            {
+                PropertiesAnimation.GeneralTime = i;
+                p.SaveBitmap(@$"Render\Image{i.ToString("00000")}.png");
+                i++;
+            }
+
+            w.ShowDialog();
+            CompositionTarget.Rendering -= Rendering;
+            w.Content = null;
+
+            p.Width = double.NaN;
+            p.Height = double.NaN;
+            p.EnableSelection = true;
+            configuration.dpnl.Children.Add(p);
+            PropertiesAnimation.GeneralTime = t;
+            VisualObjectsTreeView.ItemsSource = Elements.Nodes;
+            Elements.RefreshAtChange = true;
         }
     }
 

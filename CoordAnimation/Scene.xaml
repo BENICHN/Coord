@@ -7,11 +7,10 @@
              xmlns:local="clr-namespace:CoordAnimation"
              xmlns:benlib="clr-namespace:BenLib.WPF;assembly=BenLib.WPF"
              xmlns:c="clr-namespace:Coord;assembly=CoordLib"
-             mc:Ignorable="d" 
-             d:DesignHeight="1000" d:DesignWidth="1920" Loaded="UserControl_Loaded" Background="{StaticResource VSBackground}" DataContext="{Binding RelativeSource={RelativeSource Self}}">
+             mc:Ignorable="d" d:DesignHeight="1000" d:DesignWidth="1920" Name="this" Loaded="UserControl_Loaded" Background="{StaticResource VSBackground}">
     <UserControl.Resources>
         <ContextMenu x:Key="PlaneCM">
-            <MenuItem Header="Ajouter un effet sur la sélection" Click="MenuItem_Click" ItemsSource="{Binding CharacterEffectNames}"/>
+            <MenuItem Header="Ajouter un effet sur la sélection" Click="MenuItem_Click" ItemsSource="{Binding CharacterEffectNames, ElementName=this}"/>
         </ContextMenu>
     </UserControl.Resources>
     <Grid>
@@ -45,7 +44,7 @@
                 <Menu>
                     <MenuItem Name="menuPP" Header="PP" HorizontalAlignment="Left" Click="MenuPP_Click"/>
                     <MenuItem Name="menuGC" Header="GC" HorizontalAlignment="Left" Click="MenuGC_Click"/>
-                    <MenuItem Name="menuAddVisualObject" HorizontalAlignment="Left" MenuItem.Click="MenuAddVisualObject_Click">
+                    <MenuItem Name="menuAddVisualObject" HorizontalAlignment="Left" Click="MenuAddVisualObject_Click">
                         <MenuItem.Header>
                             <Image Source="{StaticResource DI_Add}" Width="10" Height="10"/>
                         </MenuItem.Header>
@@ -55,8 +54,9 @@
                             </DataTemplate>
                         </MenuItem.ItemTemplate>
                     </MenuItem>
+                    <MenuItem Name="menuRender" Header="R" HorizontalAlignment="Left" Click="MenuRender_Click"/>
                 </Menu>
-                <TreeView Name="VisualObjectsTreeView" Grid.Row="1" ItemsSource="{Binding Elements.Nodes}" SelectedItemChanged="VisualObjectsTreeView_SelectedItemChanged" TreeViewItem.Selected="VisualObjectsTreeView_Selected">
+                <TreeView Name="VisualObjectsTreeView" Grid.Row="1" SelectedItemChanged="VisualObjectsTreeView_SelectedItemChanged" TreeViewItem.Selected="VisualObjectsTreeView_Selected">
                     <TreeView.Resources>
                         <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>

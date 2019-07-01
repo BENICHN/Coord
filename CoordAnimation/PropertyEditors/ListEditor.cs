@@ -172,7 +172,7 @@ namespace CoordAnimation
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property == ValueProperty && List is IList list) list[Index] = e.NewValue;
+            if (e.OldValue != e.NewValue && e.Property == ValueProperty && List is IList list) list[Index] = e.NewValue;
             base.OnPropertyChanged(e);
         }
     }

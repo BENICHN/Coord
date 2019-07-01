@@ -36,7 +36,7 @@
                 <Image Source="{StaticResource DI_Remove}" Width="10" Height="10"/>
             </Button.Content>
         </Button>
-        <DataGrid Visibility="{Binding IsExpanded, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}" Name="Editors" Grid.Row="1" Grid.ColumnSpan="4" SelectionMode="Single" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" HeadersVisibility="None" GridLinesVisibility="All" IsEnabled="{Binding IsFrozen, ElementName=this, Converter={StaticResource MathConverter}, ConverterParameter=!x}">
+        <DataGrid Visibility="{Binding IsExpanded, ElementName=this, Converter={StaticResource BooleanToVisibilityConverter}}" BorderThickness="0,1" Name="Editors" Grid.Row="1" Grid.ColumnSpan="4" SelectionMode="Single" AutoGenerateColumns="False" CanUserSortColumns="False" CanUserReorderColumns="False" HeadersVisibility="None" GridLinesVisibility="All" IsEnabled="{Binding IsFrozen, ElementName=this, Converter={StaticResource MathConverter}, ConverterParameter=!x}">
             <DataGrid.Columns>
                 <DataGridTemplateColumn Width="*">
                     <DataGridTemplateColumn.CellTemplate>

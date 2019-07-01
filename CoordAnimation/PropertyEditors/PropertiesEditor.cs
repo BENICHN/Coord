@@ -43,7 +43,7 @@ namespace CoordAnimation
             m_createInstance = false;
         }
 
-        public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, NotifyObjectPropertyMetadata metadata, bool isAnimatable)
+        public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable)
         {
             var type = property.PropertyType;
             var binding = new Binding(property.Name) { Source = owner, Mode = (((owner as Freezable)?.IsFrozen ?? false) || property.ReadOnly) ? BindingMode.OneTime : BindingMode.TwoWay };
@@ -56,66 +56,121 @@ namespace CoordAnimation
             else if (type == typeof(int))
             {
                 var editor = new IntEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is int minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is int maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(IntEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<int>(editor, owner, property) : editor;
             }
             else if (type == typeof(uint))
             {
                 var editor = new UIntEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is uint minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is uint maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(UIntEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<uint>(editor, owner, property) : editor;
             }
             else if (type == typeof(long))
             {
                 var editor = new LongEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is long minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is long maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(LongEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<long>(editor, owner, property) : editor;
             }
             else if (type == typeof(ulong))
             {
                 var editor = new ULongEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is ulong minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is ulong maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(ULongEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<ulong>(editor, owner, property) : editor;
             }
             else if (type == typeof(double))
             {
                 var editor = new DoubleEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is double minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is double maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(DoubleEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<double>(editor, owner, property) : editor;
             }
             else if (type == typeof(decimal))
             {
                 var editor = new DecimalEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is decimal minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is decimal maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(DecimalEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<decimal>(editor, owner, property) : editor;
             }
             else if (type == typeof(float))
             {
                 var editor = new FloatEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is float minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is float maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(FloatEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<float>(editor, owner, property) : editor;
             }
             else if (type == typeof(short))
             {
                 var editor = new ShortEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is short minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is short maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(ShortEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<short>(editor, owner, property) : editor;
             }
             else if (type == typeof(ushort))
             {
                 var editor = new UShortEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is ushort minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is ushort maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(UShortEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<ushort>(editor, owner, property) : editor;
             }
             else if (type == typeof(byte))
             {
                 var editor = new ByteEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is byte minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is byte maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(ByteEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<byte>(editor, owner, property) : editor;
             }
             else if (type == typeof(sbyte))
             {
                 var editor = new SByteEditor();
+                if (data != null)
+                {
+                    if (data.TryGetValue("min", out object min) && min is sbyte minValue) editor.MinValue = minValue;
+                    if (data.TryGetValue("max", out object max) && max is sbyte maxValue) editor.MaxValue = maxValue;
+                }
                 editor.SetBinding(SByteEditor.ValueProperty, binding);
                 return isAnimatable ? CreateAnimatablePropertyEditor<sbyte>(editor, owner, property) : editor;
             }
@@ -163,7 +218,7 @@ namespace CoordAnimation
             }
             else if (type == typeof(Progress))
             {
-                var editor = new DoubleEditor { Value = ((Progress)owner.GetValue(property)).Value, IncrementFactor = 0.001, IsUnsigned = true };
+                var editor = new DoubleEditor { Value = ((Progress)owner.GetValue(property)).Value, IncrementFactor = 0.001, MinValue = 0 };
                 editor.ValueChanged += (sender, e) => owner.SetValue(property, new Progress(e.NewValue));
                 return isAnimatable ? CreateAnimatablePropertyEditor<Progress>(editor, owner, property) : editor;
             }
@@ -205,7 +260,7 @@ namespace CoordAnimation
             }
             else if (typeof(IList).IsAssignableFrom(type))
             {
-                var editor = new ListEditor { Type = type };
+                var editor = new ListEditor { Type = type, Margin = new Thickness(0, 0, -3, 0) };
                 var genericIList = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>));
                 if (genericIList != null) editor.ItemType = genericIList.GenericTypeArguments[0];
                 editor.SetBinding(ObjectProperty, binding);
@@ -219,11 +274,11 @@ namespace CoordAnimation
             }
             else if (typeof(DependencyObject).IsAssignableFrom(type) || type.IsInterface && App.DependencyObjectTypes.Contains(type))
             {
-                var editor = new PropertiesEditor { IsAnimatable = isAnimatable, Type = type };
+                var editor = new PropertiesEditor { IsAnimatable = isAnimatable, Type = type, Margin = new Thickness(0, 0, -3, 0) };
                 editor.SetBinding(ObjectProperty, binding);
                 return editor;
             }
-            else return owner.GetValue(property) is DependencyObject dependencyObject ? new PropertiesEditor { IsAnimatable = isAnimatable, Object = dependencyObject } : null;
+            else return owner.GetValue(property) is DependencyObject dependencyObject ? new PropertiesEditor { IsAnimatable = isAnimatable, Object = dependencyObject, Margin = new Thickness(0, 0, -3, 0) } : null;
         }
         private static FrameworkElement CreateAnimatablePropertyEditor<T>(FrameworkElement editor, DependencyObject dependencyObject, DependencyProperty dependencyProperty)
         {
@@ -242,7 +297,7 @@ namespace CoordAnimation
                 return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
             });
 
-            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, GetEditorFromProperty(dependencyObject, property, metadata, isAnimatable))); }
+            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, GetEditorFromProperty(dependencyObject, property, metadata.Data, isAnimatable))); }
             catch (OperationCanceledException) { }
         }
     }

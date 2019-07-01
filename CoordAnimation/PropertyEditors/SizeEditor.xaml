@@ -16,8 +16,8 @@
             <ColumnDefinition Width="35"/>
         </Grid.ColumnDefinitions>
 
-        <benlib:DoubleEditor Value="{Binding SizeWidth, ElementName=this, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center"/>
-        <benlib:DoubleEditor Value="{Binding SizeHeight, ElementName=this, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
+        <benlib:DoubleEditor Value="{Binding SizeWidth, ElementName=this, Mode=TwoWay}" MinValue="0" Height="25" HorizontalContentAlignment="Center"/>
+        <benlib:DoubleEditor Value="{Binding SizeHeight, ElementName=this, Mode=TwoWay}" MinValue="0" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
         <Grid Name="grid" Grid.Row="1">
             <Border Name="border" Margin="5"/>
             <benlib:ArrowLine Margin="5, 0" Stroke="{Binding Foreground, ElementName=this}" StrokeThickness="1" Y1="5" Y2="5" X2="{Binding ActualWidth, ElementName=border}" ArrowLength="7" ArrowAngle="45" ArrowEnds="Both"/>

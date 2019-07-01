@@ -190,13 +190,16 @@ namespace Coord
                 {
                     if (Effects != null) foreach (var effect in Effects) effect.Object?.Apply(characters, effect.Interval, coordinatesSystemManager);
 
-                    foreach (var tr in Transforms)
+                    if (Transforms != null)
                     {
-                        if (tr.Object is Transform transform)
+                        foreach (var tr in Transforms)
                         {
-                            var chars = characters.SubCollection(tr.Interval, true).ToArray();
-                            var bounds = chars.Bounds();
-                            chars.Transform(transform.GetValue(bounds, coordinatesSystemManager), false);
+                            if (tr.Object is Transform transform)
+                            {
+                                var chars = characters.SubCollection(tr.Interval, true).ToArray();
+                                var bounds = chars.Bounds();
+                                chars.Transform(transform.GetValue(bounds, coordinatesSystemManager), false);
+                            }
                         }
                     }
 

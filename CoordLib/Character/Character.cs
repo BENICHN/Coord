@@ -160,7 +160,6 @@ namespace Coord
             if (geometry is GeometryGroup geometryGroup) { foreach (var c in geometryGroup.Children.SelectMany(g => FromGeometry(g, fill, stroke))) yield return c; }
             else yield return new Character(geometry, fill, stroke);
         }
-
         public static IEnumerable<Character> FromGeometry(IEnumerable<Geometry> geometries, Brush fill = null, Pen stroke = null) => geometries.SelectMany(g => FromGeometry(g, fill, stroke));
 
         public static Character Text(Point anchorPoint, string text, Typeface typeface, double fontSize, TextAlignment textAlignment = TextAlignment.Left) => new Character(new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, fontSize, Brushes.Transparent, 1) { TextAlignment = textAlignment }.BuildGeometry(anchorPoint));

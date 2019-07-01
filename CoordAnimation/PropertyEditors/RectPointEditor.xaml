@@ -16,8 +16,8 @@
             <ColumnDefinition Width="35"/>
         </Grid.ColumnDefinitions>
 
-        <benlib:DoubleEditor Name="xprogressSB" Value="{Binding RectPointXProgress, ElementName=this, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center"/>
-        <benlib:DoubleEditor Name="yprogressSB" Value="{Binding RectPointYProgress, ElementName=this, Mode=TwoWay}" IsUnsigned="True" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
+        <benlib:DoubleEditor Name="xprogressSB" Value="{Binding RectPointXProgress, ElementName=this, Mode=TwoWay}" MinValue="0" Height="25" HorizontalContentAlignment="Center"/>
+        <benlib:DoubleEditor Name="yprogressSB" Value="{Binding RectPointYProgress, ElementName=this, Mode=TwoWay}" MinValue="0" Height="25" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="1"/>
 
         <Ellipse Name="currentPoint" Width="{Binding PointsRadius, ElementName=this}" Height="{Binding PointsRadius, ElementName=this}" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Fill="{Binding Foreground, ElementName=this}" Margin="{Binding PointMargin, ElementName=this}"/>
 

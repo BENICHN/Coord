@@ -14,7 +14,7 @@
             <benlib:DoubleEditor Name="Y" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged"/>
         </DockPanel>
         <DockPanel Name="Polar" Visibility="Collapsed">
-            <benlib:DoubleEditor Name="L" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged" IsUnsigned="True"/>
+            <benlib:DoubleEditor Name="L" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged" MinValue="0"/>
             <TextBlock Text=" ∠ " VerticalAlignment="Center"/>
             <benlib:DoubleEditor Name="A" Desactivated="SwitchableTextBox_Desactivated" ValueChanged="DoubleEditor_ValueChanged"/>
             <TextBlock Name="AngleUnit" Text=" °" VerticalAlignment="Center"/>

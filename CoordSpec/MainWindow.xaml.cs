@@ -64,7 +64,7 @@ namespace CoordSpec
             {
                 stopwatch.Spend();
                 plane.RenderChanged();
-                if (SaveImages) plane.SaveImage($@"{ImagesPath}\Image{stopwatch.ElapsedFrames.ToString("00000")}.png");
+                if (SaveImages) plane.SaveBitmap($@"{ImagesPath}\Image{stopwatch.ElapsedFrames.ToString("00000")}.png");
 
                 if (elapsed)
                 {

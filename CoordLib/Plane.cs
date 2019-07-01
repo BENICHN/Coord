@@ -258,15 +258,20 @@ namespace Coord
 
         #region Save
 
+        public System.Drawing.Bitmap GetFrame() => VisualToBitmapConverter.GetBitmap(this, (int)ActualWidth, (int)ActualHeight);
+
+        public void SaveBitmap(string fileName)
+        {
+            using var bmp = GetFrame();
+            bmp.Save(fileName);
+        }
+
         public BitmapSource GetSourceFrame()
         {
             var rtb = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
-            for (int i = 0; i < VisualChildrenCount; i++) rtb.Render(GetVisualChild(i));
-
+            rtb.Render(this);
             return rtb;
         }
-
-        public System.Drawing.Bitmap GetFrame() => GetSourceFrame().ToBitmap();
 
         public void SaveImage(string fileName)
         {
@@ -279,7 +284,7 @@ namespace Coord
             png.Save(stream);
         }
 
-        #endregion 
+        #endregion
 
         #region Render
 
@@ -491,10 +496,13 @@ namespace Coord
                 {
                     Cadre.OutOffset += outOffset;
                     var scale = m_charactersManipulatingScale;
-                    scale.ScaleX = Cadre.NewRect.Width / Cadre.BaseRect.Width;
-                    if (Cadre.ReverseX) scale.ScaleX *= -1;
-                    scale.ScaleY = Cadre.NewRect.Height / Cadre.BaseRect.Height;
-                    if (Cadre.ReverseY) scale.ScaleY *= -1;
+                    double scaleX = Cadre.NewRect.Width / Cadre.BaseRect.Width;
+                    if (Cadre.ReverseX) scaleX *= -1;
+                    double scaleY = Cadre.NewRect.Height / Cadre.BaseRect.Height;
+                    if (Cadre.ReverseY) scaleY *= -1;
+                    if (Input.IsShiftPressed()) scaleX = scaleY = Math.Abs(scaleX) < Math.Abs(scaleY) ? scaleX : scaleY;
+                    scale.ScaleX = scaleX;
+                    scale.ScaleY = scaleY;
                     RenderChanged();
                 }
                 else if (IsCharactersTranslating)
