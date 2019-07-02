@@ -167,7 +167,7 @@ namespace CoordAnimation
             Value = list[index];
             List = list;
             Index = index;
-            Editor = PropertiesEditor.GetEditorFromProperty(this, ValueProperty, null, true);
+            Editor = TypeEditionHelper.GetEditorFromProperty(this, ValueProperty, null, true);
         }
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)

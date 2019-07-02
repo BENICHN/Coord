@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 
-namespace CoordAnimation
+namespace Coord
 {
     public static class PropertiesAnimation
     {

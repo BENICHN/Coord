@@ -89,11 +89,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="EffectElement.cs" />
-    <Compile Include="ConfigEdit.xaml.cs">
+    <Compile Include="Scene\EffectElement.cs" />
+    <Compile Include="Scene\ConfigEdit.xaml.cs">
       <DependentUpon>ConfigEdit.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PropertiesAnimation.cs" />
     <Compile Include="PropertyEditors\AnimatablePropertyEditor.xaml.cs">
       <DependentUpon>AnimatablePropertyEditor.xaml</DependentUpon>
     </Compile>
@@ -104,7 +103,11 @@
       <DependentUpon>EnumEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="PropertyEditors\ListEditor.cs" />
+    <Compile Include="PropertyEditors\ProgressEditor.xaml.cs">
+      <DependentUpon>ProgressEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="PropertyEditors\PropertiesEditor.cs" />
+    <Compile Include="PropertyEditors\TypeEditionHelper.cs" />
     <Compile Include="PropertyEditors\VectorEditor.xaml.cs">
       <DependentUpon>VectorEditor.xaml</DependentUpon>
     </Compile>
@@ -120,17 +123,17 @@
     <Compile Include="PropertyEditors\VisualObjectSelector.xaml.cs">
       <DependentUpon>VisualObjectSelector.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Timeline.xaml.cs">
+    <Compile Include="Scene\Timeline.xaml.cs">
       <DependentUpon>Timeline.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Timeline.cs" />
-    <Compile Include="VisualObjectControl.xaml.cs">
+    <Compile Include="Scene\Timeline.cs" />
+    <Compile Include="PropertyEditors\VisualObjectControl.xaml.cs">
       <DependentUpon>VisualObjectControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="PropertyEditors\SizeEditor.xaml.cs">
       <DependentUpon>SizeEditor.xaml</DependentUpon>
     </Compile>
-    <Page Include="ConfigEdit.xaml">
+    <Page Include="Scene\ConfigEdit.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -150,11 +153,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="PropertyEditors\ProgressEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PropertyEditors\VectorEditor.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Scene.xaml">
+    <Page Include="Scene\Scene.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -183,7 +190,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Global.xaml">
+    <Page Include="Graphics\Global.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -195,8 +202,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Elements.cs" />
-    <Compile Include="Scene.xaml.cs">
+    <Compile Include="Scene\Elements.cs" />
+    <Compile Include="Scene\Scene.xaml.cs">
       <DependentUpon>Scene.xaml</DependentUpon>
     </Compile>
     <Compile Include="PropertyEditors\IntervalEditor.xaml.cs">
@@ -208,7 +215,7 @@
     <Compile Include="PropertyEditors\RectPointEditor.xaml.cs">
       <DependentUpon>RectPointEditor.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Global.xaml.cs">
+    <Compile Include="Graphics\Global.xaml.cs">
       <DependentUpon>Global.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
@@ -219,11 +226,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Timeline.xaml">
+    <Page Include="Scene\Timeline.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="VisualObjectControl.xaml">
+    <Page Include="PropertyEditors\VisualObjectControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -69,6 +69,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Base\PropertiesAnimation.cs" />
     <Compile Include="Character\Effects\TransformCharacterEffect.cs" />
     <Compile Include="Coordinates\CoordinatesSystemManager.cs" />
     <Compile Include="Coordinates\CoordinatesSystems\ComplexCoordinatesSystem.cs" />

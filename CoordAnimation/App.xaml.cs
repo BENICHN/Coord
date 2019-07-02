@@ -23,7 +23,7 @@ namespace CoordAnimation
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             foreach (string assembly in Directory.GetFiles(AppPath, "*.dll").Concat(Directory.GetFiles(AppPath, "*.exe"))) Assembly.Load(Path.GetFileNameWithoutExtension(assembly));
-            DependencyObjectTypes = new TypeTree(AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => typeof(DependencyObject).IsAssignableFrom(t)));
+            DependencyObjectTypes = new TypeTree(AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())/*.Where(t => typeof(DependencyObject).IsAssignableFrom(t))*/);
             var w = new MainWindow();
             Scene = w.Content as Scene;
             w.Show();

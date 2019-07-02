@@ -1,6 +1,7 @@
 ﻿using BenLib.Framework;
 using BenLib.Standard;
 using System;
+using System.Globalization;
 using System.Windows;
 
 namespace Coord
@@ -66,7 +67,7 @@ namespace Coord
             (1, 0.5) => "Right",
             (0.5, 0) => "Bottom",
             (0.5, 0.5) => "Center",
-            _ => IsNaN ? "NaN" : $"{XProgress};{YProgress}",
+            _ => IsNaN ? "NaN" : $"{XProgress.ToString(CultureInfo.InvariantCulture)};{YProgress.ToString(CultureInfo.InvariantCulture)}",
         };
 
         private static RectPoint FromString(string s)

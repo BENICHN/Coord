@@ -246,7 +246,7 @@ namespace CoordAnimation
             void Rendering(object sender, EventArgs e)
             {
                 PropertiesAnimation.GeneralTime = i;
-                p.SaveBitmap(@$"Render\Image{i.ToString("00000")}.png");
+                p.SaveBitmap($@"Render\Image{i.ToString("00000")}.png");
                 i++;
             }
 
