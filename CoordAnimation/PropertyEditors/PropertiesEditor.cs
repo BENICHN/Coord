@@ -39,9 +39,6 @@ namespace CoordAnimation
 
         private async Task LoadEditors(DependencyObject dependencyObject)
         {
-            string s = TypeEditionHelper.FromType(typeof(VisualObject)).Serialize(App.Scene.Plane.VisualObjects[9]);
-            object o = TypeEditionHelper.FromType(typeof(VisualObject)).Deserialize(s);
-
             bool isAnimatable = IsAnimatable;
             var properties = dependencyObject is NotifyObject notifyObject ? notifyObject.AllDisplayableProperties : dependencyObject.GetType().GetAllDependencyProperties().Select(dp =>
             {

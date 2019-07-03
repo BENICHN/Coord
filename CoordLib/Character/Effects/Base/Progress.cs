@@ -50,9 +50,9 @@ namespace Coord
 
         public static Progress Parse(string s)
         {
-            string[] ss = s.Split(';');
+            string[] ss = s.Split(';', ',');
             if (ss.Length != 3) throw new FormatException();
-            return new Progress(double.Parse(ss[0]), (ProgressMode)int.Parse(ss[1]), double.Parse(ss[2]));
+            return new Progress(double.Parse(ss[0], CultureInfo.InvariantCulture), (ProgressMode)int.Parse(ss[1], CultureInfo.InvariantCulture), double.Parse(ss[2], CultureInfo.InvariantCulture));
         }
 
         public override string ToString() => $"{Value.ToString(CultureInfo.InvariantCulture)};{((int)Mode).ToString(CultureInfo.InvariantCulture)};{LagFactor.ToString(CultureInfo.InvariantCulture)}";

@@ -55,6 +55,7 @@
                         </MenuItem.ItemTemplate>
                     </MenuItem>
                     <MenuItem Name="menuRender" Header="R" HorizontalAlignment="Left" Click="MenuRender_Click"/>
+                    <MenuItem Name="menuOpen" Header="O" HorizontalAlignment="Left" Click="MenuOpen_Click"/>
                 </Menu>
                 <TreeView Name="VisualObjectsTreeView" Grid.Row="1" SelectedItemChanged="VisualObjectsTreeView_SelectedItemChanged" TreeViewItem.Selected="VisualObjectsTreeView_Selected">
                     <TreeView.Resources>

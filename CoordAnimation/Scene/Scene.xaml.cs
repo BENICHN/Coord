@@ -3,12 +3,14 @@ using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using CoordSpec;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -60,17 +62,25 @@ namespace CoordAnimation
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.OldItems != null) { foreach (VisualObject visualObject in e.OldItems) Elements.RemoveAt(Elements.Nodes.IndexOf(node => node is VisualObjectElement visualObjectElement && visualObjectElement.VisualObject == visualObject)); }
-            if (e.NewItems != null)
+            if (e.Action == NotifyCollectionChangedAction.Reset) Elements.Nodes.RemoveAll(el =>
             {
-                foreach (VisualObject visualObject in e.NewItems)
+                var vo = (el as VisualObjectElement).VisualObject;
+                return vo != Plane.Grid && vo != Plane.Axes && vo != Plane.AxesNumbers;
+            });
+            else
+            {
+                if (e.OldItems != null) { foreach (VisualObject visualObject in e.OldItems) Elements.RemoveAt(Elements.Nodes.IndexOf(node => node is VisualObjectElement visualObjectElement && visualObjectElement.VisualObject == visualObject)); }
+                if (e.NewItems != null)
                 {
-                    int index = Plane.VisualObjects.IndexOf(visualObject);
-                    index += index > Plane.AxesNumbersIndex ? 3 : 2;
-                    Elements.Insert(index, visualObject);
+                    foreach (VisualObject visualObject in e.NewItems)
+                    {
+                        int index = Plane.VisualObjects.IndexOf(visualObject);
+                        index += index > Plane.AxesNumbersIndex ? 3 : 2;
+                        Elements.Insert(index, visualObject);
+                    }
                 }
+                Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
             }
-            Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
@@ -261,6 +271,25 @@ namespace CoordAnimation
             PropertiesAnimation.GeneralTime = t;
             VisualObjectsTreeView.ItemsSource = Elements.Nodes;
             Elements.RefreshAtChange = true;
+        }
+
+        public JToken Serialize()
+        {
+            var result = new JObject();
+            var references = new ReferenceCollection();
+
+            var planeHelper = TypeEditionHelper.FromType(typeof(Plane));
+            var p = planeHelper.Serialize(Plane, references);
+
+            result.Add("References", references.Serialize());
+
+            return result;
+        }
+
+        private void MenuOpen_Click(object sender, RoutedEventArgs e)
+        {
+            var t = Serialize();
+            var refs = ReferenceCollection.Deserialize(t["References"]);
         }
     }
 

@@ -2,7 +2,7 @@
 using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
-using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,112 +17,87 @@ using System.Windows.Media;
 
 namespace CoordAnimation
 {
-    public class EditableTypeConverter : JsonConverter
+    public class Reference
     {
-        public override bool CanConvert(Type objectType) => TypeEditionHelper.FromType(objectType) != null;
+        public long ID { get; set; }
+        public Type Type { get; set; }
+        public object Object { get; set; }
+        public JToken Token { get; set; }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) => reader.TokenType switch
-        {
-            JsonToken.StartObject => ReadObject(reader),
-            JsonToken.StartArray => (object)ReadList(reader),
-            _ => throw new FormatException()
-        };
+        public void Deserialize(ReferenceCollection references) => Object = TypeEditionHelper.FromType(Type).Deserialize(Token, references);
+    }
 
-        private DependencyObject ReadObject(JsonReader reader)
+    public class ReferenceCollection : ICollection<Reference>
+    {
+        private long m_nextID;
+        private readonly List<Reference> m_items;
+
+        bool ICollection<Reference>.IsReadOnly => false;
+        public int Count => m_items.Count;
+
+        public Reference this[object obj] => TryGetReferenceByValue(obj, out var r) ? r : throw new ArgumentException();
+        public Reference this[long iD] => TryGetReferenceByID(iD, out var r) ? r : throw new ArgumentException();
+
+        public bool TryGetReferenceByValue(object obj, out Reference reference)
         {
-            Type type = null;
-            DependencyObject result = null;
-            string pn = null;
-            DependencyProperty dp = null;
-            try
-            {
-                while (reader.Read())
-                {
-                    if (pn == "[Type]")
-                    {
-                        type = Type.GetType((string)reader.Value);
-                        result = (DependencyObject)Activator.CreateInstance(type);
-                    }
-                    else
-                    {
-                        if (reader.TokenType == JsonToken.PropertyName)
-                        {
-                            pn = (string)reader.Value;
-                            if (pn != "[Type]") dp = DependencyPropertyDescriptor.FromName(pn, type, type).DependencyProperty;
-                            continue;
-                        }
-                        else if (reader.TokenType == JsonToken.Null) result.SetValue(dp, null);
-                        else if (reader.TokenType == JsonToken.StartObject) result.SetValue(dp, ReadObject(reader));
-                        else if (reader.TokenType == JsonToken.StartArray) result.SetValue(dp, ReadList(reader));
-                        else if (reader.TokenType == JsonToken.EndObject) break;
-                        else if (TypeEditionHelper.FromType(dp.PropertyType) is ITypeEditionHelper helper) result.SetValue(dp, helper.Deserialize((string)reader.Value));
-                    }
-                    pn = null;
-                    dp = null;
-                }
-                return result;
-            }
-            catch { return null; }
+            reference = m_items.FirstOrDefault(r => r.Object == obj);
+            return reference != null;
+        }
+        public bool TryGetReferenceByID(long iD, out Reference reference)
+        {
+            reference = m_items.FirstOrDefault(r => r.ID == iD);
+            return reference != null;
         }
 
-        private IList ReadList(JsonReader reader)
+        public ReferenceCollection() => m_items = new List<Reference>();
+        private ReferenceCollection(IEnumerable<Reference> references) => m_items = new List<Reference>(references);
+
+        public Reference GetOrAdd(object obj)
         {
-            Type itemType = null;
-            IList result = null;
-            bool isType = true;
-            try
-            {
-                while (reader.Read())
-                {
-                    if (isType)
-                    {
-                        var type = Type.GetType((string)reader.Value);
-                        result = (IList)Activator.CreateInstance(type);
-                        var genericIList = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>));
-                        if (genericIList != null) itemType = genericIList.GenericTypeArguments[0];
-                        isType = false;
-                    }
-                    else
-                    {
-                        if (reader.TokenType == JsonToken.Null) result.Add(null);
-                        else if (reader.TokenType == JsonToken.StartObject) result.Add(ReadObject(reader));
-                        else if (reader.TokenType == JsonToken.StartArray) result.Add(ReadList(reader));
-                        else if (reader.TokenType == JsonToken.EndArray) break;
-                        else if (TypeEditionHelper.FromType(itemType) is ITypeEditionHelper helper) result.Add(helper.Deserialize((string)reader.Value));
-                    }
-                }
-                return result;
-            }
-            catch { return null; }
+            if (obj == null) return null;
+            if (TryGetReferenceByValue(obj, out var reference)) return reference;
+            var r = new Reference { ID = m_nextID++, Object = obj, Type = obj.GetType() };
+            m_items.Add(r);
+            return r;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public void Clear()
         {
-            if (value is IList list)
-            {
-                writer.WriteStartArray();
-                writer.WriteValue(list.GetType().AssemblyQualifiedName);
-                foreach (object item in list) { if (TypeEditionHelper.FromType(item.GetType()) is ITypeEditionHelper helper) writer.WriteRawValue(helper.Serialize(item)); }
-                writer.WriteEndArray();
-            }
-            else if (value is DependencyObject dependencyObject)
-            {
-                writer.WriteStartObject();
-                writer.WritePropertyName("[Type]");
-                writer.WriteValue(dependencyObject.GetType().AssemblyQualifiedName);
-                foreach (var property in dependencyObject is NotifyObject notifyObject ? notifyObject.AllProperties : dependencyObject.GetType().GetAllDependencyProperties())
-                {
-                    if (TypeEditionHelper.FromType(property.PropertyType) is ITypeEditionHelper helper)
-                    {
-                        writer.WritePropertyName(property.Name);
-                        string s = helper.Serialize(dependencyObject.GetValue(property));
-                        if (helper.IsRaw) writer.WriteRawValue(s);
-                        else writer.WriteValue(s);
-                    }
-                }
-                writer.WriteEndObject();
-            }
+            m_items.Clear();
+            m_nextID = 0;
         }
+
+        public JToken Serialize()
+        {
+            var result = new JArray();
+            foreach (var reference in m_items)
+            {
+                result.Add(new JObject
+                {
+                    { "ID", reference.ID },
+                    { "Type", reference.Type.AssemblyQualifiedName },
+                    { "Value", reference.Token }
+                });
+            }
+            return result;
+        }
+
+        public static ReferenceCollection Deserialize(JToken data)
+        {
+            if (!(data is JArray jArray)) throw new FormatException();
+            var result = new ReferenceCollection(jArray.Select(token => new Reference { ID = (long)token["ID"], Type = Type.GetType((string)token["Type"]), Token = token["Value"] }));
+            foreach (var reference in result) reference.Deserialize(result);
+            return result;
+        }
+
+        public bool Contains(Reference item) => m_items.Contains(item);
+        public void CopyTo(Reference[] array, int arrayIndex) => m_items.CopyTo(array, arrayIndex);
+
+        void ICollection<Reference>.Add(Reference item) => throw new InvalidOperationException();
+        bool ICollection<Reference>.Remove(Reference item) => throw new InvalidOperationException();
+
+        IEnumerator<Reference> IEnumerable<Reference>.GetEnumerator() => m_items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => m_items.GetEnumerator();
     }
 
     public static class TypeEditionHelper
@@ -162,6 +137,7 @@ namespace CoordAnimation
             type == typeof(bool?) ? new NullableBooleanEditionHelper() :
             typeof(Enum).IsAssignableFrom(type) ? new EnumEditionHelper(type) :
             typeof(IList).IsAssignableFrom(type) ? new ListEditionHelper(type) :
+            type == typeof(Plane) ? new PlaneEditionHelper() :
             typeof(VisualObject).IsAssignableFrom(type) ? new VisualObjectEditionHelper(type) :
             typeof(DependencyObject).IsAssignableFrom(type) || type.IsInterface && App.DependencyObjectTypes.Contains(type) ? new DependencyObjectEditionHelper(type) :
             (ITypeEditionHelper)null;
@@ -169,9 +145,8 @@ namespace CoordAnimation
 
     public interface ITypeEditionHelper
     {
-        bool IsRaw { get; }
-        object Deserialize(string data);
-        string Serialize(object obj);
+        object Deserialize(JToken data, ReferenceCollection references);
+        JToken Serialize(object obj, ReferenceCollection references);
 
         bool IsAnimatable { get; }
         FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable);
@@ -182,7 +157,6 @@ namespace CoordAnimation
     public abstract class TypeEditionHelper<T> : ITypeEditionHelper
     {
         public virtual bool IsAnimatable => true;
-        public virtual bool IsRaw => false;
 
         public FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable)
         {
@@ -201,25 +175,52 @@ namespace CoordAnimation
         public abstract FrameworkElement GetEditor(Dictionary<string, object> data);
         public abstract DependencyProperty BindingProperty { get; }
 
-        public abstract T Deserialize(string data);
-        public abstract string Serialize(T obj);
+        public T Deserialize(JToken data, ReferenceCollection references)
+        {
+            if (data.Type == JTokenType.Null) return default;
+            if (data.Type == JTokenType.Integer && references.TryGetReferenceByID(data.Value<long>(), out var r))
+            {
+                if (r.Object is T obj) return obj;
+                else
+                {
+                    r.Deserialize(references);
+                    return (T)r.Object;
+                }
+            }
+            else return DeserializeCore(data, references);
+        }
 
-        object ITypeEditionHelper.Deserialize(string data) => Deserialize(data);
-        string ITypeEditionHelper.Serialize(object obj) => Serialize((T)obj);
+        public JToken Serialize(T obj, ReferenceCollection references)
+        {
+            if (obj == null) return JValue.CreateNull();
+            if (obj.GetType().IsValueType) return SerializeCore(obj, references);
+            else
+            {
+                var r = references.GetOrAdd(obj);
+                if (r.Token == null) r.Token = SerializeCore(obj, references);
+                return r.ID;
+            }
+        }
+
+        public abstract T DeserializeCore(JToken data, ReferenceCollection references);
+        public abstract JToken SerializeCore(T obj, ReferenceCollection references);
+
+        object ITypeEditionHelper.Deserialize(JToken data, ReferenceCollection references) => Deserialize(data, references);
+        JToken ITypeEditionHelper.Serialize(object obj, ReferenceCollection references) => Serialize((T)obj, references);
     }
 
     public class StringEditionHelper : TypeEditionHelper<string>
     {
-        public override string Deserialize(string data) => data;
+        public override string DeserializeCore(JToken data, ReferenceCollection references) => data.Value<string>();
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new SwitchableTextBox();
 
-        public override string Serialize(string obj) => obj;
+        public override JToken SerializeCore(string obj, ReferenceCollection references) => obj;
         public override DependencyProperty BindingProperty => SwitchableTextBox.TextProperty;
     }
 
     public class FloatEditionHelper : TypeEditionHelper<float>
     {
-        public override float Deserialize(string data) => float.Parse(data);
+        public override float DeserializeCore(JToken data, ReferenceCollection references) => float.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new FloatEditor();
@@ -231,13 +232,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(float obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(float obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => FloatEditor.ValueProperty;
     }
 
     public class DoubleEditionHelper : TypeEditionHelper<double>
     {
-        public override double Deserialize(string data) => double.Parse(data);
+        public override double DeserializeCore(JToken data, ReferenceCollection references) => double.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new DoubleEditor();
@@ -249,13 +250,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(double obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(double obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => DoubleEditor.ValueProperty;
     }
 
     public class DecimalEditionHelper : TypeEditionHelper<decimal>
     {
-        public override decimal Deserialize(string data) => decimal.Parse(data);
+        public override decimal DeserializeCore(JToken data, ReferenceCollection references) => decimal.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new DecimalEditor();
@@ -267,13 +268,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(decimal obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(decimal obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => DecimalEditor.ValueProperty;
     }
 
     public class LongEditionHelper : TypeEditionHelper<long>
     {
-        public override long Deserialize(string data) => long.Parse(data);
+        public override long DeserializeCore(JToken data, ReferenceCollection references) => long.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new LongEditor();
@@ -285,13 +286,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(long obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(long obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => LongEditor.ValueProperty;
     }
 
     public class ULongEditionHelper : TypeEditionHelper<ulong>
     {
-        public override ulong Deserialize(string data) => ulong.Parse(data);
+        public override ulong DeserializeCore(JToken data, ReferenceCollection references) => ulong.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new ULongEditor();
@@ -303,13 +304,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(ulong obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(ulong obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => ULongEditor.ValueProperty;
     }
 
     public class IntEditionHelper : TypeEditionHelper<int>
     {
-        public override int Deserialize(string data) => int.Parse(data);
+        public override int DeserializeCore(JToken data, ReferenceCollection references) => int.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new IntEditor();
@@ -321,13 +322,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(int obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(int obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => IntEditor.ValueProperty;
     }
 
     public class UIntEditionHelper : TypeEditionHelper<uint>
     {
-        public override uint Deserialize(string data) => uint.Parse(data);
+        public override uint DeserializeCore(JToken data, ReferenceCollection references) => uint.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new UIntEditor();
@@ -339,13 +340,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(uint obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(uint obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => UIntEditor.ValueProperty;
     }
 
     public class ShortEditionHelper : TypeEditionHelper<short>
     {
-        public override short Deserialize(string data) => short.Parse(data);
+        public override short DeserializeCore(JToken data, ReferenceCollection references) => short.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new ShortEditor();
@@ -357,13 +358,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(short obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(short obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => ShortEditor.ValueProperty;
     }
 
     public class UShortEditionHelper : TypeEditionHelper<ushort>
     {
-        public override ushort Deserialize(string data) => ushort.Parse(data);
+        public override ushort DeserializeCore(JToken data, ReferenceCollection references) => ushort.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new UShortEditor();
@@ -375,13 +376,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(ushort obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(ushort obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => UShortEditor.ValueProperty;
     }
 
     public class SByteEditionHelper : TypeEditionHelper<sbyte>
     {
-        public override sbyte Deserialize(string data) => sbyte.Parse(data);
+        public override sbyte DeserializeCore(JToken data, ReferenceCollection references) => sbyte.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new SByteEditor();
@@ -393,13 +394,13 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(sbyte obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(sbyte obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => SByteEditor.ValueProperty;
     }
 
     public class ByteEditionHelper : TypeEditionHelper<byte>
     {
-        public override byte Deserialize(string data) => byte.Parse(data);
+        public override byte DeserializeCore(JToken data, ReferenceCollection references) => byte.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var editor = new ByteEditor();
@@ -411,116 +412,121 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(byte obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(byte obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => ByteEditor.ValueProperty;
     }
 
     public class PointEditionHelper : TypeEditionHelper<Point>
     {
-        public override Point Deserialize(string data) => Point.Parse(data);
+        public override Point DeserializeCore(JToken data, ReferenceCollection references) => Point.Parse(data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new PointEditor();
 
-        public override string Serialize(Point obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(Point obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => PointEditor.PointProperty;
     }
 
     public class VectorEditionHelper : TypeEditionHelper<Vector>
     {
-        public override Vector Deserialize(string data) => Vector.Parse(data);
+        public override Vector DeserializeCore(JToken data, ReferenceCollection references) => Vector.Parse(data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new VectorEditor();
 
-        public override string Serialize(Vector obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(Vector obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => VectorEditor.VectorProperty;
     }
 
     public class RectEditionHelper : TypeEditionHelper<Rect>
     {
-        public override Rect Deserialize(string data) => Rect.Parse(data);
+        public override Rect DeserializeCore(JToken data, ReferenceCollection references) => Rect.Parse(data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new RectEditor { Height = 120 };
 
-        public override string Serialize(Rect obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(Rect obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => RectEditor.RectProperty;
     }
 
     public class SizeEditionHelper : TypeEditionHelper<Size>
     {
-        public override Size Deserialize(string data) => Size.Parse(data);
+        public override Size DeserializeCore(JToken data, ReferenceCollection references) => Size.Parse(data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new SizeEditor { Height = 120 };
 
-        public override string Serialize(Size obj) => obj.ToString(CultureInfo.InvariantCulture);
+        public override JToken SerializeCore(Size obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => SizeEditor.SizeProperty;
     }
 
     public class ColorEditionHelper : TypeEditionHelper<Color>
     {
-        public override Color Deserialize(string data) => Imaging.ColorFromHex(uint.Parse(data, NumberStyles.HexNumber));
+        public override Color DeserializeCore(JToken data, ReferenceCollection references) => Imaging.ColorFromHex(uint.Parse(data.Value<string>(), NumberStyles.HexNumber));
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new ColorEditor { Height = 180 };
 
-        public override string Serialize(Color obj) => obj.ToHex();
+        public override JToken SerializeCore(Color obj, ReferenceCollection references) => obj.ToHex();
         public override DependencyProperty BindingProperty => ColorEditor.ColorProperty;
     }
 
     public class RectPointEditionHelper : TypeEditionHelper<RectPoint>
     {
-        public override RectPoint Deserialize(string data) => RectPoint.Parse(data);
+        public override RectPoint DeserializeCore(JToken data, ReferenceCollection references) => RectPoint.Parse(data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new RectPointEditor { Height = 120 };
 
-        public override string Serialize(RectPoint obj) => obj.ToString();
+        public override JToken SerializeCore(RectPoint obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => RectPointEditor.RectPointProperty;
     }
 
     public class ProgressEditionHelper : TypeEditionHelper<Progress>
     {
-        public override Progress Deserialize(string data) => Progress.Parse(data);        
+        public override Progress DeserializeCore(JToken data, ReferenceCollection references) => Progress.Parse(data.Value<string>());
 
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new ProgressEditor();
 
-        public override string Serialize(Progress obj) => obj.ToString();
+        public override JToken SerializeCore(Progress obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => ProgressEditor.ProgressProperty;
     }
 
     public class BooleanEditionHelper : TypeEditionHelper<bool>
     {
-        public override bool Deserialize(string data) => bool.Parse(data);
+        public override bool DeserializeCore(JToken data, ReferenceCollection references) => bool.Parse(data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new CheckBox();
 
-        public override string Serialize(bool obj) => obj.ToString();
+        public override JToken SerializeCore(bool obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => ToggleButton.IsCheckedProperty;
     }
 
     public class NullableBooleanEditionHelper : TypeEditionHelper<bool?>
     {
-        public override bool? Deserialize(string data) => data == null ? (bool?)null : bool.Parse(data);
+        public override bool? DeserializeCore(JToken data, ReferenceCollection references)
+        {
+            string s = data.Value<string>();
+            return s == "null" ? new bool?() : bool.Parse(s);
+        }
+
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new CheckBox { IsThreeState = true };
 
-        public override string Serialize(bool? obj) => obj?.ToString();
+        public override JToken SerializeCore(bool? obj, ReferenceCollection references) => obj?.ToString() ?? "null";
         public override DependencyProperty BindingProperty => ToggleButton.IsCheckedProperty;
     }
 
     public class IntIntervalEditionHelper : TypeEditionHelper<Interval<int>>
     {
-        public override Interval<int> Deserialize(string data) => Interval<int>.Parse(data, s => int.Parse(s));
+        public override Interval<int> DeserializeCore(JToken data, ReferenceCollection references) => Interval<int>.Parse(data.Value<string>(), s => int.Parse(s));
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new IntervalEditor { IntervalType = IntervalType.Int };
 
-        public override string Serialize(Interval<int> obj) => obj.ToString();
+        public override JToken SerializeCore(Interval<int> obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => IntervalEditor.IntIntervalProperty;
     }
 
     public class DoubleIntervalEditionHelper : TypeEditionHelper<Interval<double>>
     {
-        public override Interval<double> Deserialize(string data) => Interval<double>.Parse(data, s => double.Parse(s));
+        public override Interval<double> DeserializeCore(JToken data, ReferenceCollection references) => Interval<double>.Parse(data.Value<string>(), s => double.Parse(s));
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new IntervalEditor { IntervalType = IntervalType.Double };
 
-        public override string Serialize(Interval<double> obj) => obj.ToString();
+        public override JToken SerializeCore(Interval<double> obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => IntervalEditor.DoubleIntervalProperty;
     }
 
     public class DecimalIntervalEditionHelper : TypeEditionHelper<Interval<decimal>>
     {
-        public override Interval<decimal> Deserialize(string data) => Interval<decimal>.Parse(data, s => decimal.Parse(s));
+        public override Interval<decimal> DeserializeCore(JToken data, ReferenceCollection references) => Interval<decimal>.Parse(data.Value<string>(), s => decimal.Parse(s));
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new IntervalEditor { IntervalType = IntervalType.Decimal };
 
-        public override string Serialize(Interval<decimal> obj) => obj.ToString();
+        public override JToken SerializeCore(Interval<decimal> obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => IntervalEditor.DecimalIntervalProperty;
     }
 
@@ -530,22 +536,39 @@ namespace CoordAnimation
 
         public Type EnumType { get; }
 
-        public override Enum Deserialize(string data) => (Enum)Enum.Parse(EnumType, data);
+        public override Enum DeserializeCore(JToken data, ReferenceCollection references) => (Enum)Enum.Parse(EnumType, data.Value<string>());
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new EnumEditor();
 
-        public override string Serialize(Enum obj) => obj.ToString();
+        public override JToken SerializeCore(Enum obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => EnumEditor.EnumerationProperty;
     }
 
     public class ListEditionHelper : TypeEditionHelper<IList>
     {
         public override bool IsAnimatable => false;
-        public override bool IsRaw => true;
         public ListEditionHelper(Type type) => Type = type;
 
         public Type Type { get; }
 
-        public override IList Deserialize(string data) => (IList)JsonConvert.DeserializeObject(data, Type, new EditableTypeConverter());
+        public override IList DeserializeCore(JToken data, ReferenceCollection references)
+        {
+            if (!(data is JArray jArray)) throw new FormatException();
+
+            var type = Type;
+            Type itemType = null;
+            var genericIList = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>));
+            /*if (genericIList != null) */
+            itemType = genericIList.GenericTypeArguments[0];
+            if (TypeEditionHelper.FromType(itemType) is ITypeEditionHelper helper)
+            {
+                var result = (IList)Activator.CreateInstance(type);
+                foreach (var token in jArray) result.Add(helper.Deserialize(token, references));
+                return result;
+            }
+
+            throw new FormatException();
+        }
+
         public override FrameworkElement GetEditor(Dictionary<string, object> data)
         {
             var type = Type;
@@ -555,22 +578,45 @@ namespace CoordAnimation
             return editor;
         }
 
-        public override string Serialize(IList obj) => JsonConvert.SerializeObject(obj, Formatting.Indented, new EditableTypeConverter());
+        public override JToken SerializeCore(IList obj, ReferenceCollection references)
+        {
+            var result = new JArray();
+            foreach (object item in obj) { if (TypeEditionHelper.FromType(item.GetType()) is ITypeEditionHelper helper) result.Add(helper.Serialize(item, references)); }
+            return result;
+        }
         public override DependencyProperty BindingProperty => PropertiesEditorBase.ObjectProperty;
     }
 
     public class DependencyObjectEditionHelper : TypeEditionHelper<DependencyObject>
     {
         public override bool IsAnimatable => false;
-        public override bool IsRaw => true;
         public DependencyObjectEditionHelper(Type type) => Type = type;
 
         public Type Type { get; }
 
-        public override DependencyObject Deserialize(string data) => (DependencyObject)JsonConvert.DeserializeObject(data, Type, new EditableTypeConverter());
+        public override DependencyObject DeserializeCore(JToken data, ReferenceCollection references)
+        {
+            if (!(data is JObject jObject)) throw new FormatException();
+
+            var type = Type;
+            var result = (DependencyObject)Activator.CreateInstance(type);
+            foreach (var kvp in jObject)
+            {
+                var dp = DependencyPropertyDescriptor.FromName(kvp.Key, type, type).DependencyProperty;
+                if (TypeEditionHelper.FromType(dp.PropertyType) is ITypeEditionHelper helper) result.SetValue(dp, helper.Deserialize(kvp.Value, references));
+            }
+            return result;
+        }
+
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new PropertiesEditor { Type = Type, Margin = new Thickness(0, 0, -3, 0) };
 
-        public override string Serialize(DependencyObject obj) => JsonConvert.SerializeObject(obj, Formatting.Indented, new EditableTypeConverter());
+        public override JToken SerializeCore(DependencyObject obj, ReferenceCollection references)
+        {
+            var result = new JObject();
+            foreach (var property in obj is NotifyObject notifyObject ? notifyObject.AllProperties : obj.GetType().GetAllDependencyProperties()) { if (TypeEditionHelper.FromType(property.PropertyType) is ITypeEditionHelper helper) result.Add(property.Name, helper.Serialize(obj.GetValue(property), references)); }
+            return result;
+        }
+
         public override DependencyProperty BindingProperty => PropertiesEditorBase.ObjectProperty;
     }
 
@@ -583,5 +629,29 @@ namespace CoordAnimation
 
         public override FrameworkElement GetEditor(Dictionary<string, object> data) => new VisualObjectSelector { Selection = App.Scene.Plane.Selection, Pointing = IsPointing ? Type : null };
         public override DependencyProperty BindingProperty => VisualObjectSelector.VisualObjectProperty;
+    }
+
+    public class PlaneEditionHelper : DependencyObjectEditionHelper
+    {
+        public PlaneEditionHelper() : base(typeof(Plane)) { }
+
+        public override JToken SerializeCore(DependencyObject obj, ReferenceCollection references)
+        {
+            var o = (Plane)obj;
+            var result = new JObject();
+            foreach (var property in o.GetType().GetDependencyProperties()) { if (TypeEditionHelper.FromType(property.PropertyType) is ITypeEditionHelper helper) result.Add(property.Name, helper.Serialize(obj.GetValue(property), references)); }
+            result.Add("VisualObjects", o.VisualObjects.Serialize(references));
+            return result;
+        }
+    }
+
+    public static partial class Extensions
+    {
+        public static JToken Serialize<T>(this object obj, ReferenceCollection references) => TypeEditionHelper.FromType(typeof(T)).Serialize(obj, references);
+        public static JToken Serialize(this object obj, ReferenceCollection references) => TypeEditionHelper.FromType(obj.GetType()).Serialize(obj, references);
+        public static JToken Serialize(this object obj, Type type, ReferenceCollection references) => TypeEditionHelper.FromType(type).Serialize(obj, references);
+
+        public static T Deserialize<T>(this JToken data, ReferenceCollection references) => (T)TypeEditionHelper.FromType(typeof(T)).Deserialize(data, references);
+        public static object Deserialize(this JToken data, Type type, ReferenceCollection references) => TypeEditionHelper.FromType(type).Serialize(data, references);
     }
 }
