@@ -187,7 +187,7 @@ namespace CoordAnimation
 
                 if (e.NewValue is AbsoluteKeyFrameCollection<T> newValue)
                 {
-                    Children = new VisualObjectCollection(KeyFrames.Select((kf, i) => CreateKeyFrame(i)));
+                    Children = new VisualObjectCollection(KeyFrames.OfType<AbsoluteKeyFrame<T>>().Select((kf, i) => CreateKeyFrame(i)));
                     newValue.CollectionChanged += TimelineKeyFrames_CollectionChanged;
                     newValue.Changed += ChangedHandler;
                 }

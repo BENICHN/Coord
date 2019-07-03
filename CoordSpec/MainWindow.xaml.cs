@@ -76,6 +76,6 @@ namespace CoordSpec
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => plane.VisualObjects.Clear();
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) => plane.Items.Clear();
     }
 }

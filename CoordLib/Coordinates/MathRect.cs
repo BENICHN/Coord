@@ -1,6 +1,7 @@
 ﻿using BenLib.Framework;
 using BenLib.Standard;
 using System;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 
@@ -81,9 +82,16 @@ namespace Coord
 
         public bool Contains(Point point) => WidthContains(point.X) && HeightContains(point.Y);
 
-        public override string ToString() => $"{X};{Y};{Width};{Height}";
+        public override string ToString() => $"{X.ToString(CultureInfo.InvariantCulture)};{Y.ToString(CultureInfo.InvariantCulture)};{Width.ToString(CultureInfo.InvariantCulture)};{Height.ToString(CultureInfo.InvariantCulture)}";
         public override bool Equals(object obj) => obj is MathRect rect && Equals(rect);
         public bool Equals(MathRect other) => X == other.X && Y == other.Y && Width == other.Width && Height == other.Height;
+
+        public static MathRect Parse(string s)
+        {
+            string[] ss = s.Split(';', ',');
+            if (ss.Length != 4) throw new FormatException();
+            return new MathRect(double.Parse(ss[0], CultureInfo.InvariantCulture), double.Parse(ss[1], CultureInfo.InvariantCulture), double.Parse(ss[2], CultureInfo.InvariantCulture), double.Parse(ss[3], CultureInfo.InvariantCulture));
+        }
 
         public override int GetHashCode()
         {

@@ -68,8 +68,8 @@ namespace CoordAnimation
                     UpdateCursorPoint(PropertiesAnimation.GeneralTime);
                 };
 
-                plane.VisualObjects.Insert(1, curves);
-                plane.VisualObjects.Add(t);
+                plane.Items.Insert(1, curves);
+                plane.Items.Add(t);
 
                 KeyFrames = t;
                 Curves = curves;
@@ -83,6 +83,8 @@ namespace CoordAnimation
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            plane.Items = new VisualObjectCollection();
+
             plane.Selection.AllAtOnce = true;
             plane.Selection.AllowMultiple = false;
             plane.CoordinatesSystemManager.MinCellSize = 45;
@@ -95,7 +97,7 @@ namespace CoordAnimation
 
             PropertiesAnimation.GeneralTimeChanged += OnGeneralTimeChanged;
 
-            plane.VisualObjects.AddRange(new TimelineLimits(), new TimelineHeader(), m_cursor);
+            plane.Items.AddRange(new TimelineLimits(), new TimelineHeader(), m_cursor);
         }
 
         private void OnGeneralTimeChanged(object sender, PropertyChangedExtendedEventArgs<long> e) => UpdateCursorPoint(e.NewValue);

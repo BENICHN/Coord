@@ -35,7 +35,7 @@ namespace CoordSpec
             var dp3 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Emerald, new Pen(FlatBrushes.Clouds, 3));
             var dp4 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.SunFlower, new Pen(FlatBrushes.Clouds, 3));
             var dp5 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Amethyst, new Pen(FlatBrushes.Clouds, 3));
-            plane.VisualObjects.Add(Renderer(dp1, dp2, dp3, dp4, dp5));
+            plane.Items.Add(Renderer(dp1, dp2, dp3, dp4, dp5));
 
             async Task Animate()
             {

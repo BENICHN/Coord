@@ -64,7 +64,7 @@ namespace CoordAnimation
             get
             {
                 long time = PropertiesAnimation.GeneralTime;
-                return KeyFrames != null && KeyFrames.Any(kf => kf.FramesCount == time);
+                return KeyFrames != null && KeyFrames.OfType<AbsoluteKeyFrame<T>>().Any(kf => kf.FramesCount == time);
             }
             set
             {

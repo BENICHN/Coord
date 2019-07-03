@@ -217,6 +217,8 @@ namespace Coord
 
     public class VisualObjectCollection : NotifyObjectCollection<VisualObject>
     {
+        internal bool IsLocked { get; set; }
+
         public VisualObjectCollection() : base() { }
         public VisualObjectCollection(IEnumerable<VisualObject> collection) : base(collection) { }
         public VisualObjectCollection(params VisualObject[] collection) : base(collection) { }
@@ -226,6 +228,7 @@ namespace Coord
 
         protected override void Register(VisualObject item)
         {
+            if (IsLocked) throw new InvalidOperationException();
             if (item != null)
             {
                 base.Register(item);
@@ -236,12 +239,19 @@ namespace Coord
 
         protected override void UnRegister(VisualObject item)
         {
+            if (IsLocked) throw new InvalidOperationException();
             if (item != null)
             {
                 base.UnRegister(item);
                 item.PreviewSelectionChanged -= Item_PreviewSelectionChanged;
                 item.SelectionChanged -= Item_SelectionChanged;
             }
+        }
+
+        protected override void MoveItem(int oldIndex, int newIndex)
+        {
+            if (IsLocked) throw new InvalidOperationException();
+            base.MoveItem(oldIndex, newIndex);
         }
 
         private void Item_SelectionChanged(object sender, VisualObjectSelectionChangedEventArgs e) => SelectionChanged?.Invoke(this, e);

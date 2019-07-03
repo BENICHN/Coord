@@ -6,13 +6,65 @@ using System.Windows;
 
 namespace Coord
 {
+    public class AnimationData : Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection>
+    {
+        public DependencyObject Owner { get; set; }
+
+        internal AnimationData(DependencyObject owner)
+        {
+            Owner = owner;
+            PropertiesAnimation.GeneralTimeChanged += (sender, e) => { foreach (var kvp in this) Owner.SetValue(kvp.Key, kvp.Value.ValueAt(PropertiesAnimation.GeneralTime)); };
+        }
+
+        private IAbsoluteKeyFrameCollection CreatePropertyData(DependencyProperty dependencyProperty)
+        {
+            var propertyData = (IAbsoluteKeyFrameCollection)Activator.CreateInstance(typeof(AbsoluteKeyFrameCollection<>).MakeGenericType(dependencyProperty.PropertyType));
+            propertyData.CollectionChanged += (sender, e) => { if (propertyData.Count == 0) { Remove(dependencyProperty); PropertiesAnimation.NotifyDataRemoved(propertyData); } };
+            return propertyData;
+        }
+
+        private AbsoluteKeyFrameCollection<T> CreatePropertyData<T>(DependencyProperty dependencyProperty)
+        {
+            var propertyData = new AbsoluteKeyFrameCollection<T>();
+            propertyData.CollectionChanged += (sender, e) => { if (propertyData.Count == 0) { Remove(dependencyProperty); PropertiesAnimation.NotifyDataRemoved(propertyData); } };
+            return propertyData;
+        }
+
+        public IAbsoluteKeyFrameCollection PutAnimationData(DependencyProperty dependencyProperty)
+        {
+            var propertyData = CreatePropertyData(dependencyProperty);
+            if (ContainsKey(dependencyProperty)) this[dependencyProperty] = propertyData;
+            else Add(dependencyProperty, propertyData);
+            return propertyData;
+        }
+
+        public AbsoluteKeyFrameCollection<T> PutAnimationData<T>(DependencyProperty dependencyProperty)
+        {
+            var propertyData = CreatePropertyData<T>(dependencyProperty);
+            if (ContainsKey(dependencyProperty)) this[dependencyProperty] = propertyData;
+            else Add(dependencyProperty, propertyData);
+            return propertyData;
+        }
+
+        public void PutKeyFrame<T>(DependencyProperty dependencyProperty, AbsoluteKeyFrame<T> keyFrame)
+        {
+            if (TryGetValue(dependencyProperty, out var keyFrames)) ((AbsoluteKeyFrameCollection<T>)keyFrames).PutKeyFrame(keyFrame);
+            else
+            {
+                var propertyData = CreatePropertyData<T>(dependencyProperty);
+                propertyData.Add(keyFrame);
+                Add(dependencyProperty, propertyData);
+            }
+        }
+    }
     public static class PropertiesAnimation
     {
         public static event EventHandler<EventArgs<IAbsoluteKeyFrameCollection>> DataRemoved;
+        internal static void NotifyDataRemoved(IAbsoluteKeyFrameCollection data) => DataRemoved?.Invoke(null, EventArgsHelper.Create(data));
 
-        private static Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection> GetAnimationData(DependencyObject obj) => (Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection>)obj.GetValue(AnimationDataProperty);
-        private static void SetAnimationData(DependencyObject obj, Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection> value) => obj.SetValue(AnimationDataProperty, value);
-        private static readonly DependencyProperty AnimationDataProperty = DependencyProperty.RegisterAttached("AnimationData", typeof(Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection>), typeof(PropertiesAnimation));
+        public static AnimationData GetAnimationData(DependencyObject obj) => (AnimationData)obj.GetValue(AnimationDataProperty);
+        public static void SetAnimationData(DependencyObject obj, AnimationData value) => obj.SetValue(AnimationDataProperty, value);
+        public static readonly DependencyProperty AnimationDataProperty = DependencyProperty.RegisterAttached("AnimationData", typeof(AnimationData), typeof(PropertiesAnimation));
 
         private static long s_generalTime;
         public static long GeneralTime
@@ -31,37 +83,22 @@ namespace Coord
 
         public static event PropertyChangedExtendedEventHandler<long> GeneralTimeChanged;
 
+        public static IAbsoluteKeyFrameCollection PutAnimationData(this DependencyObject dependencyObject, DependencyProperty dependencyProperty)
+        {
+            if (!(GetAnimationData(dependencyObject) is AnimationData data)) SetAnimationData(dependencyObject, data = new AnimationData(dependencyObject));
+            return data.PutAnimationData(dependencyProperty);
+        }
+
         public static AbsoluteKeyFrameCollection<T> PutAnimationData<T>(this DependencyObject dependencyObject, DependencyProperty dependencyProperty)
         {
-            var propertyData = new AbsoluteKeyFrameCollection<T>();
-            if (!(GetAnimationData(dependencyObject) is Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection> data))
-            {
-                data = new Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection>();
-                SetAnimationData(dependencyObject, data);
-                GeneralTimeChanged += (sender, e) => { foreach (var kvp in data) dependencyObject.SetValue(kvp.Key, kvp.Value.ValueAt(GeneralTime)); };
-            }
-            if (data.ContainsKey(dependencyProperty)) data[dependencyProperty] = propertyData;
-            else data.Add(dependencyProperty, propertyData);
-            propertyData.CollectionChanged += (sender, e) => { if (propertyData.Count == 0) { data.Remove(dependencyProperty); DataRemoved?.Invoke(null, EventArgsHelper.Create<IAbsoluteKeyFrameCollection>(propertyData)); } };
-            return propertyData;
+            if (!(GetAnimationData(dependencyObject) is AnimationData data)) SetAnimationData(dependencyObject, data = new AnimationData(dependencyObject));
+            return data.PutAnimationData<T>(dependencyProperty);
         }
 
         public static void PutKeyFrame<T>(this DependencyObject dependencyObject, DependencyProperty dependencyProperty, AbsoluteKeyFrame<T> keyFrame)
         {
-            var data = GetAnimationData(dependencyObject);
-            if (data == null)
-            {
-                data = new Dictionary<DependencyProperty, IAbsoluteKeyFrameCollection>();
-                SetAnimationData(dependencyObject, data);
-                GeneralTimeChanged += (sender, e) => { foreach (var kvp in data) dependencyObject.SetValue(kvp.Key, kvp.Value.ValueAt(GeneralTime)); };
-            }
-            if (data.TryGetValue(dependencyProperty, out var keyFrames)) ((AbsoluteKeyFrameCollection<T>)keyFrames).PutKeyFrame(keyFrame);
-            else
-            {
-                var propertyData = new AbsoluteKeyFrameCollection<T> { keyFrame };
-                data.Add(dependencyProperty, propertyData);
-                propertyData.CollectionChanged += (sender, e) => { if (propertyData.Count == 0) { data.Remove(dependencyProperty); DataRemoved?.Invoke(null, EventArgsHelper.Create<IAbsoluteKeyFrameCollection>(propertyData)); } };
-            }
+            if (!(GetAnimationData(dependencyObject) is AnimationData data)) SetAnimationData(dependencyObject, data = new AnimationData(dependencyObject));
+            data.PutKeyFrame(dependencyProperty, keyFrame);
         }
 
         public static bool TryGetKeyFrames<T>(this DependencyObject dependencyObject, DependencyProperty dependencyProperty, out AbsoluteKeyFrameCollection<T> keyFrames)

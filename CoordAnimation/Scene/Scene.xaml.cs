@@ -3,6 +3,7 @@ using BenLib.Standard;
 using BenLib.WPF;
 using Coord;
 using CoordSpec;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -32,7 +33,6 @@ namespace CoordAnimation
         public ElementTree Elements { get; } = new ElementTree { RefreshAtChange = true };
 
         public bool IsPlaying { get; private set; }
-        public WpfObservableRangeCollection<CharacterEffectElement> EffectElements { get; } = new WpfObservableRangeCollection<CharacterEffectElement>();
 
         private Element m_lastSelectedElement;
 
@@ -47,6 +47,7 @@ namespace CoordAnimation
             Elements.Add(Plane.Axes);
             Elements.Add(Plane.AxesNumbers);
 
+            Plane.Items = new VisualObjectCollection();
             Plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
             Plane.OverAxesNumbersChanged += Plane_OverAxesNumbersChanged;
 
@@ -85,26 +86,26 @@ namespace CoordAnimation
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            var p = Point(4, 2).Style(FlatBrushes.Alizarin);
+            /*var p = Point(4, 2).Style(FlatBrushes.Alizarin);
             var g = Group(Point(0, 0).Style(FlatBrushes.PeterRiver));
             var t = InTex("u^3+v^3+uv(u+v)+2uv(u+v)+p(u+v)+q=0", 1, p).Style(FlatBrushes.Clouds);
             var g2 = Group(Group(Group(Group(Group(Group(g))), t)));
             var c = Circle(p, 1).Style(new Pen(FlatBrushes.Carrot, 3));
             var d = new Deriv();
             //var m = new MAF();//.Insert(PositiveReals, PositiveReals, c, default, true, true, 1).Fit(PositiveReals, PositiveReals, c, true, true, 1);
-            //VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
+            //Items.CollectionChanged += VisualObjects_CollectionChanged;
             //previewPlane.OverAxesNumbersChanged += (sender, e) => UpdateAxesNumbers();
             //Plane.RenderAtChange = true;
             //Plane.RenderAtSelectionChange = true;
             Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
-            Plane.VisualObjects.Add(p);
-            //VisualObjects.Add(g2);
-            Plane.VisualObjects.Add(FunctionCurve(x => x + Sin(PI * x), false).Style(new Pen(FlatBrushes.Nephritis, 3)));
-            //VisualObjects.Add(new VisualObjectRenderer(t, c));
-            Plane.VisualObjects.Add(t);
-            Plane.VisualObjects.Add(new ELC { Center = new PointVisualObject { Definition = p.Definition, Fill = FlatBrushes.Amethyst, Radius = 15 }, Rank = 5, Stroke = new Pen(FlatBrushes.Pumpkin, 3) });
-            Plane.VisualObjects.Add(d);
-            //Plane.VisualObjects.Add(new A());
+            Plane.Items.Add(p);
+            //Items.Add(g2);
+            Plane.Items.Add(FunctionCurve(x => x + Sin(PI * x), false).Style(new Pen(FlatBrushes.Nephritis, 3)));
+            //Items.Add(new VisualObjectRenderer(t, c));
+            Plane.Items.Add(t);
+            Plane.Items.Add(new ELC { Center = new PointVisualObject { Definition = p.Definition, Fill = FlatBrushes.Amethyst, Radius = 15 }, Rank = 5, Stroke = new Pen(FlatBrushes.Pumpkin, 3) });
+            Plane.Items.Add(d);
+            //Plane.Items.Add(new A());
 
             c.Definition.PutKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new LinearAbsoluteKeyFrame<double> { FramesCount = 120, Value = 8 });
             c.Definition.PutKeyFrame(CenterRadiusCircleDefinition.RadiusProperty, new EasingAbsoluteKeyFrame<double> { FramesCount = 180, Value = 5, EasingFunction = new CubicEase() });
@@ -119,8 +120,8 @@ namespace CoordAnimation
             var dp3 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Emerald, new Pen(FlatBrushes.Clouds, 3));
             var dp4 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.SunFlower, new Pen(FlatBrushes.Clouds, 3));
             var dp5 = new DoublePendulum { Angle1 = 3 * PI / 7, Angle2 = 3 * PI / 4, Length1 = 1, Length2 = 2, Mass1 = 1, Mass2 = 1 }.Style(FlatBrushes.Amethyst, new Pen(FlatBrushes.Clouds, 3));
-            Plane.VisualObjects.Add(Renderer(dp1, dp2, dp3));
-            Plane.VisualObjects.Add(Group(dp4, dp5));
+            Plane.Items.Add(Renderer(dp1, dp2, dp3));
+            Plane.Items.Add(Group(dp4, dp5));
             Plane.RenderAtChange = true;
             //CompositionTarget.Rendering += (sender, e) => { if (!IsPlaying) Plane.RenderChanged(); };
             PropertiesAnimation.GeneralTimeChanged += (sender, e) =>
@@ -138,22 +139,22 @@ namespace CoordAnimation
 
             //await d.Animate();
             //BenLib.Framework.ThreadingFramework.SetInterval(() => previewPlane.RenderChanged(), 1000.0 / 60);
-            Plane.VisualObjects.Add(c);
-            Plane.VisualObjects.Add(Vector(p, new Vector(2, 5)).Style(new Pen(FlatBrushes.PeterRiver, 3)));
-            Plane.VisualObjects.Add(new Koch { Start = Point(-1, 5), End = Point(3, 3), Stroke = new Pen(FlatBrushes.Nephritis, 5) });
-            //Plane.VisualObjects.Add(Group(new GridVisualObject { Primary = true, Secondary = true, SecondaryDensity = 10 }));
+            Plane.Items.Add(c);
+            Plane.Items.Add(Vector(p, new Vector(2, 5)).Style(new Pen(FlatBrushes.PeterRiver, 3)));
+            Plane.Items.Add(new Koch { Start = Point(-1, 5), End = Point(3, 3), Stroke = new Pen(FlatBrushes.Nephritis, 5) });
+            //Plane.Items.Add(Group(new GridVisualObject { Primary = true, Secondary = true, SecondaryDensity = 10 }));
 
-            //Plane.VisualObjects.CollectionChanged += (sndr, args) => VisualObjectsTreeView.IsEnabled = false;
-            //Plane.VisualObjects.ItemChanged += (sndr, args) => { if (!Elements.RefreshAtChange) VisualObjectsTreeView.IsEnabled = false; };
+            //Plane.Items.CollectionChanged += (sndr, args) => VisualObjectsTreeView.IsEnabled = false;
+            //Plane.Items.ItemChanged += (sndr, args) => { if (!Elements.RefreshAtChange) VisualObjectsTreeView.IsEnabled = false; };
             //Plane.InputRangeChanged += (sndr, args) => { if (!Elements.RefreshAtChange) VisualObjectsTreeView.IsEnabled = false; };
 
-            //Plane.VisualObjects.Add(m);
-            //VisualObjects.Add(Characters(p, default, true, t.GetCharacters(), (0, 3)).Color(FlatBrushes.PeterRiver));
-            //VisualObjects.Add(InTex("a====b", 1, Point(0, 0), RectPoint.BottomLeft).Color(FlatBrushes.Alizarin));
+            //Plane.Items.Add(m);
+            //Items.Add(Characters(p, default, true, t.GetCharacters(), (0, 3)).Color(FlatBrushes.PeterRiver));
+            //Items.Add(InTex("a====b", 1, Point(0, 0), RectPoint.BottomLeft).Color(FlatBrushes.Alizarin));
             Plane.OverAxesNumbers = t;
             //await m.Animate();
             //previewPlane.Zoom(true, new MathRect(4, 1, 1, 1), new Rect(100, 100, 300, 300), null, t);
-            //RefreshElements();
+            //RefreshElements();*/
         }
 
         //private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) => EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect;
@@ -166,7 +167,6 @@ namespace CoordAnimation
                 {
                     var c = (CharacterEffect)Activator.CreateInstance(characterEffectType.Type);
                     Plane.Selection.PushEffect(c);
-                    EffectElements.Add(new CharacterEffectElement(c, null, null));
                 }
             }
         }
@@ -213,7 +213,7 @@ namespace CoordAnimation
         {
             if (e.OriginalSource is MenuItem menuItem && menuItem.Header is Type type && Activator.CreateInstance(type) is VisualObject visualObject)
             {
-                Plane.VisualObjects.Add(visualObject);
+                Plane.Items.Add(visualObject);
                 VisualObjectsEditor.Object = visualObject;
             }
         }
@@ -281,15 +281,28 @@ namespace CoordAnimation
             var planeHelper = TypeEditionHelper.FromType(typeof(Plane));
             var p = planeHelper.Serialize(Plane, references);
 
+            result.Add("Plane", p);
             result.Add("References", references.Serialize());
 
             return result;
         }
 
+        public void Deserialize(JToken data)
+        {
+            var refs = ReferenceCollection.Deserialize(data["References"]);
+            refs[0].CopyValues(Plane, refs);
+        }
+
         private void MenuOpen_Click(object sender, RoutedEventArgs e)
         {
-            var t = Serialize();
-            var refs = ReferenceCollection.Deserialize(t["References"]);
+            var od = new OpenFileDialog();
+            if (od.ShowDialog() == true) Deserialize(JObject.Load(new JsonTextReader(new StreamReader(File.OpenRead(od.FileName)))));
+        }
+
+        private void MenuSave_Click(object sender, RoutedEventArgs e)
+        {
+            var sd = new SaveFileDialog();
+            if (sd.ShowDialog() == true) File.WriteAllText(sd.FileName, Serialize().ToString());
         }
     }
 

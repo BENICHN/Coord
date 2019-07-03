@@ -19,7 +19,7 @@ namespace Coord
     /// <summary>
     /// Plan pouvant contenir des objets visuels utilisant un système de coordonnées.
     /// </summary>
-    [ContentProperty("VisualObjects")]
+    [ContentProperty("Items")]
     public class Plane : FrameworkElement
     {
         #region Champs
@@ -51,7 +51,10 @@ namespace Coord
 
         protected override int VisualChildrenCount => VisualObjects.Count + 3;
 
-        public VisualObjectCollection VisualObjects { get; } = new VisualObjectCollection();
+        public VisualObjectCollection Items { get => (VisualObjectCollection)GetValue(ItemsProperty); set => SetValue(ItemsProperty, value); }
+        public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register("Items", typeof(VisualObjectCollection), typeof(Plane));
+
+        public VisualObjectCollection VisualObjects { get; } = new VisualObjectCollection { IsLocked = true };
         public TrackingCharacterSelection Selection { get; }
 
         public VisualObject OverAxesNumbers { get => (VisualObject)GetValue(OverAxesNumbersProperty); set => SetValue(OverAxesNumbersProperty, value); }
@@ -615,13 +618,58 @@ namespace Coord
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
-            if (e.Property == OverAxesNumbersProperty)
+            if (e.Property == ItemsProperty)
+            {
+                VisualObjects.IsLocked = false;
+
+                if (e.OldValue is VisualObjectCollection oldVisualObjects)
+                {
+                    oldVisualObjects.CollectionChanged -= Items_CollectionChanged;
+                    VisualObjects.Clear();
+                }
+                if (e.NewValue is VisualObjectCollection newVisualObjects)
+                {
+                    newVisualObjects.CollectionChanged += Items_CollectionChanged;
+                    VisualObjects.AddRange(newVisualObjects);
+                }
+
+                VisualObjects.IsLocked = true;
+            }
+            else if (e.Property == OverAxesNumbersProperty)
             {
                 ComputeAxesTextVisualIndex();
                 OverAxesNumbersChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<VisualObject>("OverAxesNumbers", (VisualObject)e.OldValue, (VisualObject)e.NewValue));
             }
             else if (e.Property == RestoreCursorProperty) { if (!IsMoving) Cursor = (e.NewValue as Cursor) ?? Cursors.Arrow; }
             base.OnPropertyChanged(e);
+        }
+
+        private void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            VisualObjects.IsLocked = false;
+
+            if (e.Action == NotifyCollectionChangedAction.Reset) VisualObjects.Clear();
+            else if (e.Action == NotifyCollectionChangedAction.Move) VisualObjects.Move(e.OldStartingIndex, e.NewStartingIndex);
+            else if (e.Action == NotifyCollectionChangedAction.Replace) VisualObjects[e.OldStartingIndex] = (VisualObject)e.NewItems[0];
+            else
+            {
+                if (e.OldItems != null)
+                {
+                    for (int i = 0; i < e.OldItems.Count; i++)
+                    {
+                        VisualObjects.RemoveAt(e.OldStartingIndex + i);
+                    }
+                }
+                if (e.NewItems != null)
+                {
+                    for (int i = 0; i < e.NewItems.Count; i++)
+                    {
+                        VisualObjects.Insert(e.NewStartingIndex + i, (VisualObject)e.NewItems[i]);
+                    }
+                }
+            }
+
+            VisualObjects.IsLocked = true;
         }
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)

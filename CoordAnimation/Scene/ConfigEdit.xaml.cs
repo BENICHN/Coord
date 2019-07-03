@@ -51,7 +51,7 @@ namespace CoordAnimation
                 m_current = configuration;
                 configuration.CurrentTypeChanged += Configuration_CurrentTypeChanged;
                 configuration.Disposed += Configuration_Disposed;
-                plane.VisualObjects.Add(configuration.VisualObject);
+                plane.Items.Add(configuration.VisualObject);
                 await configuration.Run();
             }
         }
@@ -89,7 +89,7 @@ namespace CoordAnimation
                     m_createdPoints.Remove(currentPoint);
                     m_currentPoint = null;
                 }
-                else plane.VisualObjects.Add(currentPoint);
+                else plane.Items.Add(currentPoint);
             }
         }
 

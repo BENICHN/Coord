@@ -63,6 +63,7 @@ namespace Coord
         public CoordinatesSystem CoordinatesSystem { get => (CoordinatesSystem)GetValue(CoordinatesSystemProperty); set => SetValue(CoordinatesSystemProperty, value); }
         public static readonly DependencyProperty CoordinatesSystemProperty = CreateProperty<CoordinatesSystemManager, CoordinatesSystem>(true, true, true, "CoordinatesSystem");
 
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         public MathRect InputRangeLimits { get => (MathRect)GetValue(InputRangeLimitsProperty); set => SetValue(InputRangeLimitsProperty, value); }
         public static readonly DependencyProperty InputRangeLimitsProperty = DependencyProperty.Register("InputRangeLimits", typeof(MathRect), typeof(CoordinatesSystemManager), new PropertyMetadata(new MathRect(double.NaN, double.NaN, double.NaN, double.NaN)));
 

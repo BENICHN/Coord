@@ -684,7 +684,7 @@ namespace Coord
             if (!axesNumbersAdded) visualObjects.Add(plane.AxesNumbers);
 
             var zoom = new PlaneZoom { InputRange = inputRange, OutputRange = outputRange, Clip = clip, Children = visualObjects };
-            plane.VisualObjects.Add(zoom);
+            plane.Items.Add(zoom);
             if (overAxesNumbers) plane.OverAxesNumbers = zoom;
 
             return zoom;
