@@ -1,6 +1,7 @@
 ﻿using BenLib.Framework;
 using BenLib.Standard;
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
@@ -9,9 +10,18 @@ namespace Coord
 {
     internal class MathRectValueInterpolationHelper : ValueInterpolationHelper<MathRect> { protected override MathRect InterpolateCore(MathRect start, MathRect end, double progress) => base.InterpolateCore(start, end, progress); }
 
+    public class MathRectConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) => sourceType == typeof(string) || base.CanConvertFrom(context, sourceType);
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => destinationType == typeof(string) || base.CanConvertTo(context, destinationType);
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) => value is string s ? MathRect.Parse(s) : base.ConvertFrom(context, culture, value);
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) => value is MathRect mathRect ? mathRect.ToString() : base.ConvertTo(context, culture, value, destinationType);
+    }
+
     /// <summary>
     /// Décrit la largeur, la hauteur et l'emplacement d'un rectangle dans un repère orthonormé standard.
     /// </summary>
+    [TypeConverter("MathRectConverter")]
     public readonly struct MathRect : IEquatable<MathRect>
     {
         static MathRect() => ValueInterpolationHelper<MathRect>.Default = new MathRectValueInterpolationHelper();

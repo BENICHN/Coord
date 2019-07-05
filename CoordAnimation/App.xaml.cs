@@ -1,6 +1,5 @@
 ﻿using BenLib.Standard;
 using System;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -22,7 +21,11 @@ namespace CoordAnimation
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
-            foreach (string assembly in Directory.GetFiles(AppPath, "*.dll").Concat(Directory.GetFiles(AppPath, "*.exe"))) Assembly.Load(Path.GetFileNameWithoutExtension(assembly));
+            foreach (string assembly in Directory.GetFiles(AppPath, "*.dll").Concat(Directory.GetFiles(AppPath, "*.exe")))
+            {
+                try { Assembly.Load(Path.GetFileNameWithoutExtension(assembly)); }
+                catch { }
+            }
             DependencyObjectTypes = new TypeTree(AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())/*.Where(t => typeof(DependencyObject).IsAssignableFrom(t))*/);
             var w = new MainWindow();
             Scene = w.Content as Scene;

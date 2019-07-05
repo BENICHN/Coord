@@ -63,9 +63,8 @@ namespace Coord
         public CoordinatesSystem CoordinatesSystem { get => (CoordinatesSystem)GetValue(CoordinatesSystemProperty); set => SetValue(CoordinatesSystemProperty, value); }
         public static readonly DependencyProperty CoordinatesSystemProperty = CreateProperty<CoordinatesSystemManager, CoordinatesSystem>(true, true, true, "CoordinatesSystem");
 
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         public MathRect InputRangeLimits { get => (MathRect)GetValue(InputRangeLimitsProperty); set => SetValue(InputRangeLimitsProperty, value); }
-        public static readonly DependencyProperty InputRangeLimitsProperty = DependencyProperty.Register("InputRangeLimits", typeof(MathRect), typeof(CoordinatesSystemManager), new PropertyMetadata(new MathRect(double.NaN, double.NaN, double.NaN, double.NaN)));
+        public static readonly DependencyProperty InputRangeLimitsProperty = CreateProperty<CoordinatesSystemManager, MathRect>(true, true, true, "InputRangeLimits", new MathRect(double.NaN, double.NaN, double.NaN, double.NaN));
 
         public ReadOnlyCoordinatesSystemManager AsReadOnly() => new ReadOnlyCoordinatesSystemManager(MaxCellSize, MinCellSize, InputRange, OutputRange, CoordinatesSystem);
     }
@@ -244,7 +243,7 @@ namespace Coord
 
             if (outhorizontalStep < MinCellSize)
             {
-                while ((outhorizontalStep = horizontalStep * WidthRatio) < MinCellSize)
+                while (horizontalStep * WidthRatio < MinCellSize)
                 {
                     horizontalStep *= horizontalStepFactor;
 
@@ -267,7 +266,7 @@ namespace Coord
             }
             else if (outhorizontalStep > MaxCellSize)
             {
-                while ((outhorizontalStep = horizontalStep * WidthRatio) > MaxCellSize)
+                while (horizontalStep * WidthRatio > MaxCellSize)
                 {
                     horizontalStep /= horizontalStepFactor;
 
@@ -306,7 +305,7 @@ namespace Coord
 
             if (outverticalStep < MinCellSize)
             {
-                while ((outverticalStep = verticalStep * WidthRatio) < MinCellSize)
+                while (verticalStep * WidthRatio < MinCellSize)
                 {
                     verticalStep *= verticalStepFactor;
 
@@ -329,7 +328,7 @@ namespace Coord
             }
             else if (outverticalStep > MaxCellSize)
             {
-                while ((outverticalStep = verticalStep * WidthRatio) > MaxCellSize)
+                while (verticalStep * WidthRatio > MaxCellSize)
                 {
                     verticalStep /= verticalStepFactor;
 

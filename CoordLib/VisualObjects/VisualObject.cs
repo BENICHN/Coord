@@ -24,12 +24,8 @@ namespace Coord
 
         public bool IsSelectable { get; set; } = true;
         public bool IsHitTestVisible { get; set; } = true;
-
-        public bool? RenderAtChange { get => (bool?)GetValue(RenderAtChangeProperty); set => SetValue(RenderAtChangeProperty, value); }
-        public static readonly DependencyProperty RenderAtChangeProperty = CreateProperty<VisualObject, bool?>(false, false, false, "RenderAtChange", (bool?)null);
-
-        public bool? RenderAtSelectionChange { get => (bool?)GetValue(RenderAtSelectionChangeProperty); set => SetValue(RenderAtSelectionChangeProperty, value); }
-        public static readonly DependencyProperty RenderAtSelectionChangeProperty = CreateProperty<VisualObject, bool?>(false, false, false, "RenderAtSelectionChange", (bool?)null);
+        public bool? RenderAtChange { get; set; }
+        public bool? RenderAtSelectionChange { get; set; }
 
         public Brush Fill { get => (Brush)GetValue(FillProperty); set => SetValue(FillProperty, value); }
         public static readonly DependencyProperty FillProperty = CreateProperty<VisualObject, Brush>(true, true, true, "Fill");

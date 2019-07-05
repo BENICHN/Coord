@@ -139,7 +139,7 @@ namespace CoordAnimation
             type == typeof(bool?) ? new NullableBooleanEditionHelper() :
             typeof(Enum).IsAssignableFrom(type) ? new EnumEditionHelper(type) :
             typeof(IList).IsAssignableFrom(type) ? new ListEditionHelper(type) :
-            type == typeof(Plane) ? new PlaneEditionHelper() :
+            //type == typeof(Plane) ? new PlaneEditionHelper() :
             typeof(VisualObject).IsAssignableFrom(type) ? new VisualObjectEditionHelper(type) :
             typeof(DependencyObject).IsAssignableFrom(type) || type.IsInterface && App.DependencyObjectTypes.Contains(type) ? new DependencyObjectEditionHelper(type) :
             (ITypeEditionHelper)null;
@@ -656,7 +656,7 @@ namespace CoordAnimation
         public override DependencyProperty BindingProperty => VisualObjectSelector.VisualObjectProperty;
     }
 
-    public class PlaneEditionHelper : DependencyObjectEditionHelper
+    /*public class PlaneEditionHelper : DependencyObjectEditionHelper
     {
         public override bool IsDeep => false;
         public PlaneEditionHelper() : base(typeof(Plane)) { }
@@ -675,7 +675,7 @@ namespace CoordAnimation
             result.Add("CoordinatesSysyemManager", p.CoordinatesSystemManager.Serialize(references));
             return result;
         }
-    }
+    }*/
 
     public static partial class Extensions
     {

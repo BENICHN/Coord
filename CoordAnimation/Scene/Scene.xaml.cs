@@ -86,6 +86,9 @@ namespace CoordAnimation
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            Plane.RenderAtChange = true;
+            Plane.RenderAtSelectionChange = true;
+            Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
             /*var p = Point(4, 2).Style(FlatBrushes.Alizarin);
             var g = Group(Point(0, 0).Style(FlatBrushes.PeterRiver));
             var t = InTex("u^3+v^3+uv(u+v)+2uv(u+v)+p(u+v)+q=0", 1, p).Style(FlatBrushes.Clouds);
@@ -296,7 +299,13 @@ namespace CoordAnimation
         private void MenuOpen_Click(object sender, RoutedEventArgs e)
         {
             var od = new OpenFileDialog();
-            if (od.ShowDialog() == true) Deserialize(JObject.Load(new JsonTextReader(new StreamReader(File.OpenRead(od.FileName)))));
+            if (od.ShowDialog() == true)
+            {
+                using var fs = File.OpenRead(od.FileName);
+                using var sr = new StreamReader(fs);
+                using var jtr = new JsonTextReader(sr);
+                Deserialize(JObject.Load(jtr));
+            }
         }
 
         private void MenuSave_Click(object sender, RoutedEventArgs e)
