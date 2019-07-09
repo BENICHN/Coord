@@ -10,7 +10,7 @@ namespace Coord
     {
         public DependencyObject Owner { get; set; }
 
-        internal AnimationData(DependencyObject owner)
+        public AnimationData(DependencyObject owner)
         {
             Owner = owner;
             PropertiesAnimation.GeneralTimeChanged += (sender, e) => { foreach (var kvp in this) Owner.SetValue(kvp.Key, kvp.Value.ValueAt(PropertiesAnimation.GeneralTime)); };

@@ -127,7 +127,7 @@ namespace Coord
             var offset = target.TopLeft - source.TopLeft;
             double scaleX = target.Width / source.Width;
             double scaleY = target.Height / source.Height;
-            var result = new Matrix();
+            var result = Matrix.Identity;
             result.Translate(offset.X, offset.Y);
             result.ScaleAt(scaleX, scaleY, source.Left + offset.X, source.Top + offset.Y);
             return result;
@@ -141,7 +141,7 @@ namespace Coord
             var offset = target.BottomLeft - source.BottomLeft;
             double scaleX = target.Width / source.Width;
             double scaleY = target.Height / source.Height;
-            var result = new Matrix();
+            var result = Matrix.Identity;
             result.Translate(offset.X, offset.Y);
             result.ScaleAt(scaleX, scaleY, source.Left + offset.X, source.Bottom + offset.Y);
             return result;

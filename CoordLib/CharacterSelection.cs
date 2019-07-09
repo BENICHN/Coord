@@ -102,7 +102,7 @@ namespace Coord
             base.OnPropertyChanged(e);
         }
 
-        public TrackingCharacterSelection(Plane plane) : base(plane.AllChildren())
+        public TrackingCharacterSelection(Plane plane) : base(plane.VisualObjects)
         {
             Plane = plane;
             plane.Grid.PreviewSelectionChanged += VisualObjects_PreviewSelectionChanged;

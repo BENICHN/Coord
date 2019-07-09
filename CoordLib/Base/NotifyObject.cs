@@ -54,7 +54,7 @@ namespace Coord
                 IsDestroyed = true;
                 Changed = null;
                 OnDestroyed();
-                foreach (var property in AllProperties) SetValue(property, property.DefaultMetadata.DefaultValue);
+                foreach (var property in AllProperties) ClearValue(property);
                 Destroyed?.Invoke(this, EventArgs.Empty);
             }
         }

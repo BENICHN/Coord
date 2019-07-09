@@ -29,11 +29,14 @@
             </Border.Background>
             <Border Name="huecursor" HorizontalAlignment="Stretch" VerticalAlignment="Top" BorderBrush="White" BorderThickness="1" Height="1"/>
         </Border>
-        <Border Grid.Row="2" Grid.ColumnSpan="3">
-            <Border.Background>
-                <SolidColorBrush Color="{Binding Color, ElementName=this}"/>
-            </Border.Background>
+        <Grid Grid.Row="2" Grid.ColumnSpan="3">
+            <Border Name="alphaselector" MouseDown="Alpha_MouseDown" MouseMove="Alpha_MouseMove" MouseUp="Alpha_MouseUp">
+                <Border.Background>
+                    <SolidColorBrush Color="{Binding Color, ElementName=this}"/>
+                </Border.Background>
+                <Border Name="alphacursor" HorizontalAlignment="Left" VerticalAlignment="Stretch" BorderBrush="White" BorderThickness="1" Width="1"/>
+            </Border>
             <benlib:SwitchableTextBox Name="colorBox" HorizontalAlignment="Center" Background="{StaticResource VSBackground}" Text="{Binding ColorHex, ElementName=this, Mode=TwoWay}"/>
-        </Border>
+        </Grid>
     </Grid>
 </UserControl>

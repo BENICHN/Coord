@@ -49,7 +49,6 @@ namespace CoordAnimation
 
             Plane.Items = new VisualObjectCollection();
             Plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
-            Plane.OverAxesNumbersChanged += Plane_OverAxesNumbersChanged;
 
             var cm = TryFindResource("PlaneCM") as ContextMenu;
             (cm.Items[0] as MenuItem).ItemsSource = App.DependencyObjectTypes[typeof(CharacterEffect)].DerivedTypes.AllTreeItems().Select(node => new ContextMenuCharacterEffectType(node.Type)).ToArray();
@@ -59,15 +58,9 @@ namespace CoordAnimation
             VisualObjectsTreeView.ItemsSource = Elements.Nodes;
         }
 
-        private void Plane_OverAxesNumbersChanged(object sender, PropertyChangedExtendedEventArgs<VisualObject> e) => Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
-
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Reset) Elements.Nodes.RemoveAll(el =>
-            {
-                var vo = (el as VisualObjectElement).VisualObject;
-                return vo != Plane.Grid && vo != Plane.Axes && vo != Plane.AxesNumbers;
-            });
+            if (e.Action == NotifyCollectionChangedAction.Move) Elements.Nodes.Move(e.OldStartingIndex, e.NewStartingIndex);
             else
             {
                 if (e.OldItems != null) { foreach (VisualObject visualObject in e.OldItems) Elements.RemoveAt(Elements.Nodes.IndexOf(node => node is VisualObjectElement visualObjectElement && visualObjectElement.VisualObject == visualObject)); }
@@ -76,11 +69,9 @@ namespace CoordAnimation
                     foreach (VisualObject visualObject in e.NewItems)
                     {
                         int index = Plane.VisualObjects.IndexOf(visualObject);
-                        index += index > Plane.AxesNumbersIndex ? 3 : 2;
                         Elements.Insert(index, visualObject);
                     }
                 }
-                Elements.Nodes.Move(Elements.Nodes.IndexOf(e => e is VisualObjectElement voe && voe.VisualObject == Plane.AxesNumbers), Plane.AxesNumbersIndex);
             }
         }
 
@@ -281,8 +272,7 @@ namespace CoordAnimation
             var result = new JObject();
             var references = new ReferenceCollection();
 
-            var planeHelper = TypeEditionHelper.FromType(typeof(Plane));
-            var p = planeHelper.Serialize(Plane, references);
+            var p = Plane.SerializeCore(references);
 
             result.Add("Plane", p);
             result.Add("References", references.Serialize());
@@ -293,12 +283,12 @@ namespace CoordAnimation
         public void Deserialize(JToken data)
         {
             var refs = ReferenceCollection.Deserialize(data["References"]);
-            refs[0].CopyValues(Plane, refs);
+            data["Plane"].DeserializeCore(refs, Plane);
         }
 
         private void MenuOpen_Click(object sender, RoutedEventArgs e)
         {
-            var od = new OpenFileDialog();
+            var od = new OpenFileDialog { Filter = "Contenu Coord (*.coord)|*.coord" };
             if (od.ShowDialog() == true)
             {
                 using var fs = File.OpenRead(od.FileName);
@@ -310,7 +300,7 @@ namespace CoordAnimation
 
         private void MenuSave_Click(object sender, RoutedEventArgs e)
         {
-            var sd = new SaveFileDialog();
+            var sd = new SaveFileDialog { Filter = "Contenu Coord (*.coord)|*.coord" };
             if (sd.ShowDialog() == true) File.WriteAllText(sd.FileName, Serialize().ToString());
         }
     }

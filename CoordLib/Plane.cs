@@ -28,14 +28,10 @@ namespace Coord
         private Character[] m_previousRectContent;
         private Character[] m_clickHitTest;
 
-        private int m_axesTextVisualIndex;
-
         private double m_restoreWidthRatio;
         private double m_restoreHeightRatio;
 
         protected readonly Dictionary<VisualObject, DrawingVisual> Visuals = new Dictionary<VisualObject, DrawingVisual>();
-        protected DrawingVisual BackgroundVisual = new DrawingVisual();
-        protected DrawingVisual AxesTextVisual = new DrawingVisual();
         protected DrawingVisual SelectionRectangle = new DrawingVisual();
         private readonly VisualObject m_backgroundVisualObject;
         private bool m_isMoving;
@@ -49,18 +45,16 @@ namespace Coord
 
         #region Propriétés
 
-        protected override int VisualChildrenCount => VisualObjects.Count + 3;
+        protected override int VisualChildrenCount => VisualObjects.Count + 1;
 
         public VisualObjectCollection Items { get => (VisualObjectCollection)GetValue(ItemsProperty); set => SetValue(ItemsProperty, value); }
         public static readonly DependencyProperty ItemsProperty = DependencyProperty.Register("Items", typeof(VisualObjectCollection), typeof(Plane));
 
-        public VisualObjectCollection VisualObjects { get; } = new VisualObjectCollection { IsLocked = true };
+        public VisualObjectCollection VisualObjects { get; } = new VisualObjectCollection();
         public TrackingCharacterSelection Selection { get; }
 
         public VisualObject OverAxesNumbers { get => (VisualObject)GetValue(OverAxesNumbersProperty); set => SetValue(OverAxesNumbersProperty, value); }
         public static readonly DependencyProperty OverAxesNumbersProperty = DependencyProperty.Register("OverAxesNumbers", typeof(VisualObject), typeof(Plane), new PropertyMetadata { CoerceValueCallback = (d, v) => v is VisualObject value && !(d as Plane).VisualObjects.Contains(value) ? null : v });
-
-        public int AxesNumbersIndex => OverAxesNumbers == null ? VisualObjects.Count + 2 : VisualObjects.IndexOf(OverAxesNumbers) + 2;
 
         public AxesNumbers AxesNumbers { get; }
         public AxesVisualObject Axes { get; }
@@ -186,23 +180,21 @@ namespace Coord
             Grid = new GridVisualObject { Primary = true, Secondary = true, Fill = Brushes.Black, Stroke = new Pen(Brushes.DeepSkyBlue, 1.0).GetAsTypedFrozen(), SecondaryStroke = new Pen(new SolidColorBrush(Color.FromRgb(0, 53, 72)), 1.0).GetAsTypedFrozen() };
             m_backgroundVisualObject = Renderer(Grid, Axes);
 
+            VisualObjects.Add(m_backgroundVisualObject);
+            VisualObjects.Add(AxesNumbers);
+            ComputeAxesTextVisualIndex();
+            VisualObjects.IsLocked = true;
+
             Selection = new TrackingCharacterSelection(this);
             Selection.Changed += (sender, e) => { if (e.OriginalSource.RenderAtSelectionChange ?? RenderAtSelectionChange) Render(e.OriginalSource); };
 
             Cadre = new CadreVisualObject { CharacterSelection = Selection, Stroke = new Pen(FlatBrushes.Carrot, 1) };
-
-            Visuals.Add(m_backgroundVisualObject, BackgroundVisual);
-            Visuals.Add(AxesNumbers, AxesTextVisual);
-
-            AddVisualChild(BackgroundVisual);
-            AddVisualChild(AxesTextVisual);
             AddVisualChild(SelectionRectangle);
 
             Grid.Changed += (sender, e) => OnBackgroundChanged();
             Axes.Changed += (sender, e) => OnBackgroundChanged();
             AxesNumbers.Changed += (sender, e) => OnBackgroundChanged();
 
-            ComputeAxesTextVisualIndex();
             CoordinatesSystemManager.Changed += (sender, e) =>
             {
                 ReadOnlyCoordinatesSystemManager = ((CoordinatesSystemManager)sender).AsReadOnly();
@@ -231,32 +223,10 @@ namespace Coord
             visualObject.Changed -= OnVisualObjectChanged;
         }
 
-        protected override Visual GetVisualChild(int index) =>
-            m_axesTextVisualIndex < 1 ? null :
-            index == 0 ? BackgroundVisual :
-            index == VisualChildrenCount - 1 ? SelectionRectangle :
-            index == m_axesTextVisualIndex ? AxesTextVisual :
-            index < m_axesTextVisualIndex ? Visuals[VisualObjects[index - 1]] : Visuals[VisualObjects[index - 2]];
+        protected override Visual GetVisualChild(int index) => index == VisualChildrenCount - 1 ? SelectionRectangle : Visuals[VisualObjects[index]];
 
-        private void ComputeAxesTextVisualIndex() => m_axesTextVisualIndex = OverAxesNumbers == null ? VisualChildrenCount - 2 : VisualObjects.IndexOf(OverAxesNumbers) + 1;
-
-        public IEnumerable<VisualObject> AllChildren()
-        {
-            yield return Grid;
-            yield return Axes;
-            int offset = 0;
-            int axesNumbersIndex = AxesNumbersIndex - 2;
-            for (int i = 0; i <= VisualObjects.Count; i++)
-            {
-                if (i == axesNumbersIndex)
-                {
-                    offset++;
-                    yield return AxesNumbers;
-                }
-                else yield return VisualObjects[i - offset];
-            }
-        }
-
+        private void ComputeAxesTextVisualIndex() => VisualObjects.Move(VisualObjects.IndexOf(AxesNumbers), OverAxesNumbers == null ? VisualObjects.Count - 1 : VisualObjects.IndexOf(OverAxesNumbers));
+        
         #endregion 
 
         #region Save
@@ -296,12 +266,7 @@ namespace Coord
             visualObject.ClearCache();
             Render(visualObject);
         }
-        public void Render(VisualObject visualObject)
-        {
-            if (visualObject == Grid || visualObject == Axes) Render(m_backgroundVisualObject, BackgroundVisual);
-            else if (visualObject == AxesNumbers) Render(AxesNumbers, AxesTextVisual);
-            else if (Visuals.TryGetValue(visualObject, out var visual)) Render(visualObject, visual);
-        }
+        public void Render(VisualObject visualObject) { if (Visuals.TryGetValue(visualObject, out var visual)) Render(visualObject, visual); }
         public void Render(VisualObject visualObject, DrawingVisual visual)
         {
             var csm = ReadOnlyCoordinatesSystemManager;
@@ -313,28 +278,29 @@ namespace Coord
 
         public void RenderChanged()
         {
-            if (m_backgroundVisualObject.IsChanged) Render(m_backgroundVisualObject, BackgroundVisual);
-            if (AxesNumbers.IsChanged) Render(AxesNumbers, AxesTextVisual);
             foreach (var visualObject in VisualObjects.Where(vo => vo.IsChanged)) Render(visualObject);
             RenderSelectionRect();
         }
 
         public void RenderBackground()
         {
-            Render(m_backgroundVisualObject, BackgroundVisual);
-            Render(AxesNumbers, AxesTextVisual);
+            Render(m_backgroundVisualObject);
+            Render(AxesNumbers);
         }
         public void RenderForeground()
         {
-            foreach (var visualObject in VisualObjects) Render(visualObject);
+            if (Items is VisualObjectCollection items) foreach (var visualObject in items) Render(visualObject);
             RenderSelectionRect();
         }
         public void RenderForegroundWithoutCache()
         {
-            foreach (var visualObject in VisualObjects)
+            if (Items is VisualObjectCollection items)
             {
-                visualObject.ClearCache();
-                Render(visualObject);
+                foreach (var visualObject in items)
+                {
+                    visualObject.ClearCache();
+                    Render(visualObject);
+                }
             }
             RenderSelectionRect();
         }
@@ -366,8 +332,8 @@ namespace Coord
 
         #region HitTest
 
-        protected Character[] HitTestCharacters(Point point) => (Input.IsAltPressed() ? AllChildren() : VisualObjects).SelectMany(visualObject => visualObject.HitTestCache(point)).ToArray().Reverse();
-        protected Character[] HitTestCharacters(Rect rect) => (Input.IsAltPressed() ? AllChildren() : VisualObjects).SelectMany(visualObject => visualObject.HitTestCache(rect)).ToArray().Reverse();
+        protected Character[] HitTestCharacters(Point point) => (Input.IsAltPressed() ? VisualObjects : (Items ?? Enumerable.Empty<VisualObject>())).SelectMany(visualObject => visualObject.HitTestCache(point)).ToArray().Reverse();
+        protected Character[] HitTestCharacters(Rect rect) => (Input.IsAltPressed() ? VisualObjects : (Items ?? Enumerable.Empty<VisualObject>())).SelectMany(visualObject => visualObject.HitTestCache(rect)).ToArray().Reverse();
 
         #endregion
 
@@ -625,50 +591,46 @@ namespace Coord
                 if (e.OldValue is VisualObjectCollection oldVisualObjects)
                 {
                     oldVisualObjects.CollectionChanged -= Items_CollectionChanged;
-                    VisualObjects.Clear();
+                    ClearVisualObjects();
                 }
                 if (e.NewValue is VisualObjectCollection newVisualObjects)
                 {
                     newVisualObjects.CollectionChanged += Items_CollectionChanged;
-                    VisualObjects.AddRange(newVisualObjects);
+                    for (int i = 0; i < newVisualObjects.Count; i++) VisualObjects.Insert(1, newVisualObjects[i]);
                 }
 
                 VisualObjects.IsLocked = true;
             }
             else if (e.Property == OverAxesNumbersProperty)
             {
+                VisualObjects.IsLocked = false;
                 ComputeAxesTextVisualIndex();
+                VisualObjects.IsLocked = true;
                 OverAxesNumbersChanged?.Invoke(this, new PropertyChangedExtendedEventArgs<VisualObject>("OverAxesNumbers", (VisualObject)e.OldValue, (VisualObject)e.NewValue));
             }
             else if (e.Property == RestoreCursorProperty) { if (!IsMoving) Cursor = (e.NewValue as Cursor) ?? Cursors.Arrow; }
             base.OnPropertyChanged(e);
         }
 
+        private void ClearVisualObjects() => VisualObjects.RemoveAll(vo => vo != m_backgroundVisualObject && vo != AxesNumbers);
+
         private void Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             VisualObjects.IsLocked = false;
+            int axesNumbersIndex = VisualObjects.IndexOf(AxesNumbers);
+            int osi = e.OldStartingIndex + e.OldStartingIndex > axesNumbersIndex ? 2 : 1;
+            int nsi = e.NewStartingIndex + e.NewStartingIndex > axesNumbersIndex ? 2 : 1;
 
-            if (e.Action == NotifyCollectionChangedAction.Reset) VisualObjects.Clear();
-            else if (e.Action == NotifyCollectionChangedAction.Move) VisualObjects.Move(e.OldStartingIndex, e.NewStartingIndex);
-            else if (e.Action == NotifyCollectionChangedAction.Replace) VisualObjects[e.OldStartingIndex] = (VisualObject)e.NewItems[0];
+            if (e.Action == NotifyCollectionChangedAction.Reset) ClearVisualObjects();
+            else if (e.Action == NotifyCollectionChangedAction.Move) VisualObjects.Move(osi, nsi);
+            else if (e.Action == NotifyCollectionChangedAction.Replace) VisualObjects[osi] = (VisualObject)e.NewItems[0];
             else
             {
-                if (e.OldItems != null)
-                {
-                    for (int i = 0; i < e.OldItems.Count; i++)
-                    {
-                        VisualObjects.RemoveAt(e.OldStartingIndex + i);
-                    }
-                }
-                if (e.NewItems != null)
-                {
-                    for (int i = 0; i < e.NewItems.Count; i++)
-                    {
-                        VisualObjects.Insert(e.NewStartingIndex + i, (VisualObject)e.NewItems[i]);
-                    }
-                }
+                if (e.OldItems != null) { for (int i = 0; i < e.OldItems.Count; i++) VisualObjects.RemoveAt(osi + i); }
+                if (e.NewItems != null) { for (int i = 0; i < e.NewItems.Count; i++) VisualObjects.Insert(nsi + i, (VisualObject)e.NewItems[i]); }
             }
 
+            ComputeAxesTextVisualIndex();
             VisualObjects.IsLocked = true;
         }
 
@@ -697,20 +659,8 @@ namespace Coord
 
         private void VisualObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Reset)
-            {
-                OverAxesNumbers = null;
-                foreach (var visual in Visuals.Values) RemoveVisualChild(visual);
-                Visuals.Clear();
-                Visuals.Add(m_backgroundVisualObject, BackgroundVisual);
-                Visuals.Add(AxesNumbers, AxesTextVisual);
-            }
-            else
-            {
-                if (e.OldItems != null) { foreach (var visualObject in e.OldItems.OfType<VisualObject>()) RemoveVisualObject(visualObject); }
-                if (e.NewItems != null) { foreach (var visualObject in e.NewItems.OfType<VisualObject>()) AddVisualObject(visualObject); }
-                ComputeAxesTextVisualIndex();
-            }
+            if (e.OldItems != null) { foreach (var visualObject in e.OldItems.OfType<VisualObject>()) RemoveVisualObject(visualObject); }
+            if (e.NewItems != null) { foreach (var visualObject in e.NewItems.OfType<VisualObject>()) AddVisualObject(visualObject); }
         }
 
         #endregion 

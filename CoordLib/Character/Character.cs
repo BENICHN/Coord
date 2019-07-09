@@ -17,7 +17,7 @@ namespace Coord
         public Character(Geometry geometry)
         {
             Geometry = geometry;
-            Transform = geometry.Transform?.Value ?? new Matrix();
+            Transform = geometry.Transform?.Value ?? Matrix.Identity;
             if (geometry.IsFrozen) IsTransformed = true;
             else geometry.Transform = null;
         }

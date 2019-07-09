@@ -110,7 +110,7 @@ namespace Coord
         protected override Freezable CreateInstanceCore() => new MatrixTransform();
 
         public Matrix Matrix { get => (Matrix)GetValue(MatrixProperty); set => SetValue(MatrixProperty, value); }
-        public static readonly DependencyProperty MatrixProperty = CreateProperty<MatrixTransform, Matrix>(true, true, true, "Matrix");
+        public static readonly DependencyProperty MatrixProperty = CreateProperty<MatrixTransform, Matrix>(true, true, true, "Matrix", Matrix.Identity);
 
         public bool In { get => (bool)GetValue(InProperty); set => SetValue(InProperty, value); }
         public static readonly DependencyProperty InProperty = CreateProperty<MatrixTransform, bool>(true, true, true, "In");

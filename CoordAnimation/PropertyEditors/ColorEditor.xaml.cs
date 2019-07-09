@@ -23,6 +23,7 @@ namespace CoordAnimation
 
         public bool IsPointingHue { get; private set; }
         public bool IsPointingSB { get; private set; }
+        public bool IsPointingAlpha { get; private set; }
 
         public ImageSource HueImage
         {
@@ -54,25 +55,41 @@ namespace CoordAnimation
             set
             {
                 m_setting = true;
-                var (_, s, b) = Color.HSB();
-                OnColorChanged(value, s, b);
-                Color = ColorFromHSB(m_currentHue, s, b);
+                var (a, _, s, b) = Color.AHSB();
+                OnColorChanged(a, value, s, b);
+                var c = ColorFromHSB(m_currentHue, s, b);
+                c.A = Color.A;
+                Color = c;
                 m_setting = false;
+            }
+        }
+
+        public double Alpha
+        {
+            get => (double)Color.A / 255;
+            set
+            {
+                var c = Color;
+                c.A = (byte)(value * 255);
+                Color = c;
+                UpdateAlphaCursor(value);
             }
         }
 
         private void SetCurrentHue(double h) { if (h >= 0) m_currentHue = h % 360; }
 
-        private void OnColorChanged(double h, double s, double b)
+        private void OnColorChanged(double a, double h, double s, double b)
         {
             SetCurrentHue(h);
             UpdateHueCursor(h);
             UpdateSBCursor(s, b);
+            UpdateAlphaCursor(a);
             NotifyPropertyChanged("SBImage");
         }
 
         private void UpdateSBCursor(double s, double b) => sbcursor.Margin = new Thickness(s * sbselector.ActualWidth - 4, (1 - b) * sbselector.ActualHeight - 4, 0, 0);
         private void UpdateHueCursor(double h) => huecursor.Margin = new Thickness(0, (360 - (h >= 0 ? h : m_currentHue)).Trim(0, 358) * hueselector.ActualHeight / 360, 0, 0);
+        private void UpdateAlphaCursor(double a) => alphacursor.Margin = new Thickness(a * alphaselector.ActualWidth, 0, 0, 0);
 
         public (double Saturation, double Brightness) SB
         {
@@ -85,7 +102,9 @@ namespace CoordAnimation
             {
                 m_setting = true;
                 var (s, b) = value;
-                Color = ColorFromHSB(m_currentHue, s, b);
+                var c = ColorFromHSB(m_currentHue, s, b);
+                c.A = Color.A;
+                Color = c;
                 UpdateSBCursor(s, b);
                 m_setting = false;
             }
@@ -109,8 +128,8 @@ namespace CoordAnimation
             {
                 if (!m_setting && IsLoaded)
                 {
-                    var (h, s, b) = ((Color)e.NewValue).HSB();
-                    OnColorChanged(h, s, b);
+                    var (a, h, s, b) = ((Color)e.NewValue).AHSB();
+                    OnColorChanged(a, h, s, b);
                 }
                 NotifyPropertyChanged("ColorHex");
             }
@@ -121,7 +140,7 @@ namespace CoordAnimation
         public ColorEditor()
         {
             InitializeComponent();
-            colorBox.Regex = new Regex(@"^#?(\d|a|b|c|d|e|f){0,6}$", RegexOptions.IgnoreCase);
+            colorBox.Regex = new Regex(@"^#?(\d|a|b|c|d|e|f){0,8}$", RegexOptions.IgnoreCase);
             colorBox.TextValidation = s =>
             {
                 try { m_currentColorHex = uint.Parse(s, NumberStyles.HexNumber); return true; }
@@ -170,8 +189,27 @@ namespace CoordAnimation
         private void LoadImages(object sender, EventArgs e)
         {
             NotifyPropertyChanged("HueImage");
-            var (h, s, b) = Color.HSB();
-            OnColorChanged(h, s, b);
+            var (a, h, s, b) = Color.AHSB();
+            OnColorChanged(a, h, s, b);
         }
+
+        private void Alpha_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.OnlyPressed(MouseButton.Left) && alphaselector.CaptureMouse())
+            {
+                IsPointingAlpha = true;
+                SetAlpha(e.GetPosition(alphaselector));
+            }
+        }
+        private void Alpha_MouseMove(object sender, MouseEventArgs e) { if (IsPointingAlpha) SetAlpha(e.GetPosition(alphaselector)); }
+        private void Alpha_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Released)
+            {
+                alphaselector.ReleaseMouseCapture();
+                IsPointingAlpha = false;
+            }
+        }
+        private void SetAlpha(Point position) => Alpha = (position.X / alphaselector.ActualWidth).Trim(0, 1);
     }
 }

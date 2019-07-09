@@ -17,16 +17,19 @@ namespace Coord
         public NotifyObjectCollection()
         {
             Items = new ObservableCollection<T>();
+            foreach (var item in Items) Register(item);
             CollectionChanged += (sender, e) => NotifyChanged();
         }
         public NotifyObjectCollection(List<T> list)
         {
             Items = new ObservableCollection<T>(list);
+            foreach (var item in Items) Register(item);
             CollectionChanged += (sender, e) => NotifyChanged();
         }
         public NotifyObjectCollection(IEnumerable<T> collection)
         {
             Items = new ObservableCollection<T>(collection);
+            foreach (var item in Items) Register(item);
             CollectionChanged += (sender, e) => NotifyChanged();
         }
 
@@ -60,8 +63,8 @@ namespace Coord
             }
         }
 
-        private void OnItemDestroyed(object sender, EventArgs e) => Remove((T)sender);
-        private void OnItemChanged(object sender, EventArgs e) => NotifyChanged();
+        protected virtual void OnItemDestroyed(object sender, EventArgs e) => Remove((T)sender);
+        protected virtual void OnItemChanged(object sender, EventArgs e) => NotifyChanged();
 
         protected virtual void ClearItems()
         {
@@ -225,6 +228,8 @@ namespace Coord
 
         public event EventHandler<VisualObjectSelectionChangedEventArgs> SelectionChanged;
         internal event EventHandler<VisualObjectSelectionChangedEventArgs> PreviewSelectionChanged;
+
+        protected override void OnItemDestroyed(object sender, EventArgs e) { if (!IsLocked) base.OnItemDestroyed(sender, e); }
 
         protected override void Register(VisualObject item)
         {

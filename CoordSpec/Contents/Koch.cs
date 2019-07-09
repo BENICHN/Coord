@@ -7,6 +7,7 @@ using BenLib.Framework;
 using BenLib.WPF;
 using static System.Math;
 using static BenLib.Framework.NumFramework;
+using BenLib.Standard;
 
 namespace CoordSpec
 {
@@ -22,7 +23,7 @@ namespace CoordSpec
         public static readonly DependencyProperty EndProperty = CreateProperty<Koch, PointVisualObject>(true, true, true, "End");
 
         public int Step { get => (int)GetValue(StepProperty); set => SetValue(StepProperty, value); }
-        public static readonly DependencyProperty StepProperty = CreateProperty<Koch, int>(true, true, true, "Step");
+        public static readonly DependencyProperty StepProperty = CreateProperty<Koch, int>(true, true, true, "Step", new Dictionary<string, object> { { "min", 0 }, { "max", 10 } });
 
         public Progress Progress { get => (Progress)GetValue(ProgressProperty); set => SetValue(ProgressProperty, value); }
         public static readonly DependencyProperty ProgressProperty = CreateProperty<Koch, Progress>(true, true, true, "Progress", 1);
@@ -56,30 +57,38 @@ namespace CoordSpec
             {
                 var start = s.Definition.InPoint;
                 var end = e.Definition.InPoint;
-                int step = Min(10, Step);
+                int step = Step.Trim(0, 10);
                 m_cache = (GetPoints(start, end, step, Progress.Value, IsProgressGlobal).Append(end).ToArray(), step);
                 static IEnumerable<Point> GetPoints(Point start, Point end, int step, double progress, bool isProgressGlobal)
                 {
-                    var diff = end - start;
-                    var diff3 = diff / 3;
-                    var p1 = start + diff3;
-                    var p2 = p1 + diff3.Rotate(PI / 3);
-                    var p3 = p1 + diff3;
-                    if ((isProgressGlobal || step == 0) && progress < 1) p2 = Interpolate(start + diff / 2, p2, progress);
-
                     if (step == 0)
                     {
                         yield return start;
-                        yield return p1;
-                        yield return p2;
-                        yield return p3;
+                        yield return end;
                     }
                     else
                     {
-                        foreach (var point in GetPoints(start, p1, step - 1, progress, isProgressGlobal)) yield return point;
-                        foreach (var point in GetPoints(p1, p2, step - 1, progress, isProgressGlobal)) yield return point;
-                        foreach (var point in GetPoints(p2, p3, step - 1, progress, isProgressGlobal)) yield return point;
-                        foreach (var point in GetPoints(p3, end, step - 1, progress, isProgressGlobal)) yield return point;
+                        var diff = end - start;
+                        var diff3 = diff / 3;
+                        var p1 = start + diff3;
+                        var p2 = p1 + diff3.Rotate(PI / 3);
+                        var p3 = p1 + diff3;
+                        if ((isProgressGlobal || step == 0) && progress < 1) p2 = Interpolate(start + diff / 2, p2, progress);
+
+                        if (step == 1)
+                        {
+                            yield return start;
+                            yield return p1;
+                            yield return p2;
+                            yield return p3;
+                        }
+                        else
+                        {
+                            foreach (var point in GetPoints(start, p1, step - 1, progress, isProgressGlobal)) yield return point;
+                            foreach (var point in GetPoints(p1, p2, step - 1, progress, isProgressGlobal)) yield return point;
+                            foreach (var point in GetPoints(p2, p3, step - 1, progress, isProgressGlobal)) yield return point;
+                            foreach (var point in GetPoints(p3, end, step - 1, progress, isProgressGlobal)) yield return point;
+                        }
                     }
                 }
             }

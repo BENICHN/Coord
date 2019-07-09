@@ -37,7 +37,7 @@ namespace Coord
         public static readonly DependencyProperty ChildrenProperty = CreateProperty<VisualObject, VisualObjectCollection>(true, true, true, "Children");
 
         public VisualObjectChildrenRenderingMode ChildrenRenderingMode { get => (VisualObjectChildrenRenderingMode)GetValue(ChildrenRenderingModeProperty); set => SetValue(ChildrenRenderingModeProperty, value); }
-        public static readonly DependencyProperty ChildrenRenderingModeProperty = CreateProperty<VisualObject, VisualObjectChildrenRenderingMode>(true, true, true, "ChildrenRenderingMode");
+        public static readonly DependencyProperty ChildrenRenderingModeProperty = CreateProperty<VisualObject, VisualObjectChildrenRenderingMode>(true, true, true, "ChildrenRenderingMode", VisualObjectChildrenRenderingMode.Discard);
 
         public NotifyObjectCollection<NotifyObjectPart<CharacterEffect>> Effects => (NotifyObjectCollection<NotifyObjectPart<CharacterEffect>>)GetValue(EffectsProperty);
         public static readonly DependencyProperty EffectsProperty = CreateProperty<VisualObject, NotifyObjectCollection<NotifyObjectPart<CharacterEffect>>>(true, false, true, "Effects");
