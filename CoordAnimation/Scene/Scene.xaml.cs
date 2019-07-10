@@ -30,7 +30,7 @@ namespace CoordAnimation
     {
         public Timeline Timeline => timeline;
         public Plane Plane => configuration.plane;
-        public ElementTree Elements { get; } = new ElementTree { RefreshAtChange = true };
+        public ElementTree Elements { get; }
 
         public bool IsPlaying { get; private set; }
 
@@ -43,9 +43,9 @@ namespace CoordAnimation
         {
             InitializeComponent();
 
-            Elements.Add(Plane.Grid);
-            Elements.Add(Plane.Axes);
-            Elements.Add(Plane.AxesNumbers);
+            VisualObjectElement.SetName(Plane.VisualObjects[0], "Arrière-plan");
+            VisualObjectElement.SetName(Plane.AxesNumbers, "Graduations");
+            Elements = new ElementTree(Plane.VisualObjects.Select(vo => (VisualObjectElement)vo)) { RefreshAtChange = true };
 
             Plane.Items = new VisualObjectCollection();
             Plane.VisualObjects.CollectionChanged += VisualObjects_CollectionChanged;
@@ -63,7 +63,7 @@ namespace CoordAnimation
             if (e.Action == NotifyCollectionChangedAction.Move) Elements.Nodes.Move(e.OldStartingIndex, e.NewStartingIndex);
             else
             {
-                if (e.OldItems != null) { foreach (VisualObject visualObject in e.OldItems) Elements.RemoveAt(Elements.Nodes.IndexOf(node => node is VisualObjectElement visualObjectElement && visualObjectElement.VisualObject == visualObject)); }
+                if (e.OldItems != null) { foreach (VisualObject visualObject in e.OldItems) Elements.Nodes.RemoveAll(element => element is VisualObjectElement visualObjectElement && visualObjectElement.VisualObject == visualObject); }
                 if (e.NewItems != null)
                 {
                     foreach (VisualObject visualObject in e.NewItems)

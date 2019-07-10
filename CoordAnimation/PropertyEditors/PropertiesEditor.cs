@@ -46,7 +46,7 @@ namespace CoordAnimation
                 return (dp, metadata as NotifyObjectPropertyMetadata ?? new NotifyObjectPropertyMetadata { Description = dp.Name });
             });
 
-            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, TypeEditionHelper.GetEditorFromProperty(dependencyObject, property, metadata.Data, isAnimatable))); }
+            try { foreach (var (property, metadata) in properties) await AddEditor(new EditableProperty(metadata.Description, ValueEditionHelper.GetEditorFromProperty(dependencyObject, property, metadata.Data, isAnimatable))); }
             catch (OperationCanceledException) { }
         }
     }

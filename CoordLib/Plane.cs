@@ -618,8 +618,8 @@ namespace Coord
         {
             VisualObjects.IsLocked = false;
             int axesNumbersIndex = VisualObjects.IndexOf(AxesNumbers);
-            int osi = e.OldStartingIndex + e.OldStartingIndex > axesNumbersIndex ? 2 : 1;
-            int nsi = e.NewStartingIndex + e.NewStartingIndex > axesNumbersIndex ? 2 : 1;
+            int osi = e.OldStartingIndex + (e.OldStartingIndex > axesNumbersIndex ? 2 : 1);
+            int nsi = e.NewStartingIndex + (e.NewStartingIndex > axesNumbersIndex ? 2 : 1);
 
             if (e.Action == NotifyCollectionChangedAction.Reset) ClearVisualObjects();
             else if (e.Action == NotifyCollectionChangedAction.Move) VisualObjects.Move(osi, nsi);

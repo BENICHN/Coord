@@ -24,11 +24,11 @@ namespace CoordAnimation
             }
         }
 
-        public ElementTree() { }
-        public ElementTree(ObservableCollection<Element> nodes) : base(nodes) { }
-        public ElementTree(List<Element> items) : base(items) { }
-        public ElementTree(IEnumerable<Element> items) : base(items) { }
-        public ElementTree(params Element[] items) : base(items) { }
+        public ElementTree() { foreach (var element in Nodes) Register(element); }
+        public ElementTree(ObservableCollection<Element> nodes) : base(nodes) { foreach (var element in Nodes) Register(element); }
+        public ElementTree(List<Element> items) : base(items) { foreach (var element in Nodes) Register(element); }
+        public ElementTree(IEnumerable<Element> items) : base(items) { foreach (var element in Nodes) Register(element); }
+        public ElementTree(params Element[] items) : base(items) { foreach (var element in Nodes) Register(element); }
 
         public void ClearSelection() { foreach (var element in Nodes) element.IsSelected = false; }
 
