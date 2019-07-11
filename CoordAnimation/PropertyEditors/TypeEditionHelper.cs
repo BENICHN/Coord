@@ -138,6 +138,7 @@ namespace CoordAnimation
             type == typeof(Progress) ? new ProgressEditionHelper() :
             type == typeof(bool) ? new BooleanEditionHelper() :
             type == typeof(bool?) ? new NullableBooleanEditionHelper() :
+            type == typeof(Type) ? new TypeEditionHelper() :
             type == typeof(DependencyProperty) ? new DependencyPropertyEditionHelper() :
             typeof(Enum).IsAssignableFrom(type) ? new EnumEditionHelper(type) :
             typeof(IList).IsAssignableFrom(type) ? new ListEditionHelper(type) :
