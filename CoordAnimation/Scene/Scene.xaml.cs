@@ -7,6 +7,7 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
@@ -303,13 +304,25 @@ namespace CoordAnimation
             var sd = new SaveFileDialog { Filter = "Contenu Coord (*.coord)|*.coord" };
             if (sd.ShowDialog() == true) File.WriteAllText(sd.FileName, Serialize().ToString());
         }
+
+        private void CloneMenuItem_Click(object sender, RoutedEventArgs e) => Plane.Selection.VisualObjects.ToArray().ForEach(vo => Plane.Items.Add(vo.MemberwiseClone()));
+
+        private void DuplicMenuItem_Click(object sender, RoutedEventArgs e) => Plane.Items.Add(InCharacters(Plane.Selection.VisualObjects));
     }
 
-    public struct ContextMenuCharacterEffectType
+    public class ContextMenuCharacterEffectType : IEquatable<ContextMenuCharacterEffectType>
     {
+        public Type Type { get; }
+
         public ContextMenuCharacterEffectType(Type type) => Type = type;
 
-        public Type Type { get; }
         public override string ToString() => Type.Name.Replace("CharacterEffect", string.Empty);
+
+        public override bool Equals(object obj) => Equals(obj as ContextMenuCharacterEffectType);
+        public bool Equals(ContextMenuCharacterEffectType other) => other != null && EqualityComparer<Type>.Default.Equals(Type, other.Type);
+        public override int GetHashCode() => 2049151605 + EqualityComparer<Type>.Default.GetHashCode(Type);
+
+        public static bool operator ==(ContextMenuCharacterEffectType left, ContextMenuCharacterEffectType right) => EqualityComparer<ContextMenuCharacterEffectType>.Default.Equals(left, right);
+        public static bool operator !=(ContextMenuCharacterEffectType left, ContextMenuCharacterEffectType right) => !(left == right);
     }
 }

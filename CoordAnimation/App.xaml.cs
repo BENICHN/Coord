@@ -26,7 +26,7 @@ namespace CoordAnimation
                 try { Assembly.Load(Path.GetFileNameWithoutExtension(assembly)); }
                 catch { }
             }
-            DependencyObjectTypes = new TypeTree(AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes())/*.Where(t => typeof(DependencyObject).IsAssignableFrom(t))*/);
+            DependencyObjectTypes = new TypeTree(AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes()).Where(t => typeof(DependencyObject).IsAssignableFrom(t)));
             var w = new MainWindow();
             Scene = w.Content as Scene;
             w.Show();

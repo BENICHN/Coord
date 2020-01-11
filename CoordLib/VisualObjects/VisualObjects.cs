@@ -142,6 +142,9 @@ namespace Coord
 
         #region CharactersVisualObject
 
+        public static VisualObject InCharacters(IEnumerable<VisualObject> visualObjects, IEnumerable<Interval<int>> intervals) => visualObjects.HasOneItem(out var vo, out var vos) ? InCharacters(vo, intervals.First()) : (VisualObject)InCharactersGroup(vos, intervals);
+        public static VisualObject InCharacters(IEnumerable<VisualObject> visualObjects) => visualObjects.HasOneItem(out var vo, out var vos) ? InCharacters(vo, vo.Selection) : (VisualObject)InCharactersGroup(vos);
+
         public static InCharactersVisualObjectGroup InCharactersGroup(IEnumerable<VisualObject> visualObjects, IEnumerable<Interval<int>> intervals) => new InCharactersVisualObjectGroup { Children = visualObjects as VisualObjectCollection ?? new VisualObjectCollection(visualObjects), Intervals = new ObservableRangeCollection<Interval<int>>(intervals) };
         public static InCharactersVisualObjectGroup InCharactersGroup(IEnumerable<VisualObject> visualObjects) => new InCharactersVisualObjectGroup { Children = visualObjects as VisualObjectCollection ?? new VisualObjectCollection(visualObjects), Intervals = new ObservableRangeCollection<Interval<int>>(visualObjects.Select(vo => vo.Selection)) };
         public static InCharactersVisualObject InCharacters(VisualObject visualObject) => new InCharactersVisualObject { VisualObject = visualObject, Interval = visualObject.Selection };
@@ -614,7 +617,7 @@ namespace Coord
                 return effect.Object.Progress;
             }).ToArray();
 
-            await Animating.Animate(null, value => characterEffects.ForEach((effect, i) => effect.Object.Progress = progress[i].ChangeValue(value)), from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
+            await Animating.Animate(value => characterEffects.ForEach((effect, i) => effect.Object.Progress = progress[i].ChangeValue(value)), from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps).Task;
 
             if (destroy) characterEffects.ForEach(effect => effect.Object.Destroy());
             return visualObject;
@@ -627,7 +630,7 @@ namespace Coord
             var effect = new ColorCharacterEffect { Fill = fill, Stroke = stroke };
             visualObject.Color(interval, effect);
 
-            await Animating.Animate(null, value => effect.Progress = value, 0.0, 1.0, TimeSpan.FromSeconds(secondsDelay), default, false, false, null, FPS);
+            await Animating.Animate(value => effect.Progress = value, 0.0, 1.0, TimeSpan.FromSeconds(secondsDelay), default, false, false, null, FPS).Task;
         }
 
         public static Task<T> Write<T>(this T visualObject, bool small, bool reverse, double strokeThickness = 1, double seconds = double.NaN, double lagFactor = double.NaN) where T : VisualObject => Write(visualObject, PositiveReals, small, reverse, strokeThickness, seconds, lagFactor);

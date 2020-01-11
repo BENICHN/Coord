@@ -34,7 +34,7 @@
 
             <local:Timeline x:Name="timeline" Grid.Row="1" Grid.ColumnSpan="2"/>
             <local:PropertiesEditor x:Name="VisualObjectsEditor" IsExpanded="True"/>
-            
+
             <GridSplitter Grid.Column="0" Width="1" HorizontalAlignment="Right" Background="{StaticResource VSBorderBrush}" Panel.ZIndex="1" Grid.Row="0"/>
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
@@ -59,6 +59,12 @@
                     <MenuItem Name="menuOpen" Header="O" HorizontalAlignment="Left" Click="MenuOpen_Click"/>
                 </Menu>
                 <TreeView Name="VisualObjectsTreeView" Grid.Row="1" SelectedItemChanged="VisualObjectsTreeView_SelectedItemChanged" TreeViewItem.Selected="VisualObjectsTreeView_Selected">
+                    <TreeView.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Dupliquer" Click="DuplicMenuItem_Click"/>
+                            <MenuItem Header="Cloner" Click="CloneMenuItem_Click"/>
+                        </ContextMenu>
+                    </TreeView.ContextMenu>
                     <TreeView.Resources>
                         <Style x:Key="{x:Type TreeViewItem}" TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>

@@ -91,17 +91,17 @@ namespace CoordSpec
             base.OnPropertyChanged(e);
         }
 
-        public Task Step1() => Task.WhenAll(m_syncpf.Animate(1.15), Animate<double>(null, value => SpeedEnd = value, 0, FuncEnd, TimeSpan.FromSeconds(1.5), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60));
+        public Task Step1() => Task.WhenAll(m_syncpf.Animate(1.15).Task, Animate<double>(value => SpeedEnd = value, 0, FuncEnd, TimeSpan.FromSeconds(1.5), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60).Task);
         public async Task Step2()
         {
-            await m_syncpd.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0).AtMost(30);
+            await m_syncpd.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0).Task.AtMost(30);
             await Task.WhenAll(
-                m_syncpa.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }),
-                m_syncpb.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0),
-                Animate<double>(null, value => Length = value, 1, 0.00001, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseOut }, 60)).AtMost(30);
-            await m_syncpc.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0);
+                m_syncpa.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }).Task,
+                m_syncpb.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0).Task,
+                Animate<double>(value => Length = value, 1, 0.00001, TimeSpan.FromSeconds(1), default, false, false, new CubicEase { EasingMode = EasingMode.EaseOut }, 60).Task).AtMost(30);
+            await m_syncpc.Animate(1, new CubicEase { EasingMode = EasingMode.EaseOut }, 1, 0).Task;
         }
-        public Task Step3() => Task.WhenAll(m_syncpe.Animate(1.15), Animate<double>(null, value => AccEnd = X = value, 0, FuncEnd, TimeSpan.FromSeconds(3), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60));
+        public Task Step3() => Task.WhenAll(m_syncpe.Animate(1.15).Task, Animate<double>(value => AccEnd = X = value, 0, FuncEnd, TimeSpan.FromSeconds(3), default, false, false, new CubicEase { EasingMode = EasingMode.EaseInOut }, 60).Task);
 
         public async Task Animate()
         {

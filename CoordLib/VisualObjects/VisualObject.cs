@@ -80,6 +80,10 @@ namespace Coord
             ClearCache();
         }
 
+        public new VisualObject CloneCurrentValue() => (VisualObject)base.CloneCurrentValue();
+        public new VisualObject Clone() => (VisualObject)base.Clone();
+        public new VisualObject MemberwiseClone() => (VisualObject)base.MemberwiseClone();
+
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             if (e.Property == SelectionProperty) NotifySelectionChanged(new VisualObjectSelectionChangedEventArgs(this, (Interval<int>)e.OldValue, (Interval<int>)e.NewValue));

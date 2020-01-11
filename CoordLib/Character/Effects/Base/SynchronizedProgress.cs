@@ -1,8 +1,7 @@
-﻿using BenLib.Standard;
+﻿using BenLib.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Media.Animation;
 using static BenLib.Framework.Animating;
 using static Coord.VisualObjects;
@@ -33,10 +32,7 @@ namespace Coord
 
         public List<IProgressive> Objects { get; set; }
 
-        public Task Animate(string name, TimeSpan duration, IEasingFunction easingFunction = null, double from = 0, double to = 1, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) => Animate<double>(name, value => Progress = value, from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
-        public Task Animate(string name, double secondsDuration, IEasingFunction easingFunction = null, double from = 0, double to = 1, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) => Animate(name, TimeSpan.FromSeconds(secondsDuration), easingFunction, from, to, repeatBehavior, autoReverse, isCumulative, fps);
-
-        public Task Animate(TimeSpan duration, IEasingFunction easingFunction = null, double from = 0, double to = 1, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) => Animate(null, duration, easingFunction, from, to, repeatBehavior, autoReverse, isCumulative, fps);
-        public Task Animate(double secondsDuration, IEasingFunction easingFunction = null, double from = 0, double to = 1, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) => Animate(null, TimeSpan.FromSeconds(secondsDuration), easingFunction, from, to, repeatBehavior, autoReverse, isCumulative, fps);
+        public StaticAnimation Animate(TimeSpan duration, IEasingFunction easingFunction = null, double from = 0, double to = 1, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) => Animate<double>(value => Progress = value, from, to, duration, repeatBehavior, autoReverse, isCumulative, easingFunction, fps);
+        public StaticAnimation Animate(double secondsDuration, IEasingFunction easingFunction = null, double from = 0, double to = 1, RepeatBehavior repeatBehavior = default, bool autoReverse = false, bool isCumulative = false, int? fps = FPS) => Animate(TimeSpan.FromSeconds(secondsDuration), easingFunction, from, to, repeatBehavior, autoReverse, isCumulative, fps);
     }
 }
