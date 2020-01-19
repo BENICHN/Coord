@@ -64,4 +64,4 @@ type Gateau() =
             | Decoupe.Tranches -> slices w h n |> List.map (fun ((x1, y1), (x2, y2)) -> Point(x1, y1), Point(x2, y2))
             | Decoupe.Grilles -> parts w h n |> List.map (fun ((x1, y1), (x2, y2)) -> Point(x1, y1), Point(x2, y2))
             | _ -> failwith "Type de découpe inconnu"
-        base.OnChanged ()
+        base.OnChanged()
