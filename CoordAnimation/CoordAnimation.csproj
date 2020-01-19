@@ -54,6 +54,9 @@
     <Reference Include="BenLib.WPF">
       <HintPath>..\..\BenLib\BenLib.WPF\bin\Debug\BenLib.WPF.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core, Version=4.7.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
     <Reference Include="MathConverter, Version=1.2.1.5, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathConverter.1.2.1.5\lib\net40-client\MathConverter.dll</HintPath>
     </Reference>
@@ -279,6 +282,10 @@
     <Content Include="Graphics\VisualObjectGroup.svg" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CoordF\CoordF.fsproj">
+      <Project>{ae79bd68-8f3a-419c-966e-cd26fcb34a30}</Project>
+      <Name>CoordF</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CoordLib\CoordLib.csproj">
       <Project>{e2ca3fac-92d4-4fea-a1af-a2f04fcbddba}</Project>
       <Name>CoordLib</Name>

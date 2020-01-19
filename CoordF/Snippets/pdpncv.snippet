@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+	<CodeSnippet Format="1.0.0">
+		<Header>
+			<Title>pdpncv</Title>
+			<Shortcut>pdpncv</Shortcut>
+			<Description></Description>
+			<Author></Author>
+			<SnippetTypes>
+				<SnippetType>Expansion</SnippetType>
+			</SnippetTypes>
+		</Header>
+    <Snippet>
+      <Declarations>
+        <Literal>
+          <ID>type</ID>
+          <ToolTip>Property Type</ToolTip>
+          <Default>int</Default>
+        </Literal>
+        <Literal>
+          <ID>property</ID>
+          <ToolTip>Property Name</ToolTip>
+          <Default>MyProperty</Default>
+        </Literal>
+        <Literal>
+          <ID>ownerclass</ID>
+          <ToolTip>The owning class of this Property.  Typically the class that it is declared in.</ToolTip>
+          <Default>ownerclass</Default>
+        </Literal>
+        <Literal>
+          <ID>notify</ID>
+          <Default>true</Default>
+        </Literal>
+        <Literal>
+          <ID>defaultvalue</ID>
+          <ToolTip>The default value for this property.</ToolTip>
+          <Default>default</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp">
+        <![CDATA[public $type$ $property$ { get => ($type$)GetValue($property$Property); set => SetValue($property$Property, value); }
+public static readonly DependencyProperty $property$Property = CreateProperty<$ownerclass$, $type$>(true, true, true, "$property$", (sender, e) =>
+{
+    if (sender is $ownerclass$ owner)
+    {
+        var oldValue = ($type$)e.OldValue;
+        var newValue = ($type$)e.NewValue;
+    }
+});$end$]]>
+      </Code>
+    </Snippet>
+	</CodeSnippet>
+</CodeSnippets>

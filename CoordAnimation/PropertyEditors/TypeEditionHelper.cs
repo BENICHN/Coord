@@ -104,7 +104,7 @@ namespace CoordAnimation
 
     public static class ValueEditionHelper
     {
-        public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable)
+        public static FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, IDictionary<string, object> data, bool isAnimatable)
         {
             var helper = FromType(property.PropertyType);
             return
@@ -185,8 +185,8 @@ namespace CoordAnimation
         JToken SerializeCore(object obj, ReferenceCollection references);
 
         bool IsAnimatable { get; }
-        FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable);
-        FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable);
+        FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, IDictionary<string, object> data, bool isAnimatable);
+        FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable);
         DependencyProperty BindingProperty { get; }
     }
 
@@ -194,7 +194,7 @@ namespace CoordAnimation
     {
         public virtual bool IsAnimatable => true;
 
-        public FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, Dictionary<string, object> data, bool isAnimatable)
+        public FrameworkElement GetEditorFromProperty(DependencyObject owner, DependencyProperty property, IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = GetEditor(data, isAnimatable);
             editor.SetBinding(BindingProperty, new Binding(property.Name) { Source = owner, Mode = (((owner as Freezable)?.IsFrozen ?? false) || property.ReadOnly) ? BindingMode.OneTime : BindingMode.TwoWay });
@@ -208,7 +208,7 @@ namespace CoordAnimation
             return result;
         }
 
-        public virtual FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => null;
+        public virtual FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => null;
         public virtual DependencyProperty BindingProperty { get; }
 
         public JToken Serialize(T obj, ReferenceCollection references)
@@ -234,7 +234,7 @@ namespace CoordAnimation
     public class StringEditionHelper : ValueEditionHelper<string>
     {
         public override string DeserializeCore(JToken data, ReferenceCollection references, string existingValue) => data.Value<string>();
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new SwitchableTextBox();
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new SwitchableTextBox();
 
         public override JToken SerializeCore(string obj, ReferenceCollection references) => obj;
         public override DependencyProperty BindingProperty => SwitchableTextBox.TextProperty;
@@ -243,7 +243,7 @@ namespace CoordAnimation
     public class FloatEditionHelper : ValueEditionHelper<float>
     {
         public override float DeserializeCore(JToken data, ReferenceCollection references, float existingValue) => float.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new FloatEditor();
             if (data != null)
@@ -261,7 +261,7 @@ namespace CoordAnimation
     public class DoubleEditionHelper : ValueEditionHelper<double>
     {
         public override double DeserializeCore(JToken data, ReferenceCollection references, double existingValue) => double.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new DoubleEditor();
             if (data != null)
@@ -279,7 +279,7 @@ namespace CoordAnimation
     public class DecimalEditionHelper : ValueEditionHelper<decimal>
     {
         public override decimal DeserializeCore(JToken data, ReferenceCollection references, decimal existingValue) => decimal.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new DecimalEditor();
             if (data != null)
@@ -297,7 +297,7 @@ namespace CoordAnimation
     public class LongEditionHelper : ValueEditionHelper<long>
     {
         public override long DeserializeCore(JToken data, ReferenceCollection references, long existingValue) => long.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new LongEditor();
             if (data != null)
@@ -315,7 +315,7 @@ namespace CoordAnimation
     public class ULongEditionHelper : ValueEditionHelper<ulong>
     {
         public override ulong DeserializeCore(JToken data, ReferenceCollection references, ulong existingValue) => ulong.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new ULongEditor();
             if (data != null)
@@ -333,7 +333,7 @@ namespace CoordAnimation
     public class IntEditionHelper : ValueEditionHelper<int>
     {
         public override int DeserializeCore(JToken data, ReferenceCollection references, int existingValue) => int.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new IntEditor();
             if (data != null)
@@ -351,7 +351,7 @@ namespace CoordAnimation
     public class UIntEditionHelper : ValueEditionHelper<uint>
     {
         public override uint DeserializeCore(JToken data, ReferenceCollection references, uint existingValue) => uint.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new UIntEditor();
             if (data != null)
@@ -369,7 +369,7 @@ namespace CoordAnimation
     public class ShortEditionHelper : ValueEditionHelper<short>
     {
         public override short DeserializeCore(JToken data, ReferenceCollection references, short existingValue) => short.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new ShortEditor();
             if (data != null)
@@ -387,7 +387,7 @@ namespace CoordAnimation
     public class UShortEditionHelper : ValueEditionHelper<ushort>
     {
         public override ushort DeserializeCore(JToken data, ReferenceCollection references, ushort existingValue) => ushort.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new UShortEditor();
             if (data != null)
@@ -405,7 +405,7 @@ namespace CoordAnimation
     public class SByteEditionHelper : ValueEditionHelper<sbyte>
     {
         public override sbyte DeserializeCore(JToken data, ReferenceCollection references, sbyte existingValue) => sbyte.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new SByteEditor();
             if (data != null)
@@ -423,7 +423,7 @@ namespace CoordAnimation
     public class ByteEditionHelper : ValueEditionHelper<byte>
     {
         public override byte DeserializeCore(JToken data, ReferenceCollection references, byte existingValue) => byte.Parse(data.Value<string>(), CultureInfo.InvariantCulture);
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var editor = new ByteEditor();
             if (data != null)
@@ -441,7 +441,7 @@ namespace CoordAnimation
     public class PointEditionHelper : ValueEditionHelper<Point>
     {
         public override Point DeserializeCore(JToken data, ReferenceCollection references, Point existingValue) => Point.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new PointEditor();
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new PointEditor();
 
         public override JToken SerializeCore(Point obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => PointEditor.PointProperty;
@@ -450,7 +450,7 @@ namespace CoordAnimation
     public class VectorEditionHelper : ValueEditionHelper<Vector>
     {
         public override Vector DeserializeCore(JToken data, ReferenceCollection references, Vector existingValue) => Vector.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new VectorEditor();
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new VectorEditor();
 
         public override JToken SerializeCore(Vector obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => VectorEditor.VectorProperty;
@@ -459,7 +459,7 @@ namespace CoordAnimation
     public class RectEditionHelper : ValueEditionHelper<Rect>
     {
         public override Rect DeserializeCore(JToken data, ReferenceCollection references, Rect existingValue) => Rect.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new RectEditor { Height = 120 };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new RectEditor { Height = 120 };
 
         public override JToken SerializeCore(Rect obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => RectEditor.RectProperty;
@@ -468,7 +468,7 @@ namespace CoordAnimation
     public class MathRectEditionHelper : ValueEditionHelper<MathRect>
     {
         public override MathRect DeserializeCore(JToken data, ReferenceCollection references, MathRect existingValue) => MathRect.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new RectEditor { Height = 120 };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new RectEditor { Height = 120 };
 
         public override JToken SerializeCore(MathRect obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => RectEditor.RectProperty;
@@ -477,7 +477,7 @@ namespace CoordAnimation
     public class SizeEditionHelper : ValueEditionHelper<Size>
     {
         public override Size DeserializeCore(JToken data, ReferenceCollection references, Size existingValue) => Size.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new SizeEditor { Height = 120 };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new SizeEditor { Height = 120 };
 
         public override JToken SerializeCore(Size obj, ReferenceCollection references) => obj.ToString(CultureInfo.InvariantCulture);
         public override DependencyProperty BindingProperty => SizeEditor.SizeProperty;
@@ -486,7 +486,7 @@ namespace CoordAnimation
     public class ColorEditionHelper : ValueEditionHelper<Color>
     {
         public override Color DeserializeCore(JToken data, ReferenceCollection references, Color existingValue) => Imaging.ColorFromHex(uint.Parse(data.Value<string>(), NumberStyles.HexNumber));
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new ColorEditor { Height = 180 };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new ColorEditor { Height = 180 };
 
         public override JToken SerializeCore(Color obj, ReferenceCollection references) => obj.ToHex();
         public override DependencyProperty BindingProperty => ColorEditor.ColorProperty;
@@ -495,7 +495,7 @@ namespace CoordAnimation
     public class RectPointEditionHelper : ValueEditionHelper<RectPoint>
     {
         public override RectPoint DeserializeCore(JToken data, ReferenceCollection references, RectPoint existingValue) => RectPoint.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new RectPointEditor { Height = 120 };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new RectPointEditor { Height = 120 };
 
         public override JToken SerializeCore(RectPoint obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => RectPointEditor.RectPointProperty;
@@ -505,7 +505,7 @@ namespace CoordAnimation
     {
         public override Progress DeserializeCore(JToken data, ReferenceCollection references, Progress existingValue) => Progress.Parse(data.Value<string>());
 
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new ProgressEditor();
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new ProgressEditor();
 
         public override JToken SerializeCore(Progress obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => ProgressEditor.ProgressProperty;
@@ -514,7 +514,7 @@ namespace CoordAnimation
     public class BooleanEditionHelper : ValueEditionHelper<bool>
     {
         public override bool DeserializeCore(JToken data, ReferenceCollection references, bool existingValue) => bool.Parse(data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new CheckBox();
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new CheckBox();
 
         public override JToken SerializeCore(bool obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => ToggleButton.IsCheckedProperty;
@@ -528,7 +528,7 @@ namespace CoordAnimation
             return s == "null" ? new bool?() : bool.Parse(s);
         }
 
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new CheckBox { IsThreeState = true };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new CheckBox { IsThreeState = true };
 
         public override JToken SerializeCore(bool? obj, ReferenceCollection references) => obj?.ToString() ?? "null";
         public override DependencyProperty BindingProperty => ToggleButton.IsCheckedProperty;
@@ -537,7 +537,7 @@ namespace CoordAnimation
     public class IntIntervalEditionHelper : ValueEditionHelper<Interval<int>>
     {
         public override Interval<int> DeserializeCore(JToken data, ReferenceCollection references, Interval<int> existingValue) => Interval<int>.Parse(data.Value<string>(), s => int.Parse(s));
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new IntervalEditor { IntervalType = IntervalType.Int };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new IntervalEditor { IntervalType = IntervalType.Int };
 
         public override JToken SerializeCore(Interval<int> obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => IntervalEditor.IntIntervalProperty;
@@ -546,7 +546,7 @@ namespace CoordAnimation
     public class DoubleIntervalEditionHelper : ValueEditionHelper<Interval<double>>
     {
         public override Interval<double> DeserializeCore(JToken data, ReferenceCollection references, Interval<double> existingValue) => Interval<double>.Parse(data.Value<string>(), s => double.Parse(s));
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new IntervalEditor { IntervalType = IntervalType.Double };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new IntervalEditor { IntervalType = IntervalType.Double };
 
         public override JToken SerializeCore(Interval<double> obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => IntervalEditor.DoubleIntervalProperty;
@@ -555,7 +555,7 @@ namespace CoordAnimation
     public class DecimalIntervalEditionHelper : ValueEditionHelper<Interval<decimal>>
     {
         public override Interval<decimal> DeserializeCore(JToken data, ReferenceCollection references, Interval<decimal> existingValue) => Interval<decimal>.Parse(data.Value<string>(), s => decimal.Parse(s));
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new IntervalEditor { IntervalType = IntervalType.Decimal };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new IntervalEditor { IntervalType = IntervalType.Decimal };
 
         public override JToken SerializeCore(Interval<decimal> obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => IntervalEditor.DecimalIntervalProperty;
@@ -568,7 +568,7 @@ namespace CoordAnimation
         public Type EnumType { get; }
 
         public override Enum DeserializeCore(JToken data, ReferenceCollection references, Enum existingValue) => (Enum)Enum.Parse(EnumType, data.Value<string>());
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new EnumEditor();
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new EnumEditor();
 
         public override JToken SerializeCore(Enum obj, ReferenceCollection references) => obj.ToString();
         public override DependencyProperty BindingProperty => EnumEditor.EnumerationProperty;
@@ -613,7 +613,7 @@ namespace CoordAnimation
             return existingValue;
         }
 
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable)
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable)
         {
             var type = Type;
             var editor = new ListEditor { IsAnimatable = isAnimatable, Type = type, Margin = new Thickness(0, 0, -3, 0) };
@@ -686,7 +686,7 @@ namespace CoordAnimation
             return existingValue;
         }
 
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new PropertiesEditor { IsAnimatable = isAnimatable, Type = Type, Margin = new Thickness(0, 0, -3, 0) };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new PropertiesEditor { IsAnimatable = isAnimatable, Type = Type, Margin = new Thickness(0, 0, -3, 0) };
 
         public override JToken SerializeCore(DependencyObject obj, ReferenceCollection references)
         {
@@ -712,7 +712,7 @@ namespace CoordAnimation
         public VisualObjectEditionHelper() : base(typeof(VisualObject)) { }
         public VisualObjectEditionHelper(Type type) : base(type) { }
 
-        public override FrameworkElement GetEditor(Dictionary<string, object> data, bool isAnimatable) => new VisualObjectSelector { Selection = App.Scene.Plane.Selection, Pointing = IsPointing ? Type : null };
+        public override FrameworkElement GetEditor(IDictionary<string, object> data, bool isAnimatable) => new VisualObjectSelector { Selection = App.Scene.Plane.Selection, Pointing = IsPointing ? Type : null };
         public override DependencyProperty BindingProperty => VisualObjectSelector.VisualObjectProperty;
     }
 

@@ -20,7 +20,7 @@ namespace Coord
         public bool Register { get; set; }
         public bool Notify { get; set; }
 
-        public Dictionary<string, object> Data { get; set; }
+        public IDictionary<string, object> Data { get; set; }
     }
 
     public abstract class NotifyObject : Freezable
@@ -83,14 +83,14 @@ namespace Coord
             //base.OnPropertyChanged(e);
         }
 
-        protected static void OverrideDefaultValue<TOwner, TProperty>(DependencyProperty property, TProperty value) where TOwner : NotifyObject
+        public static void OverrideDefaultValue<TOwner, TProperty>(DependencyProperty property, TProperty value) where TOwner : NotifyObject
         {
             var type = typeof(TOwner);
             var metadata = (NotifyObjectPropertyMetadata)property.GetMetadata(type);
             property.OverrideMetadata(type, new NotifyObjectPropertyMetadata(value, metadata.PropertyChangedCallback, metadata.CoerceValueCallback) { Register = metadata.Register, Notify = metadata.Notify, Display = metadata.Display, Description = metadata.Description });
         }
 
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName) where TOwner : NotifyObject
+        public static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName });
@@ -100,7 +100,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue) where TOwner : NotifyObject
+        public static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName });
@@ -294,7 +294,7 @@ namespace Coord
             return dp;
         }
 
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data });
@@ -304,7 +304,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, Dictionary<string, object> data) where TOwner : NotifyObject
+        public static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data });
@@ -314,7 +314,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data });
@@ -324,7 +324,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data });
@@ -334,7 +334,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data });
@@ -345,7 +345,7 @@ namespace Coord
             return dp;
         }
 
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data }, validateValueCallback);
@@ -355,7 +355,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data }, validateValueCallback);
@@ -365,7 +365,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data }, validateValueCallback);
@@ -375,7 +375,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data }, validateValueCallback);
@@ -385,7 +385,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = propertyName, Data = data }, validateValueCallback);
@@ -396,7 +396,7 @@ namespace Coord
             return dp;
         }
 
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = description, Data = data });
@@ -406,7 +406,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = description, Data = data });
@@ -416,7 +416,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description, Data = data });
@@ -426,7 +426,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description, Data = data });
@@ -436,7 +436,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = description, Data = data });
@@ -447,7 +447,7 @@ namespace Coord
             return dp;
         }
 
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(default(TProperty)) { Register = register, Notify = notify, Display = display, Description = description, Data = data }, validateValueCallback);
@@ -457,7 +457,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue) { Register = register, Notify = notify, Display = display, Description = description, Data = data }, validateValueCallback);
@@ -467,7 +467,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description, Data = data }, validateValueCallback);
@@ -477,7 +477,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback) { Register = register, Notify = notify, Display = display, Description = description, Data = data }, validateValueCallback);
@@ -487,7 +487,7 @@ namespace Coord
 
             return dp;
         }
-        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback, Dictionary<string, object> data) where TOwner : NotifyObject
+        protected static DependencyProperty CreateProperty<TOwner, TProperty>(bool register, bool notify, bool display, string propertyName, string description, TProperty defaultValue, PropertyChangedCallback propertyChangedCallback, CoerceValueCallback coerceValueCallback, ValidateValueCallback validateValueCallback, IDictionary<string, object> data) where TOwner : NotifyObject
         {
             var ownerType = typeof(TOwner);
             var dp = DependencyProperty.Register(propertyName, typeof(TProperty), ownerType, new NotifyObjectPropertyMetadata(defaultValue, propertyChangedCallback, coerceValueCallback) { Register = register, Notify = notify, Display = display, Description = description, Data = data }, validateValueCallback);
