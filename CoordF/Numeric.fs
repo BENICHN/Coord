@@ -4,6 +4,9 @@ module Numeric
 open System.Windows
 open Coord
 
+[<Literal>]
+let tau = 6.28318530711641949889
+
 let (|*>) (p : Point) (csm : ReadOnlyCoordinatesSystemManager) = csm.ComputeOutCoordinates p
 
 let private swap = List.map (fun ((x1:float, y1:float), (x2:float, y2:float)) -> (y1, x1), (y2, x2))
@@ -17,7 +20,7 @@ let divs n =
             if i * p = n then yield i, p 
     ]
 
-let rec parts (w : float) (h : float) (n : int) =
+let rec parts w h n =
     let L = max w h
     let l = min w h
     let inv = l = w
@@ -36,10 +39,26 @@ let rec parts (w : float) (h : float) (n : int) =
         if inv then (parts l L1 (m1 * p)) @ ((0.0, L1), (l, L1)) :: (parts l L2 (m2 * p) |> shifty L1)
         else (parts L1 l (m1 * p)) @ ((L1, 0.0), (L1, l)) :: (parts L2 l (m2 * p) |> shiftx L1)
 
-let slices (w : float) (h : float) (n : int) =
+let slices w h n =
     let L = max w h
     let l = min w h
     let inv = l = w
     let Lp = L / (float n)
     let res = [ for i = 1 to n - 1 do yield let ip = Lp * (float i) in ((ip, 0.0), (ip, l))]
+    if inv then res |> swap else res
+
+let sectors w h n =
+    let a = (max w h) / 2.0
+    let b = (min w h) / 2.0
+    let s = tau * a * b / 2.0
+    let inv = 2.0 * a = w
+    let res = 
+        [ 
+            for i = 0 to n - 1 do 
+                let ap =
+                    let dap = atan (b * tan (2.0 * (float i) * s / ((float n) * a * b)) / a)
+                    let dap = if dap < 0.0 then tau / 4.0 + dap + tau / 2.0 else tau / 4.0 + dap
+                    if i <= n / 2 then dap else dap + tau / 2.0
+                yield ((b, a), (b + a * cos ap, a + a * sin ap))
+        ]
     if inv then res |> swap else res

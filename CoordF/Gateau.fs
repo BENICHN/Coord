@@ -22,6 +22,8 @@ type Gateau() =
     static let CountProperty = nobj.CreateProperty<Gateau, int>(true, true, true, "Count", 23, dict [ ("min", box 2) ])
     static let DecoupeProperty = nobj.CreateProperty<Gateau, Decoupe>(true, true, true, "Decoupe", Decoupe.Grilles)
 
+    static let maptopoints = List.map (fun ((x1, y1), (x2, y2)) -> Point(x1, y1), Point(x2, y2))
+
     let mutable cache : (Point * Point) list = []
 
     static do        
@@ -47,10 +49,14 @@ type Gateau() =
     override this.GetCharactersCore csm =
         let w = this.Width
         let h = this.Heigth
+        let d = this.Decoupe
         let fill = this.Fill
         let stroke = this.Stroke
         seq {
-                yield Character.Rectangle(Rect(Point(0.0, 0.0) |*> csm, Point(w, h) |*> csm)).Color(fill, stroke)
+                match d with
+                | Decoupe.Secteurs -> yield Character.Ellipse(Rect(Point(0.0, 0.0) |*> csm, Point(w, h) |*> csm)).Color(fill, stroke)
+                | Decoupe.Tranches | Decoupe.Grilles -> yield Character.Rectangle(Rect(Point(0.0, 0.0) |*> csm, Point(w, h) |*> csm)).Color(fill, stroke)
+                | _ -> failwith "Type de découpe inconnu"
                 for p1, p2 in cache -> Character.Line(p1 |*> csm, p2 |*> csm).Color(stroke)
             }
     override this.OnChanged () =
@@ -60,8 +66,8 @@ type Gateau() =
         let d = this.Decoupe
         cache <- 
             match d with
-            | Decoupe.Secteurs -> parts w h n |> List.map (fun ((x1, y1), (x2, y2)) -> Point(x1, y1), Point(x2, y2))
-            | Decoupe.Tranches -> slices w h n |> List.map (fun ((x1, y1), (x2, y2)) -> Point(x1, y1), Point(x2, y2))
-            | Decoupe.Grilles -> parts w h n |> List.map (fun ((x1, y1), (x2, y2)) -> Point(x1, y1), Point(x2, y2))
+            | Decoupe.Secteurs -> sectors w h n |> maptopoints
+            | Decoupe.Tranches -> slices w h n |> maptopoints
+            | Decoupe.Grilles -> parts w h n |> maptopoints
             | _ -> failwith "Type de découpe inconnu"
         base.OnChanged()
