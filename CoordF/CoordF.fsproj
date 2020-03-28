@@ -43,14 +43,17 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Vector.fs" />
+    <Compile Include="Matrix.fs" />
     <Compile Include="Numeric.fs" />
     <Compile Include="Gateau.fs" />
-    <None Include="Script.fsx" />
     <Content Include="packages.config" />
     <None Include="Snippets\fpdpn.snippet" />
     <None Include="Snippets\fpdpnc.snippet" />
     <None Include="Snippets\pdpncr.snippet" />
     <None Include="Snippets\pdpncv.snippet" />
+    <Compile Include="Parallelogram.fs" />
+    <Compile Include="Tronc.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BenLib.Framework">

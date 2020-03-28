@@ -20,6 +20,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using static Coord.VisualObjects;
+using static NumericMod;
+using static VectorMod;
+using static Parallelogram;
 using static System.Math;
 
 namespace CoordAnimation
@@ -32,6 +35,8 @@ namespace CoordAnimation
         public Timeline Timeline => timeline;
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; }
+
+        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc { Width = 0.5 };
 
         public bool IsPlaying { get; private set; }
 
@@ -150,6 +155,61 @@ namespace CoordAnimation
             //await m.Animate();
             //previewPlane.Zoom(true, new MathRect(4, 1, 1, 1), new Rect(100, 100, 300, 300), null, t);
             //RefreshElements();*/
+            Plane.Grid.Secondary = false;
+            Plane.Grid.VerticalStep = Plane.Grid.HorizontalStep = 1.0;
+            Plane.Axes.Direction = Plane.AxesNumbers.Direction = AxesDirection.None;
+            Plane.Items.Add(m_tronc);
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Left:
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        var (o, u, v) = m_tronc.Data;
+                        var (i, j) = plgmbase(o, u, v);
+                        m_tronc.TranslateOrNot(-m_tronc.TranslationStep * i);
+                    }
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(m_tronc.RotationStep * tau / 360.0);
+                    else m_tronc.TranslateOrNot(vec2.i(-m_tronc.TranslationStep));
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        var (o, u, v) = m_tronc.Data;
+                        var (i, j) = plgmbase(o, u, v);
+                        m_tronc.TranslateOrNot(m_tronc.TranslationStep * i);
+                    }
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(-m_tronc.RotationStep * tau / 360.0);
+                    else m_tronc.TranslateOrNot(vec2.i(m_tronc.TranslationStep));
+                    e.Handled = true;
+                    break;
+                case Key.Down:
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        var (o, u, v) = m_tronc.Data;
+                        var (i, j) = plgmbase(o, u, v);
+                        m_tronc.TranslateOrNot(-m_tronc.TranslationStep * j);
+                    }
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(m_tronc.RotationStep * tau / 360.0);
+                    else m_tronc.TranslateOrNot(vec2.j(-m_tronc.TranslationStep));
+                    e.Handled = true;
+                    break;
+                case Key.Up:
+                    if (Keyboard.Modifiers == ModifierKeys.Control)
+                    {
+                        var (o, u, v) = m_tronc.Data;
+                        var (i, j) = plgmbase(o, u, v);
+                        m_tronc.TranslateOrNot(m_tronc.TranslationStep * j);
+                    }
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(-m_tronc.RotationStep * tau / 360.0);
+                    else m_tronc.TranslateOrNot(vec2.j(m_tronc.TranslationStep));
+                    e.Handled = true;
+                    break;
+            }
         }
 
         //private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e) => EffectsEditor.Object = (EffectsList.SelectedItem as CharacterEffectElement)?.CharacterEffect;

@@ -1,11 +1,14 @@
 ﻿[<AutoOpen>]
-module Numeric
+module NumericMod
 
 open System.Windows
 open Coord
 
 [<Literal>]
 let tau = 6.28318530711641949889
+
+let inline clamp minValue maxValue x = max minValue (min maxValue x)
+let inline minmax a b = if a < b then a, b else b, a
 
 let (|*>) (p : Point) (csm : ReadOnlyCoordinatesSystemManager) = csm.ComputeOutCoordinates p
 
