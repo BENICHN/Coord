@@ -36,7 +36,7 @@ namespace CoordAnimation
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; }
 
-        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc { Width = 0.5 };
+        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc { Width = 0.5, Height = 2.0 };
 
         public bool IsPlaying { get; private set; }
 
@@ -166,48 +166,30 @@ namespace CoordAnimation
             switch (e.Key)
             {
                 case Key.Left:
-                    if (Keyboard.Modifiers == ModifierKeys.Control)
-                    {
-                        var (o, u, v) = m_tronc.Data;
-                        var (i, j) = plgmbase(o, u, v);
-                        m_tronc.TranslateOrNot(-m_tronc.TranslationStep * i);
-                    }
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(m_tronc.RotationStep * tau / 360.0);
-                    else m_tronc.TranslateOrNot(vec2.i(-m_tronc.TranslationStep));
+                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotUL();
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotD();
+                    else m_tronc.TranslateOrNotIL();
                     e.Handled = true;
                     break;
                 case Key.Right:
-                    if (Keyboard.Modifiers == ModifierKeys.Control)
-                    {
-                        var (o, u, v) = m_tronc.Data;
-                        var (i, j) = plgmbase(o, u, v);
-                        m_tronc.TranslateOrNot(m_tronc.TranslationStep * i);
-                    }
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(-m_tronc.RotationStep * tau / 360.0);
-                    else m_tronc.TranslateOrNot(vec2.i(m_tronc.TranslationStep));
+                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotUR();
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotH();
+                    else m_tronc.TranslateOrNotIR();
                     e.Handled = true;
                     break;
                 case Key.Down:
-                    if (Keyboard.Modifiers == ModifierKeys.Control)
-                    {
-                        var (o, u, v) = m_tronc.Data;
-                        var (i, j) = plgmbase(o, u, v);
-                        m_tronc.TranslateOrNot(-m_tronc.TranslationStep * j);
-                    }
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(m_tronc.RotationStep * tau / 360.0);
-                    else m_tronc.TranslateOrNot(vec2.j(-m_tronc.TranslationStep));
-                    e.Handled = true;
+                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotVD();
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotD();
+                    else m_tronc.TranslateOrNotJD();
                     break;
                 case Key.Up:
-                    if (Keyboard.Modifiers == ModifierKeys.Control)
-                    {
-                        var (o, u, v) = m_tronc.Data;
-                        var (i, j) = plgmbase(o, u, v);
-                        m_tronc.TranslateOrNot(m_tronc.TranslationStep * j);
-                    }
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNot(-m_tronc.RotationStep * tau / 360.0);
-                    else m_tronc.TranslateOrNot(vec2.j(m_tronc.TranslationStep));
+                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotVU();
+                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotH();
+                    else m_tronc.TranslateOrNotJU();
                     e.Handled = true;
+                    break;
+                case Key.H:
+                    m_tronc.Horiz();
                     break;
             }
         }
@@ -311,7 +293,7 @@ namespace CoordAnimation
             void Rendering(object sender, EventArgs e)
             {
                 PropertiesAnimation.GeneralTime = i;
-                p.SaveBitmap($@"Render\Image{i.ToString("00000")}.png");
+                p.SaveBitmap($@"Render\Image{i:00000}.png");
                 i++;
             }
 

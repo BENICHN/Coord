@@ -1,17 +1,11 @@
 ﻿[<AutoOpen>]
 module VectorMod
 
-[<Struct>]
 type vec2 =
     {
         x : float
         y : float
     }
-
-    static member inline zero = { x = 0.0; y = 0.0 }
-    static member inline i x = { x = x; y = 0.0 }
-    static member inline j y = { x = 0.0; y = y }
-    static member inline ij x y = { x = x; y = y }
 
     static member inline (+) (u, v) = 
         { 
@@ -53,7 +47,6 @@ type vec2 =
 
     static member inline (.*) (u, v) = u.x * v.x + u.y * v.y
    
-[<Struct>]
 type vec3 =
     {
         x : float
@@ -116,7 +109,6 @@ type vec3 =
             z = u.x * v.y - u.y * v.x
         }
    
-[<Struct>]
 type vec4 =
     {
         x : float
@@ -180,41 +172,91 @@ type vec4 =
     static member inline (*) (k : float, v : vec4) = v * k
 
     static member inline (.*) (u, v) = u.x * v.x + u.y * v.y + u.z * v.z + u.w * v.w
-                         
-let inline lengthSquared v = v .* v
-let inline length v = v |> lengthSquared |> sqrt
-let inline norm v = v / length v
-let inline relength l v = l * norm v
 
-let vec4 (v : vec3) =
-    {
-        x = v.x
-        y = v.y
-        z = v.z
-        w = 1.0
-    }
-let vec3 (v : vec4) =
-    {
-        x = v.x / v.w
-        y = v.y / v.w
-        z = v.z / v.w
-    }
+type base2 = vec2 * vec2
+type base3 = vec3 * vec3 * vec3
+type base4 = vec4 * vec4 * vec4 * vec4
 
-let coordinatesinbase (u : vec2) (v : vec2) (w : vec2) =
-    let xu, yu = u.x, u.y
-    let xv, yv = v.x, v.y
-    let x, y = w.x, w.y
-    let c = xu * yv - xv * yu
-    let a = (x * yv - y * xv) / c
-    let b = (y * xu - x * yu) / c
-    a, b
+module vec2 =
 
-let decompose (u : vec2) (v : vec2) (w : vec2) =
-    let a, b = coordinatesinbase u v w
-    a * u, b * v
+    let zero = { x = 0.0 ; y = 0.0 }
+    let i = { x = 1.0 ; y = 0.0 }
+    let j = { x = 0.0 ; y = 1.0 }
 
-let rotate a (v : vec2) =
-    let sin, cos = sin a, cos a
-    let x, y = v.x, v.y
-    { x = cos * x - sin * y; y = sin * x + cos * y }
+    let inline x x = { x = x ; y = 0.0 }
+    let inline y y = { x = 0.0 ; y = y }
+    let inline xy x y z = { x = x ; y = y }
+
+    let inline lengthSquared (v : vec2) = v .* v
+    let length (v : vec2) = v |> lengthSquared |> sqrt
+    let norm (v : vec2) = v / length v
+    let relength (l : float) (v : vec2) = l * norm v
+
+    let rotate a (v : vec2) =
+        let sin, cos = sin a, cos a
+        let x, y = v.x, v.y
+        { x = cos * x - sin * y; y = sin * x + cos * y }
+
+module vec3 =
+
+    let zero = { x = 0.0; y = 0.0 ; z = 0.0}
+    let i = { x = 1.0 ; y = 0.0 ; z = 0.0 }
+    let j = { x = 0.0 ; y = 1.0 ; z = 0.0 }
+    let k = { x = 0.0 ; y = 0.0 ; z = 1.0 }
+
+    let inline x x = { x = x ; y = 0.0 ; z = 0.0 }
+    let inline y y = { x = 0.0 ; y = y ; z = 0.0 }
+    let inline z z = { x = 0.0 ; y = 0.0 ; z = z }
+    let inline xyz x y z = { x = x ; y = y ; z = z }
+
+    let inline lengthSquared (v : vec3) = v .* v
+    let length (v : vec3) = v |> lengthSquared |> sqrt
+    let norm (v : vec3) = v / length v
+    let relength (l : float) (v : vec3) = l * norm v
+
+module vec4 =
+
+    let zero = { x = 0.0; y = 0.0 ; z = 0.0}
+    let i = { x = 1.0 ; y = 0.0 ; z = 0.0 ; w = 0.0 }
+    let j = { x = 0.0 ; y = 1.0 ; z = 0.0 ; w = 0.0 }
+    let k = { x = 0.0 ; y = 0.0 ; z = 1.0 ; w = 0.0 }
+    let l = { x = 0.0 ; y = 0.0 ; z = 0.0 ; w = 1.0 }
+
+    let inline x x = { x = x ; y = 0.0 ; z = 0.0 ; w = 0.0 }
+    let inline y y = { x = 0.0 ; y = y ; z = 0.0 ; w = 0.0 }
+    let inline z z = { x = 0.0 ; y = 0.0 ; z = z ; w = 0.0 }
+    let inline w w = { x = 0.0 ; y = 0.0 ; z = 0.0 ; w = w }
+    let inline xyzw x y z w = { x = x ; y = y ; z = z ; w = w }
+
+    let inline lengthSquared (v : vec4) = v .* v
+    let length (v : vec4) = v |> lengthSquared |> sqrt
+    let norm (v : vec4) = v / length v
+    let relength (l : float) (v : vec4) = l * norm v
+
+module base2 =
+    let ij = vec2.i, vec2.j
+    let norm ((u, v) : base2) = vec2.norm u, vec2.norm v
+    let orthdir (u : vec2) = u, { x = -u.y; y = u.x }
+    let orthndir = orthdir >> norm
+    let coordinates ((u, v) : base2) (w : vec2) =
+        if u.y = 0.0 && v.x = 0.0 then w.x / u.x, w.y / v.y
+        else
+            let xu, yu = u.x, u.y
+            let xv, yv = v.x, v.y
+            let x, y = w.x, w.y
+            let c = xu * yv - xv * yu
+            let a = (x * yv - y * xv) / c
+            let b = (y * xu - x * yu) / c
+            a, b
+    let decompose ((u, v) : base2) (w : vec2) =
+        let a, b = coordinates (u, v) w
+        a * u, b * v
+
+module base3 =
+    let ijk = vec3.i, vec3.j, vec3.k
+    let norm ((u, v, w) : base3) = vec3.norm u, vec3.norm v, vec3.norm w
+
+module base4 =
+    let ijkl = vec4.i, vec4.j, vec4.k, vec4.l
+    let norm ((u, v, w, x) : base4) = vec4.norm u, vec4.norm v, vec4.norm w, vec4.norm x
 

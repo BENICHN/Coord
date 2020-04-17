@@ -5,6 +5,8 @@ open System.Windows.Media
 open BenLib.WPF
 open Coord
 open Parallelogram
+open System
+open System.Threading
 
 type Tronc() =
     inherit VisualObject()
@@ -16,7 +18,7 @@ type Tronc() =
     static let RotationCenterProperty = nobj.CreateProperty<Tronc, RectPoint>(true, true, true, "RotationCenter", RectPoint.Center)
     static let MiniboxProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Minibox", true)
 
-    let mutable data : plgm = (vec2.zero, vec2.i 1.0, vec2.j 2.0)
+    let mutable data : plgm = (vec2.zero, base2.ij)
 
     static do        
         nobj.OverrideDefaultValue<Tronc, Brush>(vobj.FillProperty, Brushes.YellowGreen.EditFreezable(fun b -> b.Opacity <- 0.2))
@@ -44,46 +46,69 @@ type Tronc() =
 
     member this.RCenter =
         let rp = this.RotationCenter
-        let (o, u, v) = data
+        let (o, (u, v)) = data
         o + rp.XProgress * u + rp.YProgress * v
 
     override __.CreateInstanceCore() = Tronc() :> Freezable
     override __.Type = "Tronc"
 
-    member this.TranslateOrNot v =
-        let newdata = plgmtranslate v data
-        if not (plgmcontainstrees newdata) then
+    member private this.Apply ndo =
+        match ndo with
+        | Some newdata ->
+            data <- newdata
+            this.NotifyChanged ()
+            true
+        | None -> false
+
+    member this.TranslateOrNot v = this.Apply (plgm.translateOrNot v data)
+    member this.RotateOrNot a = this.Apply (plgm.rotateOrNot (this.RCenter) a data)
+
+    member this.TranslateOrNotIL () = this.Apply (plgm.translateOrNotIL (this.TranslationStep) data)
+    member this.TranslateOrNotIR () = this.Apply (plgm.translateOrNotIR (this.TranslationStep) data)
+    member this.TranslateOrNotJD () = this.Apply (plgm.translateOrNotJD (this.TranslationStep) data)
+    member this.TranslateOrNotJU () = this.Apply (plgm.translateOrNotJU (this.TranslationStep) data)
+                                                  
+    member this.TranslateOrNotUL () = this.Apply (plgm.translateOrNotUL (this.TranslationStep) data)
+    member this.TranslateOrNotUR () = this.Apply (plgm.translateOrNotUR (this.TranslationStep) data)
+    member this.TranslateOrNotVD () = this.Apply (plgm.translateOrNotVD (this.TranslationStep) data)
+    member this.TranslateOrNotVU () = this.Apply (plgm.translateOrNotVU (this.TranslationStep) data)
+
+    member this.RotateOrNotD () = this.Apply (plgm.rotateOrNotD (this.RCenter) (this.RotationStep) data)
+    member this.RotateOrNotH () = this.Apply (plgm.rotateOrNotH (this.RCenter) (this.RotationStep) data)
+
+    member this.Horiz () =
+        let uictxt = SynchronizationContext.Current
+        plgm.horiz (fun newdata -> async {
+            do! Async.SwitchToContext uictxt
+            let! _ = Async.AwaitEvent (CompositionTarget.Rendering)
             data <- newdata
             this.NotifyChanged()
-    member this.RotateOrNot a =
-        let newdata = plgmrotate (this.RCenter) a data
-        if not (plgmcontainstrees newdata) then
-            data <- newdata
-            this.NotifyChanged()
+            do! Async.SwitchToThreadPool ()
+        }) 0.0001 data |> Async.Ignore |> Async.Start
 
     override this.GetCharactersCore csm =
         let fill = this.Fill
         let stroke = this.Stroke
         let inr = csm.InputRange
         let c = this.RCenter
-        let xs, ys, xe, ye = plgmminibox data
+        let xs, ys, xe, ye = plgm.minibox data
         let m = this.Minibox
         seq { for i = int (floor inr.Left) to int (ceil inr.Right) do
                 for j = int (floor inr.Bottom) to int (ceil inr.Top) do
                     yield Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin)
-              yield (data |> plgmwithcsm csm |> plgmgeometry).ToCharacter(fill, stroke)
+              yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
               if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
               yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))}
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =
         if (e.Property = WidthProperty) then
-            let o, u, v = data
+            let o, (u, v) = data
             let w = this.Width
-            let newdata =(o, u |> relength w, v)
-            if plgmcontainstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
+            let newdata = (o, (vec2.relength w u, v))
+            if plgm.containstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
         else if (e.Property = HeightProperty) then
-            let o, u, v = data
+            let o, (u, v) = data
             let h = this.Height
-            let newdata =(o, u, v |> relength h)
-            if plgmcontainstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
+            let newdata = (o, (u, vec2.relength h v))
+            if plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
         base.OnPropertyChanged(e)
