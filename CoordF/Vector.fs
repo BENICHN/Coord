@@ -184,6 +184,7 @@ type vec4 =
 let inline lengthSquared v = v .* v
 let inline length v = v |> lengthSquared |> sqrt
 let inline norm v = v / length v
+let inline relength l v = l * norm v
 
 let vec4 (v : vec3) =
     {

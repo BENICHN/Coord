@@ -10,10 +10,11 @@ type Tronc() =
     inherit VisualObject()
 
     static let WidthProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "Width", 1.0, dict [ ("min", box 0.0); ("max", box 1.0) ])
-    static let HeigthProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "Heigth", 2.0, dict [ ("min", box 0.0) ])
+    static let HeightProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "Height", 2.0, dict [ ("min", box 0.0) ])
     static let TranslationStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "TranslationStep", 0.01, dict [ ("min", box 0.0) ])
     static let RotationStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "RotationStep", 1.0, dict [ ("min", box 0.0); ("max", box 360.0) ])
     static let RotationCenterProperty = nobj.CreateProperty<Tronc, RectPoint>(true, true, true, "RotationCenter", RectPoint.Center)
+    static let MiniboxProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Minibox", true)
 
     let mutable data : plgm = (vec2.zero, vec2.i 1.0, vec2.j 2.0)
 
@@ -24,9 +25,9 @@ type Tronc() =
     member this.Width
         with get() = this.GetValue(WidthProperty) :?> float
         and set(value : float) = this.SetValue(WidthProperty, value)
-    member this.Heigth
-        with get() = this.GetValue(HeigthProperty) :?> float
-        and set(value : float) = this.SetValue(HeigthProperty, value)
+    member this.Height
+        with get() = this.GetValue(HeightProperty) :?> float
+        and set(value : float) = this.SetValue(HeightProperty, value)
     member this.TranslationStep
         with get() = this.GetValue(TranslationStepProperty) :?> float
         and set(value : float) = this.SetValue(TranslationStepProperty, value)
@@ -36,6 +37,9 @@ type Tronc() =
     member this.RotationCenter
         with get() = this.GetValue(RotationCenterProperty) :?> RectPoint
         and set(value : RectPoint) = this.SetValue(RotationCenterProperty, value)
+    member this.Minibox
+        with get() = this.GetValue(MiniboxProperty) :?> bool
+        and set(value : bool) = this.SetValue(MiniboxProperty, value)
     member __.Data = data
 
     member this.RCenter =
@@ -62,15 +66,24 @@ type Tronc() =
         let stroke = this.Stroke
         let inr = csm.InputRange
         let c = this.RCenter
+        let xs, ys, xe, ye = plgmminibox data
+        let m = this.Minibox
         seq { for i = int (floor inr.Left) to int (ceil inr.Right) do
                 for j = int (floor inr.Bottom) to int (ceil inr.Top) do
-                    yield Character.Ellipse(csm.ComputeOutCoordinates(Point(float i, float j)), 5.0, 5.0).Color(FlatBrushes.Alizarin)
+                    yield Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin)
               yield (data |> plgmwithcsm csm |> plgmgeometry).ToCharacter(fill, stroke)
-              yield Character.Ellipse(csm.ComputeOutCoordinates(Point(c.x, c.y)), 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))}
+              if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
+              yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))}
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =
-        if (e.Property = WidthProperty || e.Property = HeigthProperty) then
+        if (e.Property = WidthProperty) then
+            let o, u, v = data
             let w = this.Width
-            let h = this.Heigth
-            data <- (vec2.zero, vec2.i w, vec2.j h)
+            let newdata =(o, u |> relength w, v)
+            if plgmcontainstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
+        else if (e.Property = HeightProperty) then
+            let o, u, v = data
+            let h = this.Height
+            let newdata =(o, u, v |> relength h)
+            if plgmcontainstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
         base.OnPropertyChanged(e)

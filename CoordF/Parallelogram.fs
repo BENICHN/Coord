@@ -20,8 +20,8 @@ let plgmrotate c a ((o, u, v) : plgm) =
 
 let plgmminibox ((o, u, v) : plgm) =
     let a, b, c = o + u, o + v, o + u + v
-    let xs, xe = if sign a.x * sign b.x < 0 then minmax a.x b.x else minmax o.x c.x
-    let ys, ye = if sign a.y * sign b.y < 0 then minmax a.y b.y else minmax o.y c.y
+    let xs, xe = if sign u.x * sign v.x < 0 then minmax a.x b.x else minmax o.x c.x
+    let ys, ye = if sign u.y * sign v.y < 0 then minmax a.y b.y else minmax o.y c.y
     xs, ys, xe, ye
 
 let plgmcontainstrees p =
@@ -32,7 +32,7 @@ let plgmcontainstrees p =
     Seq.exists (fun r -> r) res
 
 let plgmwithcsm (csm : ReadOnlyCoordinatesSystemManager) ((o, u, v) : plgm) =
-    let o2 = csm.ComputeOutCoordinates(Point(o.x, o.y))
+    let o2 = Point(o.x, o.y) |*> csm
     let u2 = csm.ComputeOutCoordinates(Vector(u.x, u.y))
     let v2 = csm.ComputeOutCoordinates(Vector(v.x, v.y))
     { x = o2.X; y = o2.Y }, { x = u2.X; y = u2.Y }, { x = v2.X; y = v2.Y }

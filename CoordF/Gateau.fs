@@ -18,7 +18,7 @@ type Gateau() =
     inherit VisualObject()
 
     static let WidthProperty = nobj.CreateProperty<Gateau, float>(true, true, true, "Width", 36.0, dict [ ("min", box 1.0) ])
-    static let HeigthProperty = nobj.CreateProperty<Gateau, float>(true, true, true, "Heigth", 36.0, dict [ ("min", box 1.0) ])
+    static let HeightProperty = nobj.CreateProperty<Gateau, float>(true, true, true, "Height", 36.0, dict [ ("min", box 1.0) ])
     static let CountProperty = nobj.CreateProperty<Gateau, int>(true, true, true, "Count", 23, dict [ ("min", box 2) ])
     static let DecoupeProperty = nobj.CreateProperty<Gateau, Decoupe>(true, true, true, "Decoupe", Decoupe.Grilles)
 
@@ -33,9 +33,9 @@ type Gateau() =
     member this.Width
         with get() = this.GetValue(WidthProperty) :?> float
         and set(value : float) = this.SetValue(WidthProperty, value)
-    member this.Heigth
-        with get() = this.GetValue(HeigthProperty) :?> float
-        and set(value : float) = this.SetValue(HeigthProperty, value)
+    member this.Height
+        with get() = this.GetValue(HeightProperty) :?> float
+        and set(value : float) = this.SetValue(HeightProperty, value)
     member this.Count
         with get() = this.GetValue(CountProperty) :?> int
         and set(value : int) = this.SetValue(CountProperty, value)
@@ -48,7 +48,7 @@ type Gateau() =
 
     override this.GetCharactersCore csm =
         let w = this.Width
-        let h = this.Heigth
+        let h = this.Height
         let d = this.Decoupe
         let fill = this.Fill
         let stroke = this.Stroke
@@ -61,7 +61,7 @@ type Gateau() =
             }
     override this.OnChanged () =
         let w = this.Width
-        let h = this.Heigth
+        let h = this.Height
         let n = this.Count
         let d = this.Decoupe
         cache <- 
