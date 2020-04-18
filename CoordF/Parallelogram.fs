@@ -8,11 +8,20 @@ type plgm = vec2 * base2
 
 module plgm =
 
+    let fromvertices o a b = (o, (a - o, b - o))
+
     let normbase ((_, bas) : plgm) = base2.norm bas
     
     let contains p ((o, bas) : plgm) =
         let x, y = base2.coordinates bas (p - o)
         x >= 0.0 && x <= 1.0 && y >= 0.0 && y <= 1.0
+    
+    let sectorcontains p ((o, (u, v)) : plgm) =
+        let op = p - o
+        if op .* op <= max (u .* u) (v .* v) then
+            let x, y = base2.coordinates (u, v) op
+            x >= 0.0 && x <= 1.0 && y >= 0.0 && y <= 1.0
+        else false
     
     let translate t ((o, (u, v)) : plgm) = o + t, (u, v)
     let rotate c a ((o, (u, v)) : plgm) =
@@ -37,17 +46,16 @@ module plgm =
         let l, b, r, t = sort (o, (u, v))
         l.x, b.y, r.x, t.y
     
-    let treesinplgm data =
+    let treesarroundplgm data =
         let xs, ys, xe, ye = minibox data
-        let trees = seq { for x = int (floor xs) + 1 to int (ceil xe) - 1 do
+        seq { for x = int (floor xs) + 1 to int (ceil xe) - 1 do
                             for y = int (floor ys) + 1 to int (ceil ye) - 1 do
                                 { x = float x; y = float y} }
-        trees |> Seq.choose (fun tree -> if contains tree data then Some tree else None)
+
+    let treesinplgm data = data |> treesarroundplgm |> Seq.choose (fun tree -> if contains tree data then Some tree else None)
+    let treesinsector data = data |> treesarroundplgm |> Seq.choose (fun tree -> if sectorcontains tree data then Some tree else None)
     
-    let containstrees data =
-        match treesinplgm data |> Seq.tryHead with
-        | Some _ -> true
-        | None -> false
+    let containstrees data = data |> treesinplgm |> Seq.isEmpty |> not
     
     let bycsm (csm : ReadOnlyCoordinatesSystemManager) ((o, (u, v)) : plgm) =
         let o2 = Point(o.x, o.y) |*> csm
@@ -65,36 +73,24 @@ module plgm =
         ctxt.LineTo(Point(b.x, b.y), true, true)
         sr
     
-    //------------------------------------------------------------------------------------
-    
-    // let plgmTranslateOrTree v data =
-    //     let newdata = translate v data
-    //     match treesinplgm newdata |> Seq.tryHead with
-    //     | Some tree -> Choice2Of2 tree
-    //     | None -> Choice1Of2 newdata
-    // 
-    // let plgmRotateOrTree c a data =
-    //     let newdata = rotate c a data
-    //     match treesinplgm newdata |> Seq.tryHead with
-    //     | Some tree -> Choice2Of2 tree
-    //     | None -> Choice1Of2 newdata
-        
-    //------------------------------------------------------------------------------------
-    
     let translateOrNot tr ((o, (u, v)) : plgm) =
         let l, b, r, t = sortinbase (base2.orthdir tr) (o, (u, v))
-        if treesinplgm (b, (tr, u + v)) |> Seq.isEmpty then
+        if treesinplgm (b, (tr, t - b)) |> Seq.isEmpty then
             let newdata = translate tr (o, (u, v))
             if treesinplgm newdata |> Seq.isEmpty then Some newdata
             else None
         else None
     
-    let rotateOrNot c a data =
-        let newdata = rotate c a data
-        if treesinplgm newdata |> Seq.isEmpty then Some newdata
+    let rotateOrNot cr ang ((o, (u, v)) : plgm) =
+        let a, b, c = o + u, o + v, o + u + v
+        let (op, (up, vp)) = rotate cr ang (o, (u, v))
+        let ap, bp, cp = op + up, op + vp, op + up + vp
+        if treesinplgm (op, (up, vp)) |> Seq.isEmpty 
+           && treesinsector (fromvertices cr a ap) |> Seq.isEmpty 
+           && treesinsector (fromvertices cr b bp) |> Seq.isEmpty 
+           && treesinsector (fromvertices cr c cp) |> Seq.isEmpty 
+           && treesinsector (fromvertices cr o op) |> Seq.isEmpty then Some (op, (up, vp))
         else None
-    
-    //------------------------------------------------------------------------------------
     
     let translateOrNotIL step data = translateOrNot (vec2.x (-step)) data
     let translateOrNotIR step data = translateOrNot (vec2.x (step)) data
@@ -113,36 +109,26 @@ module plgm =
     let rotateOrNotD c step data = rotateOrNot c (step * tau / 360.0) data
     let rotateOrNotH c step data = rotateOrNot c (-step * tau / 360.0) data
     
-    //------------------------------------------------------------------------------------
-    
-    // let plgmTranslateOrTreeIL step data = plgmTranslateOrTree (vec2.x (-step)) data
-    // let plgmTranslateOrTreeIR step data = plgmTranslateOrTree (vec2.x (step)) data
-    // let plgmTranslateOrTreeJD step data = plgmTranslateOrTree (vec2.y (-step)) data
-    // let plgmTranslateOrTreeJU step data = plgmTranslateOrTree (vec2.y (step)) data
-    // 
-    // let plgmTranslateOrTreeUL (step : float) data =
-    //     let u, _ = plgmbase data
-    //     plgmTranslateOrTree (-step * u) data
-    // let plgmTranslateOrTreeUR (step : float) data =
-    //     let u, _ = plgmbase data
-    //     plgmTranslateOrTree (step * u) data
-    // let plgmTranslateOrTreeVD (step : float) data =
-    //     let _, v = plgmbase data
-    //     plgmTranslateOrTree (-step * v) data
-    // let plgmTranslateOrTreeVU (step : float) data =
-    //     let _, v = plgmbase data
-    //     plgmTranslateOrTree (step * v) data
-    // 
-    // let plgmRotateOrTreeD c step data = plgmRotateOrTree c (step * tau / 360.0) data
-    // let plgmRotateOrTreeH c step data = plgmRotateOrTree c (-step * tau / 360.0) data
-    
-    //------------------------------------------------------------------------------------
-    
     let horiz onnext mstep data =
         async {
-            let r c step data = rotateOrNotH c (10.0 * step) data
+            let r c step data = rotateOrNotH c step data
             let i step data = translateOrNotUR step data
             let u step data = translateOrNotVU step data
+
+            let rec opn n op data =
+                if n = 0 then data
+                else match op data with
+                     | Some newdata -> opn (n - 1) op newdata
+                     | None -> data
+
+            let rec opsn n op data =
+                async {
+                    let newdata = opn n op data
+                    if newdata = data then return data
+                    else
+                        do! onnext newdata
+                        return! opsn n op newdata
+                }
     
             let rec ops op step data =
                 async {
@@ -161,21 +147,17 @@ module plgm =
                             let! aops = ops op step data
                             return! opsf (step / 2.0) op aops
                     }
-                opsf (1024.0 * mstep) op data
-    
-            let rs c = ops (r c) mstep
-            let is = ops i mstep
-            let us = ops u mstep
-    
-            // let rsf c = opsfast (r c)
+                opsf (4096.0 * mstep) op data
+
+            let rsf c = opsfast (r c)
             let isf = opsfast i
             let usf = opsfast u
     
             let rec rbs data = 
                 let o, (u, v) = data
                 async {
-                    let! ars1 = rs (o + u + v) data
-                    if ars1 = data then return! rs (o + v) data
+                    let! ars1 = rsf (o + u + v) data
+                    if ars1 = data then return! rsf (o + v) data
                     else return ars1
                 }
 
@@ -190,15 +172,28 @@ module plgm =
             let rec hz ((o, (u, v)) : plgm) =
                 async {
                     if v.y <= 0.0 then
-                        MessageBox.Show "Terminé" |> ignore
-                        return o, (u, v)
+                        return (o, (u, v)), true
                     else
                         let! aris = ris (o, (u, v))
                         let! aus = usf aris
-                        if aus = aris then return aus
+                        if aus = aris then 
+                            return aus, false
                         else return! hz aus
                 }
     
             return! hz data
+        }
+
+    let horizmaxwidth height onnext mstep =
+        async {
+            let rec hmw width =
+                async {
+                    let data = (vec2.zero, (vec2.x width, vec2.y height))
+                    do! onnext data
+                    let! _, success = horiz onnext mstep data
+                    if success then return width
+                    else return! hmw (width - 0.01)
+                }
+            return! hmw 0.99
         }
 

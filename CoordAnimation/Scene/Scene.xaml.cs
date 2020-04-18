@@ -20,10 +20,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using static Coord.VisualObjects;
-using static NumericMod;
-using static VectorMod;
-using static Parallelogram;
-using static System.Math;
 
 namespace CoordAnimation
 {
@@ -36,7 +32,7 @@ namespace CoordAnimation
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; }
 
-        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc { Width = 0.5, Height = 2.0 };
+        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc();
 
         public bool IsPlaying { get; private set; }
 
@@ -190,6 +186,13 @@ namespace CoordAnimation
                     break;
                 case Key.H:
                     m_tronc.Horiz();
+                    break;
+                case Key.W:
+                    m_tronc.HorizMaxWidth();
+                    break;
+                case Key.R:
+                    m_tronc.Reset();
+                    Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
                     break;
             }
         }
