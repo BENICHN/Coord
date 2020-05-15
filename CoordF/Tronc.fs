@@ -114,6 +114,16 @@ type Tronc() =
             MessageBox.Show (width.ToString ()) |> ignore
         } |> Async.Start
 
+    member this.HorizsMaxWidths par = 
+        let uictxt = SynchronizationContext.Current
+        let track = this.Track
+        let height = this.Height
+        Async.StartWithContinuations (
+            Async.Parallel ([ for h in 1.01 .. 0.01 .. height -> async { let! w = plgm.horizmaxwidth h (if par then fun _ -> async.Zero () else this.OnNext track uictxt) 0.0001 in return h, w } ], if par then 4 else 1),
+            (fun res -> MessageBox.Show (Array.fold (fun s (h, w) -> s + sprintf "%f : %f" h w + Environment.NewLine) "" res) |> ignore),
+            (fun _ -> ()),
+            (fun _ -> ()))
+
     member this.Reset () =
         data <- (vec2.zero, base2.ij)
         this.Width <- 1.0

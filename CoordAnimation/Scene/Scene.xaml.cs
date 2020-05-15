@@ -190,6 +190,12 @@ namespace CoordAnimation
                 case Key.W:
                     m_tronc.HorizMaxWidth();
                     break;
+                case Key.S:
+                    m_tronc.HorizsMaxWidths(false);
+                    break;
+                case Key.P:
+                    m_tronc.HorizsMaxWidths(true);
+                    break;
                 case Key.R:
                     m_tronc.Reset();
                     Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);

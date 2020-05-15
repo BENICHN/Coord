@@ -54,6 +54,7 @@
     <None Include="Snippets\pdpncv.snippet" />
     <Compile Include="Parallelogram.fs" />
     <Compile Include="Tronc.fs" />
+    <Compile Include="Valises.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BenLib.Framework">
@@ -64,6 +65,9 @@
     </Reference>
     <Reference Include="BenLib.WPF">
       <HintPath>..\..\BenLib\BenLib.WPF\bin\Debug\BenLib.WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="FSharp.Control.AsyncSeq">
+      <HintPath>..\packages\FSharp.Control.AsyncSeq.2.0.23\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
