@@ -13,17 +13,13 @@ module vals =
 
     let getvals h n ncot =
         let bas = vec2.i, vec2.y h
-        let rec vals l c cur =
-            [ 
-                if (cur = n) then ()
-                elif c < ncot then
-                    yield ({x = float c ; y = l}, bas)
-                    yield! vals l (c + 1) (cur + 1)
-                else yield! vals (l + h) 0 (cur + 1)
-            ]
-        let res = vals h 0 1
-        let { x = _; vec2.y = ly }, _ = List.last res
-        res, ly + h
+        let rec vals l c cur acc =
+            if (cur > n) then acc
+            elif c < ncot then vals l (c + 1) (cur + 1) (({x = float c ; y = l}, bas) :: acc)
+            else vals (l + h) 0 cur acc
+        let res = vals 0.0 0 1 []
+        let ({ x = _; vec2.y = ly }, _) = List.head res
+        res, max (ly + h) (float ncot)
 
     let q2 onnext h n =
         asyncSeq {
@@ -35,7 +31,10 @@ module vals =
 
 type Valises() =
     inherit VisualObject()
-
+    
+    static let DelayProperty = nobj.CreateProperty<Valises, int>(true, true, true, "Delay", 500, dict [ ("min", box 0) ])
+    static let Q2hProperty = nobj.CreateProperty<Valises, float>(true, true, true, "Q2 : h", 1.0, dict [ ("min", box 0.0) ])
+    static let Q2nProperty = nobj.CreateProperty<Valises, int>(true, true, true, "Q2 : n", 1, dict [ ("min", box 0.0) ])
     static let TrackProperty = nobj.CreateProperty<Valises, bool>(true, true, true, "Track", true)
 
     let mutable data : plgm list * float = [], 0.0
@@ -43,7 +42,16 @@ type Valises() =
     static do        
         nobj.OverrideDefaultValue<Valises, Brush>(vobj.FillProperty, Brushes.YellowGreen.EditFreezable(fun b -> b.Opacity <- 0.2))
         nobj.OverrideDefaultValue<Valises, Pen>(vobj.StrokeProperty, Pen(Brushes.YellowGreen, 1.0))
-
+        
+    member this.Delay
+        with get() = this.GetValue(DelayProperty) :?> int
+        and set(value : int) = this.SetValue(DelayProperty, value)
+    member this.Q2h
+        with get() = this.GetValue(Q2hProperty) :?> float
+        and set(value : float) = this.SetValue(Q2hProperty, value)
+    member this.Q2n
+        with get() = this.GetValue(Q2nProperty) :?> int
+        and set(value : int) = this.SetValue(Q2nProperty, value)
     member this.Track
         with get() = this.GetValue(TrackProperty) :?> bool
         and set(value : bool) = this.SetValue(TrackProperty, value)
@@ -58,18 +66,23 @@ type Valises() =
                 async {
                     do! Async.SwitchToContext uictxt
                     let! _ = Async.AwaitEvent (CompositionTarget.Rendering)
+                    do! Async.Sleep this.Delay
                     data <- newdata
+                    let _, cot = newdata
+                    printfn "%f" cot
                     this.NotifyChanged()
                     do! Async.SwitchToThreadPool ()
                 } 
         else fun newdata -> async { data <- newdata }
 
-    member this.Q2 h n = 
+    member this.Q2 () = 
+        let n = this.Q2n
+        let h = this.Q2h
         let uictxt = SynchronizationContext.Current
         let track = this.Track
         async { 
-            let! width = vals.q2 (this.OnNext track uictxt) h n |> AsyncSeq.fold (fun cm c -> max cm c) 0.0
-            MessageBox.Show (width.ToString ()) |> ignore
+            let! res = vals.q2 (this.OnNext track uictxt) h n |> AsyncSeq.toListAsync
+            MessageBox.Show ((List.min res).ToString ()) |> ignore
         } |> Async.Start
 
     override this.GetCharactersCore csm =

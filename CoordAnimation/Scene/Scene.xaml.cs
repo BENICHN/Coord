@@ -32,7 +32,7 @@ namespace CoordAnimation
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; }
 
-        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc();
+        private readonly CoordF.Valises m_vals = new CoordF.Valises();
 
         public bool IsPlaying { get; private set; }
 
@@ -152,53 +152,17 @@ namespace CoordAnimation
             //previewPlane.Zoom(true, new MathRect(4, 1, 1, 1), new Rect(100, 100, 300, 300), null, t);
             //RefreshElements();*/
             Plane.Grid.Secondary = false;
-            Plane.Grid.VerticalStep = Plane.Grid.HorizontalStep = 1.0;
+            // Plane.Grid.VerticalStep = Plane.Grid.HorizontalStep = 1.0;
             Plane.Axes.Direction = Plane.AxesNumbers.Direction = AxesDirection.None;
-            Plane.Items.Add(m_tronc);
+            Plane.Items.Add(m_vals);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             switch (e.Key)
             {
-                case Key.Left:
-                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotUL();
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotD();
-                    else m_tronc.TranslateOrNotIL();
-                    e.Handled = true;
-                    break;
-                case Key.Right:
-                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotUR();
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotH();
-                    else m_tronc.TranslateOrNotIR();
-                    e.Handled = true;
-                    break;
-                case Key.Down:
-                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotVD();
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotD();
-                    else m_tronc.TranslateOrNotJD();
-                    break;
-                case Key.Up:
-                    if (Keyboard.Modifiers == ModifierKeys.Control) m_tronc.TranslateOrNotVU();
-                    else if (Keyboard.Modifiers == ModifierKeys.Shift) m_tronc.RotateOrNotH();
-                    else m_tronc.TranslateOrNotJU();
-                    e.Handled = true;
-                    break;
-                case Key.H:
-                    m_tronc.Horiz();
-                    break;
-                case Key.W:
-                    m_tronc.HorizMaxWidth();
-                    break;
-                case Key.S:
-                    m_tronc.HorizsMaxWidths(false);
-                    break;
-                case Key.P:
-                    m_tronc.HorizsMaxWidths(true);
-                    break;
-                case Key.R:
-                    m_tronc.Reset();
-                    Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
+                case Key.NumPad2:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) m_vals.Q2();
                     break;
             }
         }

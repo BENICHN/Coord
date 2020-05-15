@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Windows;
 
 namespace CoordAnimation
@@ -21,6 +22,7 @@ namespace CoordAnimation
 
         private void Application_Startup(object sender, StartupEventArgs e)
         {
+            AllocConsole();
             foreach (string assembly in Directory.GetFiles(AppPath, "*.dll").Concat(Directory.GetFiles(AppPath, "*.exe")))
             {
                 try { Assembly.Load(Path.GetFileNameWithoutExtension(assembly)); }
@@ -31,5 +33,10 @@ namespace CoordAnimation
             Scene = w.Content as Scene;
             w.Show();
         }
+
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool AllocConsole();
     }
 }
