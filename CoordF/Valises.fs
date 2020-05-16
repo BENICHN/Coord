@@ -85,6 +85,38 @@ type Valises() =
             MessageBox.Show ((List.min res).ToString ()) |> ignore
         } |> Async.Start
 
+    member this.Q2ns () = 
+        let n = this.Q2n
+        let h = this.Q2h
+        let uictxt = SynchronizationContext.Current
+        let track = this.Track
+        Async.StartWithContinuations (
+            Async.Parallel ([
+                for i in 1 .. n ->
+                    async { 
+                        let! res = vals.q2 (this.OnNext track uictxt) h i |> AsyncSeq.toListAsync
+                        return i, List.min res
+                    } ], 4),
+            (fun res -> MessageBox.Show (res |> Array.sortBy (fun (i, c) -> i) |> Array.fold (fun s (i, c) -> s + sprintf "n = %d : %f" i c + Environment.NewLine) "") |> ignore),
+            (fun _ -> ()),
+            (fun _ -> ()))
+
+    member this.Q2hs () = 
+        let n = this.Q2n
+        let h = this.Q2h
+        let uictxt = SynchronizationContext.Current
+        let track = this.Track
+        Async.StartWithContinuations (
+            Async.Parallel ([
+                for i in 0.1 .. 0.1 .. h ->
+                    async { 
+                        let! res = vals.q2 (this.OnNext track uictxt) i n |> AsyncSeq.toListAsync
+                        return i, List.min res
+                    } ], 4),
+            (fun res -> MessageBox.Show (res |> Array.sortBy (fun (i, c) -> i) |> Array.fold (fun s (i, c) -> s + sprintf "h = %f : %f" i c + Environment.NewLine) "") |> ignore),
+            (fun _ -> ()),
+            (fun _ -> ()))
+
     override this.GetCharactersCore csm =
         let fill = this.Fill
         let stroke = this.Stroke

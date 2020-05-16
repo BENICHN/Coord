@@ -159,10 +159,16 @@ namespace CoordAnimation
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            var mods = Keyboard.Modifiers;
             switch (e.Key)
             {
-                case Key.NumPad2:
-                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) m_vals.Q2();
+                case Key.F2:
+                    if (mods.HasFlag(ModifierKeys.Control))
+                    {
+                        if (mods.HasFlag(ModifierKeys.Shift)) m_vals.Q2ns();
+                        else if (mods.HasFlag(ModifierKeys.Alt)) m_vals.Q2hs();
+                    }
+                    else m_vals.Q2();
                     break;
             }
         }
