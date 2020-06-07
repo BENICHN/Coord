@@ -26,7 +26,7 @@ type Tronc() =
     static let TreesProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Trees", true)
     static let TrackProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Track", true)
 
-    let mutable data : plgm = (vec2.zero, base2.ij)
+    let mutable data : plgm = plgm.init 1.0 1.0
 
     static do        
         nobj.OverrideDefaultValue<Tronc, Brush>(vobj.FillProperty, Brushes.YellowGreen.EditFreezable(fun b -> b.Opacity <- 0.2))
@@ -173,7 +173,7 @@ type Tronc() =
         let wstart = this.WStart
         plgm.horizmaxwidths hmin hmax hstep mstep wstep wstart (this.OnNext track uictxt) |> Async.Ignore |> Async.Start
 
-    member this.Resetpos () = data <- (vec2.zero, (vec2.x this.Width, vec2.y this.Height))
+    member this.Resetpos () = data <- plgm.init this.Width this.Height
 
     override this.GetCharactersCore csm =
         let fill = this.Fill

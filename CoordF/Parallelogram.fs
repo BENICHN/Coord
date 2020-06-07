@@ -10,6 +10,8 @@ type plgm = vec2 * base2
 
 module plgm =
 
+    let init w h = ({ x = (1.0 - w) / 2.0 ; y = -h / 2.0 }, (vec2.x w, vec2.y h))
+
     let fromvertices o a b = (o, (a - o, b - o))
 
     let normbase ((_, bas) : plgm) = base2.norm bas
@@ -153,9 +155,10 @@ module plgm =
         let rec ops op step data =
             async {
                 match op step data with
-                | Some newdata ->
-                    do! onnext newdata
-                    return! ops op step newdata
+                | Some ((o, (u, v)) : plgm) ->
+                    do! onnext (o, (u, v))
+                    if v.y <= 0.0 then return (o, (u, v))
+                    else return! ops op step (o, (u, v))
                 | None -> return data
             }
         
@@ -218,41 +221,45 @@ module plgm =
     let horiz2 onnext mstep data =
             let _, _, _, opsfast, trtomid = opstk mstep onnext
                 
-            let rsf = opsfast rotateOrNotAtCenterH
-            let usf = opsfast translateOrNotVU
-            let msf = trtomid translateOrNotUR
+            let rf = opsfast rotateOrNotAtCenterH
+            let uf = opsfast translateOrNotUR
+            let um = trtomid translateOrNotUL
+            let vf = opsfast translateOrNotVU
+            let vm = trtomid translateOrNotVD
     
             let rec hz ((o, (u, v)) : plgm) =
                 async {
                     if v.y <= 0.0 then
                         return (o, (u, v)), true
                     else
-                        let! ams = msf (o, (u, v))
-                        let! ars = rsf ams
-                        let! aus = usf ars
-                        if aus = (o, (u, v)) then 
-                            return aus, false
-                        else return! hz aus
+                        let! arf = rf (o, (u, v))
+                        let! auf = uf arf
+                        let! avf = vf auf
+                        let! aum = um avf
+                        let! (no, (nu, nv)) = vm aum
+                        if u = nu then 
+                            return (no, (nu, nv)), false
+                        else return! hz (no, (nu, nv))
                 }
             hz data
 
-    let horizmaxwidth1 height mstep wstep wstart onnext =
+    let horizmaxwidth1 height mstep (wstep : decimal) (wstart : decimal) onnext =
             let rec hmw width =
                 async {
-                    let! _, success = horiz2 onnext mstep (vec2.zero, ({ x = double width; y = 0.0 }, { x = 0.0; y = height }))
+                    let! _, success = horiz2 onnext mstep (init (double width) height)
                     if success then return width
                     else let w = width - wstep in return! hmw w
                 }
             hmw wstart
 
-    let horizmaxwidth2 height mstep wstep wstart onnext =
+    let horizmaxwidth2 height mstep (wstep : decimal) (wstart : decimal) onnext =
             let rec hmw width data =
                 async {
                     let! (o, (u, v)), success = horiz2 onnext mstep data
                     if success then return width
                     else let w = width - wstep in return! hmw w (o, (vec2.relength (double w) u, v))
                 }
-            hmw wstart (vec2.zero, ({ x = double wstart; y = 0.0 }, { x = 0.0; y = height }))
+            hmw wstart (init (double wstart) height)
 
     // let horizmaxwidth height mstep wstep wstart onnext =
     //     let rec hmw wst ws =
