@@ -277,7 +277,7 @@ module plgm =
                 let! w = horizmaxwidth1 (double h) mstep wstep ws onnext
                 printfn "%f : %f ---- %d / %d" h w n total
                 if h >= hend then return (h, w) :: acc
-                else return! hmw (h + hstep) (min (1M - wstep) (w + wstep)) (n + 1) ((h, w) :: acc)
+                else return! hmw (h + hstep) w (n + 1) ((h, w) :: acc)
             }
         async {
             printfn "Hauteurs dans [ %f , %f ] avec un pas de %f" hstart hend hstep
