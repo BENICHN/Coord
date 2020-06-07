@@ -170,7 +170,7 @@ module plgm =
                         let! aops = ops op step data
                         return! opsf (step / 2.0) op aops
                 }
-            opsf (1048576.0 * mstep) op data
+            opsf (1073741824.0 * mstep) op data
             
         let trtomid optr ((o, bas) : plgm) =
             async {
@@ -275,18 +275,18 @@ module plgm =
         let rec hmw h ws n acc =
             async {
                 let! w = horizmaxwidth1 (double h) mstep wstep ws onnext
-                printfn "%f : %f ---- %d / %d" h w n total
+                printfn "%.9f : %.9f ---- %d / %d" h w n total
                 if h >= hend then return (h, w) :: acc
                 else return! hmw (h + hstep) w (n + 1) ((h, w) :: acc)
             }
         async {
-            printfn "Hauteurs dans [ %f , %f ] avec un pas de %f" hstart hend hstep
+            printfn "Hauteurs dans [ %.9f , %.9f ] avec un pas de %.9f" hstart hend hstep
             let! res = hmw hstart wstart 1 []
             use fstr = File.Open ("res.txt", FileMode.Create)
             fstr.Flush ()
             use sr = new StreamWriter (fstr :> Stream)
             res
-            |> List.map (fun (h, w) -> sprintf "%f : %f" h w)
+            |> List.map (fun (h, w) -> sprintf "%.9f : %.9f" h w)
             |> List.iter (fun s -> sr.WriteLine s)
             return res
         }
