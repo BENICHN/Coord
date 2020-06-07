@@ -32,7 +32,7 @@ namespace CoordAnimation
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; }
 
-        private readonly CoordF.Valises m_vals = new CoordF.Valises();
+        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc();
 
         public bool IsPlaying { get; private set; }
 
@@ -152,23 +152,61 @@ namespace CoordAnimation
             //previewPlane.Zoom(true, new MathRect(4, 1, 1, 1), new Rect(100, 100, 300, 300), null, t);
             //RefreshElements();*/
             Plane.Grid.Secondary = false;
-            // Plane.Grid.VerticalStep = Plane.Grid.HorizontalStep = 1.0;
+            Plane.Grid.VerticalStep = Plane.Grid.HorizontalStep = 1.0;
             Plane.Axes.Direction = Plane.AxesNumbers.Direction = AxesDirection.None;
-            Plane.Items.Add(m_vals);
+            Plane.Items.Add(m_tronc);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            var mods = Keyboard.Modifiers;
-            switch (e.Key)
+            var k = e.Key == Key.System ? e.SystemKey : e.Key;
+            switch (k)
             {
-                case Key.F2:
-                    if (mods.HasFlag(ModifierKeys.Control))
-                    {
-                        if (mods.HasFlag(ModifierKeys.Shift)) m_vals.Q2ns();
-                        else if (mods.HasFlag(ModifierKeys.Alt)) m_vals.Q2hs();
-                    }
-                    else m_vals.Q2();
+                case Key.Left:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) { if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotULF(); else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotULM(); else m_tronc.TranslateOrNotUL(); }
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotILF();
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotILM();
+                    else m_tronc.TranslateOrNotIL();
+                    e.Handled = true;
+                    break;
+                case Key.Right:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) { if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotURF(); else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotURM(); else m_tronc.TranslateOrNotUR(); }
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotIRF();
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotIRM();
+                    else m_tronc.TranslateOrNotIR();
+                    e.Handled = true;
+                    break;
+                case Key.Down:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) { if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotVDF(); else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotVDM(); else m_tronc.TranslateOrNotVD(); }
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotJDF();
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotJDM();
+                    else m_tronc.TranslateOrNotJD();
+                    break;
+                case Key.Up:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) { if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotVUF(); else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotVUM(); else m_tronc.TranslateOrNotVU(); }
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.TranslateOrNotJUF();
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) m_tronc.TranslateOrNotJUM();
+                    else m_tronc.TranslateOrNotJU();
+                    e.Handled = true;
+                    break;
+                case Key.PageUp:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.RotateOrNotHF(); else m_tronc.RotateOrNotH();
+                    break;
+                case Key.PageDown:
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt)) m_tronc.RotateOrNotDF(); else m_tronc.RotateOrNotD();
+                    break;
+                case Key.H:
+                    m_tronc.Horiz();
+                    break;
+                case Key.W:
+                    m_tronc.HorizMaxWidth();
+                    break;
+                case Key.S:
+                    m_tronc.HorizsMaxWidths();
+                    break;
+                case Key.R:
+                    m_tronc.Resetpos();
+                    Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
                     break;
             }
         }
@@ -200,7 +238,7 @@ namespace CoordAnimation
                     }
                     else
                     {
-                        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) element.IsSelected = element.IsSelected == true ? false : true;
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control) element.IsSelected = !element.IsSelected;
                         else
                         {
                             Elements.ClearSelection();
@@ -262,6 +300,7 @@ namespace CoordAnimation
             p.Height = 1080;
             configuration.dpnl.Children.Remove(p);
             var w = new Window { Content = p, BorderThickness = default, Width = 1920, Height = 1080, WindowState = WindowState.Maximized, Topmost = true, WindowStyle = WindowStyle.None, WindowStartupLocation = WindowStartupLocation.CenterScreen, ResizeMode = ResizeMode.NoResize };
+            w.KeyDown += (sender, e) => OnKeyDown(e);
             VisualObjectsTreeView.ItemsSource = null;
             Elements.RefreshAtChange = false;
 

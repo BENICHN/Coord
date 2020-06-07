@@ -2,6 +2,7 @@
 
 open System.Windows
 open System.Windows.Media
+open BenLib.Standard
 open BenLib.WPF
 open Coord
 open Parallelogram
@@ -13,6 +14,11 @@ type Tronc() =
 
     static let WidthProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "Width", 1.0, dict [ ("min", box 0.0); ("max", box 1.0) ])
     static let HeightProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "Height", 1.0, dict [ ("min", box 0.0) ])
+    static let HeightsProperty = nobj.CreateProperty<Tronc, Range<decimal>>(true, true, true, "Heights", Range<decimal>.EmptySet)
+    static let WStartProperty = nobj.CreateProperty<Tronc, decimal>(true, true, true, "WStart", 0.9999M)
+    static let WStepProperty = nobj.CreateProperty<Tronc, decimal>(true, true, true, "WStep", 0.000001M)
+    static let HStepProperty = nobj.CreateProperty<Tronc, decimal>(true, true, true, "HStep", 0.000001M)
+    static let MStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "MStep", 1E-6)
     static let TranslationStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "TranslationStep", 0.01, dict [ ("min", box 0.0) ])
     static let RotationStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "RotationStep", 1.0, dict [ ("min", box 0.0); ("max", box 360.0) ])
     static let RotationCenterProperty = nobj.CreateProperty<Tronc, RectPoint>(true, true, true, "RotationCenter", RectPoint.Center)
@@ -32,6 +38,21 @@ type Tronc() =
     member this.Height
         with get() = this.GetValue(HeightProperty) :?> float
         and set(value : float) = this.SetValue(HeightProperty, value)
+    member this.Heights
+        with get() = this.GetValue(HeightsProperty) :?> Range<decimal>
+        and set(value : Range<decimal>) = this.SetValue(HeightsProperty, value)
+    member this.WStart
+        with get() = this.GetValue(WStartProperty) :?> decimal
+        and set(value : decimal) = this.SetValue(WStartProperty, value)
+    member this.WStep
+        with get() = this.GetValue(WStepProperty) :?> decimal
+        and set(value : decimal) = this.SetValue(WStepProperty, value)
+    member this.HStep
+        with get() = this.GetValue(HStepProperty) :?> decimal
+        and set(value : decimal) = this.SetValue(HStepProperty, value)
+    member this.MStep
+        with get() = this.GetValue(MStepProperty) :?> float
+        and set(value : float) = this.SetValue(MStepProperty, value)
     member this.TranslationStep
         with get() = this.GetValue(TranslationStepProperty) :?> float
         and set(value : float) = this.SetValue(TranslationStepProperty, value)
@@ -92,15 +113,39 @@ type Tronc() =
     member this.TranslateOrNotUR () = this.Apply (plgm.translateOrNotUR (this.TranslationStep) data)
     member this.TranslateOrNotVD () = this.Apply (plgm.translateOrNotVD (this.TranslationStep) data)
     member this.TranslateOrNotVU () = this.Apply (plgm.translateOrNotVU (this.TranslationStep) data)
-
+    
     member this.RotateOrNotD () = this.Apply (plgm.rotateOrNotD (this.RCenter) (this.RotationStep) data)
     member this.RotateOrNotH () = this.Apply (plgm.rotateOrNotH (this.RCenter) (this.RotationStep) data)
+
+    member this.TranslateOrNotILF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotIRF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJDF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotJD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJUF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotJU) data) |> Async.Ignore |> Async.Start
+                                                           
+    member this.TranslateOrNotULF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotUL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotURF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotUR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVDF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotVD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVUF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotVU) data) |> Async.Ignore |> Async.Start
+                                                           
+    member this.TranslateOrNotILM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotIRM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJDM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotJD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJUM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotJU) data) |> Async.Ignore |> Async.Start
+                                                                                                                                             
+    member this.TranslateOrNotULM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotUL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotURM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotUR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVDM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotVD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVUM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotVU) data) |> Async.Ignore |> Async.Start
+
+    member this.RotateOrNotDF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.rotateOrNotD (this.RCenter)) data) |> Async.Ignore |> Async.Start
+    member this.RotateOrNotHF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.rotateOrNotH (this.RCenter)) data) |> Async.Ignore |> Async.Start
 
     member this.Horiz () = 
         let uictxt = SynchronizationContext.Current
         let track = this.Track
+        let mstep = this.MStep
         async { 
-            let! _, success = plgm.horiz (this.OnNext track uictxt) 0.0001 data
+            let!  _, success = plgm.horiz2 (this.OnNext track uictxt) mstep data
             if success then MessageBox.Show "Terminé horizontal" |> ignore
             else MessageBox.Show "Terminé" |> ignore
         } |> Async.Start
@@ -109,25 +154,26 @@ type Tronc() =
         let uictxt = SynchronizationContext.Current
         let track = this.Track
         let height = this.Height
+        let wstep = this.WStep
+        let mstep = this.MStep
+        let wstart = this.WStart
         async { 
-            let! width = plgm.horizmaxwidth height (this.OnNext track uictxt) 0.0001
+            let! width = plgm.horizmaxwidth1 height mstep wstep wstart (this.OnNext track uictxt)
             MessageBox.Show (width.ToString ()) |> ignore
         } |> Async.Start
 
-    member this.HorizsMaxWidths par = 
+    member this.HorizsMaxWidths () =
         let uictxt = SynchronizationContext.Current
         let track = this.Track
-        let height = this.Height
-        Async.StartWithContinuations (
-            Async.Parallel ([ for h in 1.01 .. 0.01 .. height -> async { let! w = plgm.horizmaxwidth h (if par then fun _ -> async.Zero () else this.OnNext track uictxt) 0.0001 in return h, w } ], if par then 4 else 1),
-            (fun res -> MessageBox.Show (Array.fold (fun s (h, w) -> s + sprintf "%f : %f" h w + Environment.NewLine) "" res) |> ignore),
-            (fun _ -> ()),
-            (fun _ -> ()))
+        let heights = this.Heights
+        let hmin, hmax = heights.Start.Value, heights.End.Value
+        let hstep = this.HStep
+        let wstep = this.WStep
+        let mstep = this.MStep
+        let wstart = this.WStart
+        plgm.horizmaxwidths hmin hmax hstep mstep wstep wstart (this.OnNext track uictxt) |> Async.Ignore |> Async.Start
 
-    member this.Reset () =
-        data <- (vec2.zero, base2.ij)
-        this.Width <- 1.0
-        this.Height <- 1.0
+    member this.Resetpos () = data <- (vec2.zero, (vec2.x this.Width, vec2.y this.Height))
 
     override this.GetCharactersCore csm =
         let fill = this.Fill

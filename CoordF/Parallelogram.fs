@@ -3,6 +3,8 @@
 open Coord
 open System.Windows
 open System.Windows.Media
+open System
+open System.IO
 
 type plgm = vec2 * base2
 
@@ -41,16 +43,24 @@ module plgm =
         l, b, r, t
         
     let sort = sortinbase (base2.ij)
+
+    let miniboxofpoints (points : vec2 list) =
+        let xs = points |> List.minBy (fun p -> p.x)
+        let ys = points |> List.minBy (fun p -> p.y)
+        let xe = points |> List.maxBy (fun p -> p.x)
+        let ye = points |> List.maxBy (fun p -> p.y)
+        xs, ys, xe, ye
     
     let minibox ((o, (u, v)) : plgm) =
         let l, b, r, t = sort (o, (u, v))
         l.x, b.y, r.x, t.y
-    
-    let treesarroundplgm data =
-        let xs, ys, xe, ye = minibox data
+
+    let treesinminibox (xs, ys, xe, ye) =
         seq { for x = int (floor xs) + 1 to int (ceil xe) - 1 do
-                            for y = int (floor ys) + 1 to int (ceil ye) - 1 do
-                                { x = float x; y = float y} }
+                for y = int (floor ys) + 1 to int (ceil ye) - 1 do
+                    { x = float x; y = float y} }
+    
+    let treesarroundplgm data = data |> minibox |> treesinminibox
 
     let treesinplgm data = data |> treesarroundplgm |> Seq.choose (fun tree -> if contains tree data then Some tree else None)
     let treesinsector data = data |> treesarroundplgm |> Seq.choose (fun tree -> if sectorcontains tree data then Some tree else None)
@@ -72,25 +82,37 @@ module plgm =
         ctxt.LineTo(Point(c.x, c.y), true, true)
         ctxt.LineTo(Point(b.x, b.y), true, true)
         sr
+
+    let trajitr tr ((o, (u, v)) : plgm) =
+        let _, b, _, t = sortinbase (base2.orthdir tr) (o, (u, v))
+        (b, (tr, t - b))
+
+    let trajirotim cr ang ((o, (u, v)) : plgm) =
+        let a, b, c = o + u, o + v, o + u + v
+        let (op, (up, vp)) = rotate cr ang (o, (u, v))
+        let ap, bp, cp = op + up, op + vp, op + up + vp
+        (op, (up, vp)), fromvertices cr a ap, fromvertices cr b bp, fromvertices cr c cp, fromvertices cr o op
     
-    let translateOrNot tr ((o, (u, v)) : plgm) =
-        let l, b, r, t = sortinbase (base2.orthdir tr) (o, (u, v))
-        if treesinplgm (b, (tr, t - b)) |> Seq.isEmpty then
-            let newdata = translate tr (o, (u, v))
+    let translateOrNot tr data =
+        if trajitr tr data |> treesinplgm |> Seq.isEmpty then
+            let newdata = translate tr data
             if treesinplgm newdata |> Seq.isEmpty then Some newdata
             else None
         else None
     
-    let rotateOrNot cr ang ((o, (u, v)) : plgm) =
-        let a, b, c = o + u, o + v, o + u + v
-        let (op, (up, vp)) = rotate cr ang (o, (u, v))
-        let ap, bp, cp = op + up, op + vp, op + up + vp
-        if treesinplgm (op, (up, vp)) |> Seq.isEmpty 
-           && treesinsector (fromvertices cr a ap) |> Seq.isEmpty 
-           && treesinsector (fromvertices cr b bp) |> Seq.isEmpty 
-           && treesinsector (fromvertices cr c cp) |> Seq.isEmpty 
-           && treesinsector (fromvertices cr o op) |> Seq.isEmpty then Some (op, (up, vp))
+    let rotateOrNot cr ang data =
+        let newdata, s1, s2, s3, s4 = trajirotim cr ang data
+        if treesinplgm newdata |> Seq.isEmpty 
+           && treesinsector s1 |> Seq.isEmpty 
+           && treesinsector s2 |> Seq.isEmpty 
+           && treesinsector s3 |> Seq.isEmpty 
+           && treesinsector s4 |> Seq.isEmpty then Some newdata
         else None
+
+    let translatemax tr ((o, (u, v)) : plgm) =
+        let (op, _) = translate tr (o, (u, v))
+        let box = miniboxofpoints [ o; o + u; o + v; o + u + v; op; op + u; op + v; op + u + v ]
+        ()
     
     let translateOrNotIL step data = translateOrNot (vec2.x (-step)) data
     let translateOrNotIR step data = translateOrNot (vec2.x (step)) data
@@ -109,49 +131,60 @@ module plgm =
     let rotateOrNotD c step data = rotateOrNot c (step * tau / 360.0) data
     let rotateOrNotH c step data = rotateOrNot c (-step * tau / 360.0) data
     
-    let horiz onnext mstep data =
-        async {
-            let r c step data = rotateOrNotH c step data
-            let i step data = translateOrNotUR step data
-            let u step data = translateOrNotVU step data
+    let rotateOrNotAtCenterD step ((o, (u, v)) : plgm) = rotateOrNotD (o + u / 2.0 + v / 2.0) step (o, (u, v))
+    let rotateOrNotAtCenterH step ((o, (u, v)) : plgm) = rotateOrNotH (o + u / 2.0 + v / 2.0) step (o, (u, v))
 
-            let rec opn n op data =
-                if n = 0 then data
-                else match op data with
-                     | Some newdata -> opn (n - 1) op newdata
-                     | None -> data
+    let opstk mstep onnext =
+        let rec opn n op data =
+            if n = 0 then data
+            else match op data with
+                 | Some newdata -> opn (n - 1) op newdata
+                 | None -> data
 
-            let rec opsn n op data =
+        let rec opsn n op data =
+            async {
+                let newdata = opn n op data
+                if newdata = data then return data
+                else
+                    do! onnext newdata
+                    return! opsn n op newdata
+            }
+        
+        let rec ops op step data =
+            async {
+                match op step data with
+                | Some newdata ->
+                    do! onnext newdata
+                    return! ops op step newdata
+                | None -> return data
+            }
+        
+        let opsfast op data =
+            let rec opsf step op data =
                 async {
-                    let newdata = opn n op data
-                    if newdata = data then return data
+                    if step <= mstep then return data
                     else
-                        do! onnext newdata
-                        return! opsn n op newdata
+                        let! aops = ops op step data
+                        return! opsf (step / 2.0) op aops
                 }
-    
-            let rec ops op step data =
-                async {
-                    match op step data with
-                    | Some newdata ->
-                        do! onnext newdata
-                        return! ops op step newdata
-                    | None -> return data
-                }
-    
-            let opsfast op data =
-                let rec opsf step op data =
-                    async {
-                        if step <= mstep then return data
-                        else
-                            let! aops = ops op step data
-                            return! opsf (step / 2.0) op aops
-                    }
-                opsf (4096.0 * mstep) op data
+            opsf (1048576.0 * mstep) op data
+            
+        let trtomid optr ((o, bas) : plgm) =
+            async {
+                let! no, _ = opsfast optr (o, bas)
+                let res = ((o + no) / 2.0, bas)
+                do! onnext res
+                return res
+            }
 
-            let rsf c = opsfast (r c)
-            let isf = opsfast i
-            let usf = opsfast u
+        ops, opn, opsn, opsfast, trtomid
+    
+    let horiz1 onnext mstep data =
+            let _, _, _, opsfast, _ = opstk mstep onnext
+
+            let rsf c = opsfast (rotateOrNotH c)
+            let isf = opsfast translateOrNotUR
+            let usf = opsfast translateOrNotVU
     
             let rec rbs data = 
                 let o, (u, v) = data
@@ -180,20 +213,75 @@ module plgm =
                             return aus, false
                         else return! hz aus
                 }
+            hz data
     
-            return! hz data
-        }
+    let horiz2 onnext mstep data =
+            let _, _, _, opsfast, trtomid = opstk mstep onnext
+                
+            let rsf = opsfast rotateOrNotAtCenterH
+            let usf = opsfast translateOrNotVU
+            let msf = trtomid translateOrNotUR
+    
+            let rec hz ((o, (u, v)) : plgm) =
+                async {
+                    if v.y <= 0.0 then
+                        return (o, (u, v)), true
+                    else
+                        let! ams = msf (o, (u, v))
+                        let! ars = rsf ams
+                        let! aus = usf ars
+                        if aus = (o, (u, v)) then 
+                            return aus, false
+                        else return! hz aus
+                }
+            hz data
 
-    let horizmaxwidth height onnext mstep =
-        async {
+    let horizmaxwidth1 height mstep wstep wstart onnext =
             let rec hmw width =
                 async {
-                    let data = (vec2.zero, (vec2.x width, vec2.y height))
-                    do! onnext data
-                    let! _, success = horiz onnext mstep data
+                    let! _, success = horiz2 onnext mstep (vec2.zero, ({ x = double width; y = 0.0 }, { x = 0.0; y = height }))
                     if success then return width
-                    else return! hmw (width - 0.01)
+                    else let w = width - wstep in return! hmw w
                 }
-            return! hmw 0.99
+            hmw wstart
+
+    let horizmaxwidth2 height mstep wstep wstart onnext =
+            let rec hmw width data =
+                async {
+                    let! (o, (u, v)), success = horiz2 onnext mstep data
+                    if success then return width
+                    else let w = width - wstep in return! hmw w (o, (vec2.relength (double w) u, v))
+                }
+            hmw wstart (vec2.zero, ({ x = double wstart; y = 0.0 }, { x = 0.0; y = height }))
+
+    // let horizmaxwidth height mstep wstep wstart onnext =
+    //     let rec hmw wst ws =
+    //         async {
+    //             let! w = horizmaxwidthenc height mstep wst (min (0.99M) (ws + 10.0M * wst)) onnext
+    //             if wst <= wstep then return w
+    //             else return! hmw (wst / 10.0M) w
+    //         }
+    //     hmw 0.1M wstart
+
+    let horizmaxwidths (hstart : decimal) (hend : decimal) (hstep : decimal) mstep (wstep : decimal) (wstart : decimal) onnext =
+        let total = int ((hend - hstart) / hstep) + 1
+        let rec hmw h ws n acc =
+            async {
+                let! w = horizmaxwidth1 (double h) mstep wstep ws onnext
+                printfn "%f : %f ---- %d / %d" h w n total
+                if h >= hend then return (h, w) :: acc
+                else return! hmw (h + hstep) (min (1M - wstep) (w + wstep)) (n + 1) ((h, w) :: acc)
+            }
+        async {
+            printfn "Hauteurs dans [ %f , %f ] avec un pas de %f" hstart hend hstep
+            let! res = hmw hstart wstart 1 []
+            use fstr = File.Open ("res.txt", FileMode.Create)
+            fstr.Flush ()
+            use sr = new StreamWriter (fstr :> Stream)
+            res
+            |> List.map (fun (h, w) -> sprintf "%f : %f" h w)
+            |> List.iter (fun s -> sr.WriteLine s)
+            return res
         }
+        
 
