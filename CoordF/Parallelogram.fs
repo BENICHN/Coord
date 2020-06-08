@@ -9,14 +9,14 @@ type plgm = vec2 * base2
 
 module plgm =
 
-    let powoflog dp = 
+    let powoflog slow dp = 
         let q, _ = (dp - 1) /% 3
-        10 * (q + 1)
-    let powofstep mstep = mstep |> log10 |> int |> (~-) |> powoflog
+        if slow then 10 * q else 10 * (q + 1)
+    let powofstep mstep slow = mstep |> log10 |> int |> (~-) |> powoflog slow
 
     let rots = dict [
                         for dp in 0 .. 12 do
-                            for pw in 0 .. powoflog dp do
+                            for pw in 0 .. powoflog false dp do
                                 let s = (pown 2.0 pw) * (pown 10.0 -dp) * tau / 360.0
                                 let sin, cos = sin s, cos s
                                 yield s, (fun (v : vec2) -> let x, y = v.x, v.y in { x = cos * x - sin * y; y = sin * x + cos * y })
@@ -31,13 +31,13 @@ module plgm =
     
     let contains p ((o, bas) : plgm) =
         let x, y = base2.coordinates bas (p - o)
-        x >= 0.0 && x <= 1.0 && y >= 0.0 && y <= 1.0
+        x > 0.0 && x < 1.0 && y > 0.0 && y < 1.0
     
     let sectorcontains p ((o, (u, v)) : plgm) =
         let op = p - o
-        if op .* op <= max (u .* u) (v .* v) then
+        if op .* op < max (u .* u) (v .* v) then
             let x, y = base2.coordinates (u, v) op
-            x >= 0.0 && x <= 1.0 && y >= 0.0 && y <= 1.0
+            x > 0.0 && x < 1.0 && y > 0.0 && y < 1.0
         else false
     
     let translate t ((o, (u, v)) : plgm) = o + t, (u, v)
@@ -150,7 +150,7 @@ module plgm =
     let rotateOrNotAtCenterD step ((o, (u, v)) : plgm) = rotateOrNotD (o + u / 2.0 + v / 2.0) step (o, (u, v))
     let rotateOrNotAtCenterH step ((o, (u, v)) : plgm) = rotateOrNotH (o + u / 2.0 + v / 2.0) step (o, (u, v))
 
-    let opstk mlog onnext =
+    let opstk mlog onnext hz slow =
         let rec opn n op data =
             if n = 0 then data
             else match op data with
@@ -171,13 +171,14 @@ module plgm =
                 match op step data with
                 | Some ((o, (u, v)) : plgm) ->
                     do! onnext (o, (u, v))
-                    if v.y <= 0.0 then return (o, (u, v))
+                    if hz && v.y <= 0.0 then return (o, (u, v))
                     else return! ops op step (o, (u, v))
                 | None -> return data
             }
 
         let mstep = pown 10.0 mlog
-        let pw = powofstep mstep
+        let pw = powofstep mstep slow
+        let st = pown 2.0 pw
 
         let opsfast op data =
             let rec opsf step op data =
@@ -187,7 +188,7 @@ module plgm =
                         let! aops = ops op step data
                         return! opsf (step / 2.0) op aops
                 }
-            opsf ((pown 2.0 pw) * mstep) op data
+            opsf (st * mstep) op data
             
         let trtomid optr ((o, bas) : plgm) =
             async {

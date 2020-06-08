@@ -58,13 +58,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BenLib.Framework">
-      <HintPath>..\..\BenLib\BenLib.Framework\bin\Debug\BenLib.Framework.dll</HintPath>
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.Framework.dll</HintPath>
     </Reference>
     <Reference Include="BenLib.Standard">
-      <HintPath>..\..\BenLib\BenLib.Standard\bin\Debug\netstandard2.0\BenLib.Standard.dll</HintPath>
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.Standard.dll</HintPath>
     </Reference>
     <Reference Include="BenLib.WPF">
-      <HintPath>..\..\BenLib\BenLib.WPF\bin\Debug\BenLib.WPF.dll</HintPath>
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.WPF.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Control.AsyncSeq">
       <HintPath>..\packages\FSharp.Control.AsyncSeq.2.0.23\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>

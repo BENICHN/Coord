@@ -46,13 +46,15 @@
   <ItemGroup>
     <Reference Include="BenLib.Framework, Version=2018.9.11.1902, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\BenLib\BenLib.Framework\bin\Debug\BenLib.Framework.dll</HintPath>
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="BenLib.Standard">
-      <HintPath>..\..\BenLib\BenLib.Standard\bin\Debug\netstandard2.0\BenLib.Standard.dll</HintPath>
+    <Reference Include="BenLib.Standard, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.Standard.dll</HintPath>
     </Reference>
-    <Reference Include="BenLib.WPF">
-      <HintPath>..\..\BenLib\BenLib.WPF\bin\Debug\BenLib.WPF.dll</HintPath>
+    <Reference Include="BenLib.WPF, Version=2018.9.11.1902, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.WPF.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.7.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
