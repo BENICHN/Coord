@@ -162,6 +162,9 @@ module plgm =
                 | None -> return data
             }
         
+        let dp = mstep |> log10 |> int |> (~-)
+        let q, _ = (dp - 1) /% 3
+        let pw = 10 * (q + 1)
         let opsfast op data =
             let rec opsf step op data =
                 async {
@@ -170,7 +173,7 @@ module plgm =
                         let! aops = ops op step data
                         return! opsf (step / 2.0) op aops
                 }
-            opsf (1073741824.0 * mstep) op data
+            opsf ((pown 2.0 pw) * mstep) op data
             
         let trtomid optr ((o, bas) : plgm) =
             async {

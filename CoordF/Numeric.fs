@@ -1,7 +1,9 @@
 ﻿[<AutoOpen>]
 module NumericMod
 
+open System
 open System.Windows
+open System.Numerics
 open Coord
 
 [<Literal>]
@@ -10,11 +12,22 @@ let tau = 6.28318530711641949889
 let inline clamp minValue maxValue x = max minValue (min maxValue x)
 let inline minmax a b = if a < b then a, b else b, a
 
+let rec gcd x y =
+    if y = 0L then x
+    else gcd y (x % y)
+
 let (|*>) (p : Point) (csm : ReadOnlyCoordinatesSystemManager) = csm.ComputeOutCoordinates p
 
 let private swap = List.map (fun ((x1:float, y1:float), (x2:float, y2:float)) -> (y1, x1), (y2, x2))
 let private shiftx x = List.map (fun ((x1:float, y1:float), (x2:float, y2:float)) -> (x1 + x, y1), (x2 + x, y2))
 let private shifty y = List.map (fun ((x1:float, y1:float), (x2:float, y2:float)) -> (x1, y1 + y), (x2, y2 + y))
+
+type DivRem = DivRem with
+    static member (/%) (x : int32,  DivRem) = fun y -> Math.DivRem(x, y)
+    static member (/%) (x : int64,  DivRem) = fun y -> Math.DivRem(x, y)
+    static member (/%) (x : bigint, DivRem) = fun y -> BigInteger.DivRem(x, y)
+
+let inline (/%) x y = (x /% DivRem) y
 
 let divs n =
     [
