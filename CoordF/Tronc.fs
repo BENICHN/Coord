@@ -6,7 +6,6 @@ open BenLib.Standard
 open BenLib.WPF
 open Coord
 open Parallelogram
-open System
 open System.Threading
 
 type Tronc() =
@@ -18,7 +17,7 @@ type Tronc() =
     static let WStartProperty = nobj.CreateProperty<Tronc, decimal>(true, true, true, "WStart", 0.9999M)
     static let WStepProperty = nobj.CreateProperty<Tronc, decimal>(true, true, true, "WStep", 0.000001M)
     static let HStepProperty = nobj.CreateProperty<Tronc, decimal>(true, true, true, "HStep", 0.000001M)
-    static let MStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "MStep", 1E-6)
+    static let MLogProperty = nobj.CreateProperty<Tronc, int>(true, true, true, "MLog", -6, dict [ ("min", box -12); ("max", box 0) ])
     static let TranslationStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "TranslationStep", 0.01, dict [ ("min", box 0.0) ])
     static let RotationStepProperty = nobj.CreateProperty<Tronc, float>(true, true, true, "RotationStep", 1.0, dict [ ("min", box 0.0); ("max", box 360.0) ])
     static let RotationCenterProperty = nobj.CreateProperty<Tronc, RectPoint>(true, true, true, "RotationCenter", RectPoint.Center)
@@ -50,9 +49,9 @@ type Tronc() =
     member this.HStep
         with get() = this.GetValue(HStepProperty) :?> decimal
         and set(value : decimal) = this.SetValue(HStepProperty, value)
-    member this.MStep
-        with get() = this.GetValue(MStepProperty) :?> float
-        and set(value : float) = this.SetValue(MStepProperty, value)
+    member this.MLog
+        with get() = this.GetValue(MLogProperty) :?> int
+        and set(value : int) = this.SetValue(MLogProperty, value)
     member this.TranslationStep
         with get() = this.GetValue(TranslationStepProperty) :?> float
         and set(value : float) = this.SetValue(TranslationStepProperty, value)
@@ -117,35 +116,36 @@ type Tronc() =
     member this.RotateOrNotD () = this.Apply (plgm.rotateOrNotD (this.RCenter) (this.RotationStep) data)
     member this.RotateOrNotH () = this.Apply (plgm.rotateOrNotH (this.RCenter) (this.RotationStep) data)
 
-    member this.TranslateOrNotILF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotIRF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotJDF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotJD) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotJUF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotJU) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotILF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotIRF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJDF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotJD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJUF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotJU) data) |> Async.Ignore |> Async.Start
                                                            
-    member this.TranslateOrNotULF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotUL) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotURF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotUR) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotVDF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotVD) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotVUF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotVU) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotULF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotUL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotURF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotUR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVDF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotVD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVUF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.translateOrNotVU) data) |> Async.Ignore |> Async.Start
                                                            
-    member this.TranslateOrNotILM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotIRM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotJDM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotJD) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotJUM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotJU) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotILM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotIRM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJDM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotJD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotJUM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotJU) data) |> Async.Ignore |> Async.Start
                                                                                                                                              
-    member this.TranslateOrNotULM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotUL) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotURM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotUR) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotVDM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotVD) data) |> Async.Ignore |> Async.Start
-    member this.TranslateOrNotVUM () = let _, _, _, _, trtomid = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotVU) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotULM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotUL) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotURM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotUR) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVDM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotVD) data) |> Async.Ignore |> Async.Start
+    member this.TranslateOrNotVUM () = let _, _, _, _, trtomid = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (trtomid (plgm.translateOrNotVU) data) |> Async.Ignore |> Async.Start
 
-    member this.RotateOrNotDF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.rotateOrNotD (this.RCenter)) data) |> Async.Ignore |> Async.Start
-    member this.RotateOrNotHF () = let _, _, _, opsfast, _ = plgm.opstk 1E-6 (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.rotateOrNotH (this.RCenter)) data) |> Async.Ignore |> Async.Start
+    member this.RotateOrNotDF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.rotateOrNotD (this.RCenter)) data) |> Async.Ignore |> Async.Start
+    member this.RotateOrNotHF () = let _, _, _, opsfast, _ = plgm.opstk this.MLog (this.OnNext this.Track SynchronizationContext.Current) in (opsfast (plgm.rotateOrNotH (this.RCenter)) data) |> Async.Ignore |> Async.Start
 
     member this.Horiz () = 
         let uictxt = SynchronizationContext.Current
         let track = this.Track
-        let mstep = this.MStep
+        let mlog = this.MLog
+        let onx = this.OnNext track uictxt
         async { 
-            let!  _, success = plgm.horiz2 (this.OnNext track uictxt) mstep data
+            let!  _, success = plgm.horiz2 (plgm.opstk mlog onx) data
             if success then MessageBox.Show "Terminé horizontal" |> ignore
             else MessageBox.Show "Terminé" |> ignore
         } |> Async.Start
@@ -155,10 +155,11 @@ type Tronc() =
         let track = this.Track
         let height = this.Height
         let wstep = this.WStep
-        let mstep = this.MStep
+        let mlog = this.MLog
         let wstart = this.WStart
+        let onx = this.OnNext track uictxt
         async { 
-            let! width = plgm.horizmaxwidth1 height mstep wstep wstart (this.OnNext track uictxt)
+            let! width = plgm.horizmaxwidth1 height (plgm.opstk mlog onx) wstep wstart
             MessageBox.Show (width.ToString ()) |> ignore
         } |> Async.Start
 
@@ -169,9 +170,10 @@ type Tronc() =
         let hmin, hmax = heights.Start.Value, heights.End.Value
         let hstep = this.HStep
         let wstep = this.WStep
-        let mstep = this.MStep
+        let mlog = this.MLog
         let wstart = this.WStart
-        plgm.horizmaxwidths hmin hmax hstep mstep wstep wstart (this.OnNext track uictxt) |> Async.Ignore |> Async.Start
+        let onx = this.OnNext track uictxt
+        plgm.horizmaxwidths hmin hmax hstep (plgm.opstk mlog onx) wstep wstart |> Async.Ignore |> Async.Start
 
     member this.Resetpos () = data <- plgm.init this.Width this.Height
 
