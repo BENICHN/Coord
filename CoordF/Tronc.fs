@@ -187,7 +187,7 @@ type Tronc() =
                                 yield Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin)
               yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
               if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
-              yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))}
+              yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0)) }
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =
         if (e.Property = WidthProperty) then
