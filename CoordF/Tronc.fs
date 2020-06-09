@@ -194,6 +194,7 @@ type Tronc() =
                     for j = int (floor inr.Bottom) to int (ceil inr.Top) do
                         let tree = { x = double i ; y = double j }
                         yield (ndata |> plgm.translate (tree - c) |> plgm.bycsm csm |> plgm.geometry).ToCharacter(FlatBrushes.Alizarin)
+                        yield Character.Ellipse(Point(tree.x, tree.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.Pomegranate, 1.0)).WithData 0
                 yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
             else
                 if t then
@@ -203,17 +204,19 @@ type Tronc() =
                 yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
                 if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
                 yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
-        }
+        } |> Seq.sortBy (fun ch -> ch.Data <> null)
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =
         if (e.Property = WidthProperty) then
-            let o, (u, v) = data
-            let w = this.Width
-            let newdata = (o, (vec2.relength w u, v))
-            if plgm.containstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
+            let w = e.NewValue :?> float
+            if w > 0.0 then
+                let o, (u, v) = data
+                let newdata = (o, (vec2.relength w u, v))
+                if plgm.containstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
         else if (e.Property = HeightProperty) then
-            let o, (u, v) = data
-            let h = this.Height
-            let newdata = (o, (u, vec2.relength h v))
-            if plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
+            let h = e.NewValue :?> float
+            if h > 0.0 then
+                let o, (u, v) = data
+                let newdata = (o, (u, vec2.relength h v))
+                if plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
         base.OnPropertyChanged(e)
