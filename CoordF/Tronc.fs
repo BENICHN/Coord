@@ -26,6 +26,7 @@ type Tronc() =
     static let TrackProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Track", true)
     static let SlowProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Slow", false)
     static let ReverseProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Reverse", false)
+    static let PhantomProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Phantom", false)
 
     let mutable data : plgm = plgm.init 1.0 1.0
 
@@ -78,6 +79,9 @@ type Tronc() =
     member this.Reverse
         with get() = this.GetValue(ReverseProperty) :?> bool
         and set(value : bool) = this.SetValue(ReverseProperty, value)
+    member this.Phantom
+        with get() = this.GetValue(PhantomProperty) :?> bool
+        and set(value : bool) = this.SetValue(PhantomProperty, value)
     member __.Data = data
 
     member this.RCenter =
@@ -93,8 +97,7 @@ type Tronc() =
         | Some newdata ->
             data <- newdata
             this.NotifyChanged ()
-            true
-        | None -> false
+        | None -> ()
 
     member private this.OnNext track uictxt =
         if track then 
@@ -113,18 +116,18 @@ type Tronc() =
     member this.TranslateOrNot v = this.Apply (plgm.translateOrNot v data)
     member this.RotateOrNot a = this.Apply (plgm.rotateOrNot (this.RCenter) a data)
 
-    member this.TranslateOrNotIL () = this.Apply (plgm.translateOrNotIL (this.TranslationStep) data)
-    member this.TranslateOrNotIR () = this.Apply (plgm.translateOrNotIR (this.TranslationStep) data)
-    member this.TranslateOrNotJD () = this.Apply (plgm.translateOrNotJD (this.TranslationStep) data)
-    member this.TranslateOrNotJU () = this.Apply (plgm.translateOrNotJU (this.TranslationStep) data)
+    member this.TranslateOrNotIL () = if this.Phantom then data <- plgm.translateIL (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotIL (this.TranslationStep) data)
+    member this.TranslateOrNotIR () = if this.Phantom then data <- plgm.translateIR (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotIR (this.TranslationStep) data)
+    member this.TranslateOrNotJD () = if this.Phantom then data <- plgm.translateJD (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotJD (this.TranslationStep) data)
+    member this.TranslateOrNotJU () = if this.Phantom then data <- plgm.translateJU (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotJU (this.TranslationStep) data)
                                                   
-    member this.TranslateOrNotUL () = this.Apply (plgm.translateOrNotUL (this.TranslationStep) data)
-    member this.TranslateOrNotUR () = this.Apply (plgm.translateOrNotUR (this.TranslationStep) data)
-    member this.TranslateOrNotVD () = this.Apply (plgm.translateOrNotVD (this.TranslationStep) data)
-    member this.TranslateOrNotVU () = this.Apply (plgm.translateOrNotVU (this.TranslationStep) data)
+    member this.TranslateOrNotUL () = if this.Phantom then data <- plgm.translateUL (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotUL (this.TranslationStep) data)
+    member this.TranslateOrNotUR () = if this.Phantom then data <- plgm.translateUR (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotUR (this.TranslationStep) data)
+    member this.TranslateOrNotVD () = if this.Phantom then data <- plgm.translateVD (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotVD (this.TranslationStep) data)
+    member this.TranslateOrNotVU () = if this.Phantom then data <- plgm.translateVU (this.TranslationStep) data; this.NotifyChanged () else this.Apply (plgm.translateOrNotVU (this.TranslationStep) data)
     
-    member this.RotateOrNotD () = this.Apply (plgm.rotateOrNotD (this.RCenter) (this.RotationStep) data)
-    member this.RotateOrNotH () = this.Apply (plgm.rotateOrNotH (this.RCenter) (this.RotationStep) data)
+    member this.RotateOrNotD () = if this.Phantom then data <- plgm.rotateD (this.RCenter) (this.RotationStep) data; this.NotifyChanged () else this.Apply (plgm.rotateOrNotD (this.RCenter) (this.RotationStep) data)
+    member this.RotateOrNotH () = if this.Phantom then data <- plgm.rotateH (this.RCenter) (this.RotationStep) data; this.NotifyChanged () else this.Apply (plgm.rotateOrNotH (this.RCenter) (this.RotationStep) data)
 
     member this.TranslateOrNotILF () = let _, _, _, opsfast, _ = this.OpTK false in (opsfast (plgm.translateOrNotIL) data) |> Async.Ignore |> Async.Start
     member this.TranslateOrNotIRF () = let _, _, _, opsfast, _ = this.OpTK false in (opsfast (plgm.translateOrNotIR) data) |> Async.Ignore |> Async.Start
@@ -212,11 +215,15 @@ type Tronc() =
             if w > 0.0 then
                 let o, (u, v) = data
                 let newdata = (o, (vec2.relength w u, v))
-                if plgm.containstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
+                if not this.Phantom && plgm.containstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
         else if (e.Property = HeightProperty) then
             let h = e.NewValue :?> float
             if h > 0.0 then
                 let o, (u, v) = data
                 let newdata = (o, (u, vec2.relength h v))
-                if plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
+                if not this.Phantom && plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
+        else if (e.Property = PhantomProperty) then
+            let p = e.NewValue :?> bool
+            if not p then
+                if data |> plgm.containstrees then this.Phantom <- true
         base.OnPropertyChanged(e)

@@ -152,6 +152,26 @@ module plgm =
     
     let rotateOrNotAtCenterD step ((o, (u, v)) : plgm) = rotateOrNotD (o + u / 2.0 + v / 2.0) step (o, (u, v))
     let rotateOrNotAtCenterH step ((o, (u, v)) : plgm) = rotateOrNotH (o + u / 2.0 + v / 2.0) step (o, (u, v))
+    
+    let translateIL step data = translate (vec2.x (-step)) data
+    let translateIR step data = translate (vec2.x (step)) data
+    let translateJD step data = translate (vec2.y (-step)) data
+    let translateJU step data = translate (vec2.y (step)) data
+    
+    let translateUL (step : float) ((o, (u, v)) : plgm) =
+        translate (-step * (vec2.norm u)) (o, (u, v))
+    let translateUR (step : float)((o, (u, v)) : plgm) =
+           translate (step * (vec2.norm u)) (o, (u, v))
+    let translateVD (step : float)((o, (u, v)) : plgm) =
+           translate (-step * (vec2.norm v)) (o, (u, v))
+    let translateVU (step : float) ((o, (u, v)) : plgm) =
+           translate (step * (vec2.norm v)) (o, (u, v))
+    
+    let rotateD c step data = rotate c (step * tau / 360.0) data
+    let rotateH c step data = rotate c (-step * tau / 360.0) data
+    
+    let rotateAtCenterD step ((o, (u, v)) : plgm) = rotateD (o + u / 2.0 + v / 2.0) step (o, (u, v))
+    let rotateAtCenterH step ((o, (u, v)) : plgm) = rotateH (o + u / 2.0 + v / 2.0) step (o, (u, v))
 
     let opstk mlog onnext hz slow =
         let rec opn n op data =
