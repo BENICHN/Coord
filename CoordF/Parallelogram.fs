@@ -41,6 +41,9 @@ module plgm =
         else false
     
     let translate t ((o, (u, v)) : plgm) = o + t, (u, v)
+    let scale c su sv ((o, (u, v)) : plgm) =
+        let ocx, ocy = c - o |> base2.decompose (u, v)
+        o + (1.0 - su) * ocx + (1.0 - sv) * ocy, (su * u, sv * v)
     let rotate c a ((o, (u, v)) : plgm) =
         let r = let sc, rt = rots.TryGetValue a in if sc then rt else vec2.rotate a
         let o2 = r (o - c)

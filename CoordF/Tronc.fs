@@ -25,6 +25,7 @@ type Tronc() =
     static let TreesProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Trees", true)
     static let TrackProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Track", true)
     static let SlowProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Slow", false)
+    static let ReverseProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Reverse", false)
 
     let mutable data : plgm = plgm.init 1.0 1.0
 
@@ -74,6 +75,9 @@ type Tronc() =
     member this.Slow
         with get() = this.GetValue(SlowProperty) :?> bool
         and set(value : bool) = this.SetValue(SlowProperty, value)
+    member this.Reverse
+        with get() = this.GetValue(ReverseProperty) :?> bool
+        and set(value : bool) = this.SetValue(ReverseProperty, value)
     member __.Data = data
 
     member this.RCenter =
@@ -182,12 +186,24 @@ type Tronc() =
         let xs, ys, xe, ye = plgm.minibox data
         let m = this.Minibox
         let t = this.Trees
-        seq { if t then for i = int (floor inr.Left) to int (ceil inr.Right) do
-                            for j = int (floor inr.Bottom) to int (ceil inr.Top) do
-                                yield Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin)
-              yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
-              if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
-              yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0)) }
+        let r = this.Reverse
+        seq {
+            if r then
+                let ndata = data |> plgm.scale c -1.0 -1.0
+                for i = int (floor inr.Left) to int (ceil inr.Right) do
+                    for j = int (floor inr.Bottom) to int (ceil inr.Top) do
+                        let tree = { x = double i ; y = double j }
+                        yield (ndata |> plgm.translate (tree - c) |> plgm.bycsm csm |> plgm.geometry).ToCharacter(FlatBrushes.Alizarin)
+                yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
+            else
+                if t then
+                    for i = int (floor inr.Left) to int (ceil inr.Right) do
+                        for j = int (floor inr.Bottom) to int (ceil inr.Top) do
+                            yield Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin)
+                yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
+                if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
+                yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
+        }
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =
         if (e.Property = WidthProperty) then
