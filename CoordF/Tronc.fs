@@ -160,6 +160,12 @@ type Tronc() =
             else MessageBox.Show "Terminé" |> ignore
         } |> Async.Start
 
+    member this.NCS () =
+        let w = this.Width
+        let h = this.Height
+        let r = this.RotationStep
+        ThreadPool.QueueUserWorkItem (new WaitCallback (fun _ -> if plgm.ncss w h r 0.0 90.0 then MessageBox.Show "N" |> ignore else MessageBox.Show "NN" |> ignore))
+
     member this.HorizMaxWidth () = 
         let height = this.Height
         let wstep = this.WStep
@@ -190,6 +196,9 @@ type Tronc() =
         let m = this.Minibox
         let t = this.Trees
         let r = this.Reverse
+        // let (_, ({ vec2.x = xu ; y = yu }, _)) = data
+        // let a = -360.0 / tau * atan2 yu xu
+        // let s, us = plgm.ncs this.Width this.Height 1.0 a a csm
         seq {
             if r then
                 let ndata = data |> plgm.scale c -1.0 -1.0
@@ -207,6 +216,7 @@ type Tronc() =
                 yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
                 if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
                 yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
+            // if s then yield! us |> List.map (fun g -> Character (g, FlatBrushes.Nephritis, new Pen (FlatBrushes.Nephritis, 1.0)))
         } |> Seq.sortBy (fun ch -> ch.Data <> null)
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =

@@ -208,6 +208,9 @@ namespace CoordAnimation
                     m_tronc.Resetpos();
                     Plane.CoordinatesSystemManager.InputRange = new MathRect(-2, -2, 9.6, 9.6 * Plane.ActualHeight / Plane.ActualWidth);
                     break;
+                case Key.N:
+                    m_tronc.NCS();
+                    break;
             }
         }
 
