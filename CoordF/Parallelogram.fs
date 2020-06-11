@@ -314,11 +314,11 @@ module plgm =
             |> List.map (fun (x, y) -> (x, y), ({ x = x + ox ; y = y + oy }, b) |> geometry)
         let g = (vec2.zero, (vec2.i, vec2.j)) |> geometry
         let rec nc a =
-            if a > aend then true
+            if a > aend then true, System.Double.NaN
             else
                 let u = plgms |> List.fold (fun s ((cx, cy), p) -> p.Transform <- new RotateTransform (a, cx, cy); Geometry.Combine (s, p, GeometryCombineMode.Union, null) :> Geometry) Geometry.Empty
                 let z = Geometry.Combine (g, u, GeometryCombineMode.Exclude, null)
-                if z.Bounds = Rect.Empty then false
+                if z.Bounds = Rect.Empty then false, a
                 else nc (a + astep)
         nc astart
 
