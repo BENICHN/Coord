@@ -27,6 +27,7 @@ type Tronc() =
     static let SlowProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Slow", false)
     static let ReverseProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Reverse", false)
     static let PhantomProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Phantom", false)
+    static let ZNProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "ZN", false)
 
     let mutable data : plgm = plgm.init 1.0 1.0
 
@@ -82,6 +83,9 @@ type Tronc() =
     member this.Phantom
         with get() = this.GetValue(PhantomProperty) :?> bool
         and set(value : bool) = this.SetValue(PhantomProperty, value)
+    member this.ZN
+        with get() = this.GetValue(ZNProperty) :?> bool
+        and set(value : bool) = this.SetValue(ZNProperty, value)
     member __.Data = data
 
     member this.RCenter =
@@ -196,9 +200,7 @@ type Tronc() =
         let m = this.Minibox
         let t = this.Trees
         let r = this.Reverse
-        // let (_, ({ vec2.x = xu ; y = yu }, _)) = data
-        // let a = -360.0 / tau * atan2 yu xu
-        // let s, us = plgm.ncs this.Width this.Height 1.0 a a csm
+        let z = this.ZN
         seq {
             if r then
                 let ndata = data |> plgm.scale c -1.0 -1.0
@@ -216,7 +218,12 @@ type Tronc() =
                 yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
                 if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
                 yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
-            // if s then yield! us |> List.map (fun g -> Character (g, FlatBrushes.Nephritis, new Pen (FlatBrushes.Nephritis, 1.0)))
+            if z then
+                let (_, ({ vec2.x = xu ; y = yu }, _)) = data
+                let a = -360.0 / tau * atan2 yu xu
+                let s, us = plgm.ncs this.Width this.Height 1.0 a a csm
+                if s then yield! us |> List.map (fun g -> Character (g, FlatBrushes.Nephritis, new Pen (FlatBrushes.Nephritis, 1.0)))
+                yield! [ ((0.0, 0.5), (1.0, 0.5)) ; ((0.5, 0.0), (0.5, 1.0)) ] |> List.map (fun ((sx, sy), (ex, ey)) -> Character.Line(Point (sx, sy) |*> csm, Point (ex, ey) |*> csm).Color(Pen (Brushes.YellowGreen, 1.0)))
         } |> Seq.sortBy (fun ch -> ch.Data <> null)
 
     override this.OnPropertyChanged (e : DependencyPropertyChangedEventArgs) =

@@ -285,43 +285,40 @@ module plgm =
     let ncs w h astep astart aend csm =
         let b = vec2.x w, vec2.y h
         let ox, oy = -w / 2.0, -h / 2.0
-        let p, q, r, s = ({ x = ox ; y = oy }, b), ({ x = 1.0 + ox ; y = oy }, b), ({ x = ox ; y = 1.0 + oy }, b), ({ x = 1.0 + ox ; y = 1.0 + oy }, b)
+        let l = w * w + h * h
+        let ls, le = int <| ceil -l, int <| floor l
+        let trees = [ for i in  ls .. le do for j in  ls .. le do yield double i, double j ]
+        let plgms =
+            trees
+            |> List.filter (fun (x, y) -> x * x + y * y <= l)
+            |> List.map (fun (x, y) -> let p = new Point (x, y) |*> csm in (p.X, p.Y), ({ x = x + ox ; y = y + oy }, b) |> bycsm csm |> geometry)
         let g = (vec2.zero, (vec2.i, vec2.j)) |> bycsm csm |> geometry
-        let gp, gq, gr, gs = p |> bycsm csm |> geometry, q |> bycsm csm |> geometry, r |> bycsm csm |> geometry, s |> bycsm csm |> geometry
-        let cp, cq, cr, cs = Point (0.0, 0.0) |*> csm, Point (1.0, 0.0) |*> csm, Point (0.0, 1.0) |*> csm, Point (1.0, 1.0) |*> csm
         let rec nc a acc =
             if a > aend then true, acc
             else
-                gp.Transform <- RotateTransform (a, cp.X, cp.Y)
-                gq.Transform <- RotateTransform (a, cq.X, cq.Y)
-                gr.Transform <- RotateTransform (a, cr.X, cr.Y)
-                gs.Transform <- RotateTransform (a, cs.X, cs.Y)
-                let u1 = Geometry.Combine (gp, gq, GeometryCombineMode.Union, null)
-                let u2 = Geometry.Combine (u1, gr, GeometryCombineMode.Union, null)
-                let u3 = Geometry.Combine (u2, gs, GeometryCombineMode.Union, null)
-                let u4 = Geometry.Combine (g, u3, GeometryCombineMode.Exclude, null)
-                if u4.Bounds = Rect.Empty then false, acc
-                else nc (a + astep) (u4 :: acc)
+                let u = plgms |> List.fold (fun s ((cx, cy), p) -> p.Transform <- new RotateTransform (a, cx, cy); Geometry.Combine (s, p, GeometryCombineMode.Union, null) :> Geometry) Geometry.Empty
+                let z = Geometry.Combine (g, u, GeometryCombineMode.Exclude, null)
+                if z.Bounds = Rect.Empty then false, acc
+                else nc (a + astep) (z :: acc)
         nc astart []
 
     let ncss w h astep astart aend =
         let b = vec2.x w, vec2.y h
         let ox, oy = -w / 2.0, -h / 2.0
-        let p, q, r, s = ({ x = ox ; y = oy }, b), ({ x = 1.0 + ox ; y = oy }, b), ({ x = ox ; y = 1.0 + oy }, b), ({ x = 1.0 + ox ; y = 1.0 + oy }, b)
+        let l = w * w + h * h
+        let ls, le = int <| ceil -l, int <| floor l
+        let trees = [ for i in  ls .. le do for j in  ls .. le do yield double i, double j ]
+        let plgms =
+            trees
+            |> List.filter (fun (x, y) -> x * x + y * y <= l)
+            |> List.map (fun (x, y) -> (x, y), ({ x = x + ox ; y = y + oy }, b) |> geometry)
         let g = (vec2.zero, (vec2.i, vec2.j)) |> geometry
-        let gp, gq, gr, gs = p |> geometry, q |> geometry, r |> geometry, s |> geometry
         let rec nc a =
             if a > aend then true
             else
-                gp.Transform <- RotateTransform (a, 0.0, 0.0)
-                gq.Transform <- RotateTransform (a, 1.0, 0.0)
-                gr.Transform <- RotateTransform (a, 0.0, 1.0)
-                gs.Transform <- RotateTransform (a, 1.0, 1.0)
-                let u1 = Geometry.Combine (gp, gq, GeometryCombineMode.Union, null)
-                let u2 = Geometry.Combine (u1, gr, GeometryCombineMode.Union, null)
-                let u3 = Geometry.Combine (u2, gs, GeometryCombineMode.Union, null)
-                let u4 = Geometry.Combine (g, u3, GeometryCombineMode.Exclude, null)
-                if u4.Bounds = Rect.Empty then false
+                let u = plgms |> List.fold (fun s ((cx, cy), p) -> p.Transform <- new RotateTransform (a, cx, cy); Geometry.Combine (s, p, GeometryCombineMode.Union, null) :> Geometry) Geometry.Empty
+                let z = Geometry.Combine (g, u, GeometryCombineMode.Exclude, null)
+                if z.Bounds = Rect.Empty then false
                 else nc (a + astep)
         nc astart
 
