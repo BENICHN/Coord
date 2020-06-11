@@ -168,7 +168,7 @@ type Tronc() =
         let w = this.Width
         let h = this.Height
         let r = this.RotationStep
-        ThreadPool.QueueUserWorkItem (new WaitCallback (fun _ -> let s, a = plgm.ncss w h r 0.0 90.0 in if s then MessageBox.Show "N" |> ignore else MessageBox.Show (sprintf "NN : %f - tan = %f" a (tan (a * tau / 360.0))) |> ignore))
+        ThreadPool.QueueUserWorkItem (new WaitCallback (fun _ -> let s, a = plgm.ncss w h r 0.0 90.0 in if s then MessageBox.Show "N" |> ignore else MessageBox.Show (sprintf "NN : %f : tan = %f" a (tan (a * tau / 360.0))) |> ignore))
 
     member this.HorizMaxWidth () = 
         let height = this.Height
