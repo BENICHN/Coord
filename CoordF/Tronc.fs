@@ -201,20 +201,23 @@ type Tronc() =
         let t = this.Trees
         let r = this.Reverse
         let z = this.ZN
+        let bottom, left, top, right = inr.Bottom, inr.Left, inr.Top, inr.Right
         seq {
             if r then
+                let w = this.Width
+                let h = this.Height
+                let l = w * w + h * h
+                let bb, ll, tt, rr = int <| floor bottom - l, int <| floor left - l, int <| ceil top + l, int <| ceil right + l
+                let trees = [ for i in  ll .. rr do for j in  bb .. tt do yield { x = double i ; y = double j } ]
                 let ndata = data |> plgm.scale c -1.0 -1.0
-                for i = int (floor inr.Left) to int (ceil inr.Right) do
-                    for j = int (floor inr.Bottom) to int (ceil inr.Top) do
-                        let tree = { x = double i ; y = double j }
-                        yield (ndata |> plgm.translate (tree - c) |> plgm.bycsm csm |> plgm.geometry).ToCharacter(FlatBrushes.Alizarin)
-                        yield Character.Ellipse(Point(tree.x, tree.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.Pomegranate, 1.0)).WithData 0
+                yield! trees |> List.map (fun tree -> (ndata |> plgm.translate (tree - c) |> plgm.bycsm csm |> plgm.geometry).ToCharacter(FlatBrushes.Alizarin))
+                yield! trees |> List.map (fun tree -> Character.Ellipse(Point(tree.x, tree.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.Pomegranate, 1.0)).WithData 0)
                 yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
             else
                 if t then
-                    for i = int (floor inr.Left) to int (ceil inr.Right) do
-                        for j = int (floor inr.Bottom) to int (ceil inr.Top) do
-                            yield Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin)
+                    let bb, ll, tt, rr = int <| floor bottom, int <| floor left, int <| ceil top, int <| ceil right
+                    let trees = [ for i in  ll .. rr do for j in  bb .. tt do yield double i, double j ]
+                    yield! trees |> List.map (fun (i, j) -> Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin))
                 yield (data |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
                 if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
                 yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
