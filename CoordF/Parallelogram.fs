@@ -342,16 +342,29 @@ module plgm =
 
     let horizmaxwidths (hstart : decimal) (hend : decimal) (hstep : decimal) optk (wstep : decimal) (wstart : decimal) =
         let total = int ((hend - hstart) / hstep) + 1
-        let rec hmw h ws n acc =
+        let rec hmw h ws hst n acc =
             async {
-                let! w = horizmaxwidth1 (double h) optk wstep ws
-                printfn "%.9f : %.9f ---- %d / %d" h w n total
-                if h >= hend then return (h, w) :: acc
-                else return! hmw (h + hstep) w (n + 1) ((h, w) :: acc)
+                let nh = h + hst
+                if nh > hend then 
+                    if hst = hstep then return acc
+                    else return! hmw h ws (hst / 2M) (n - (int (hst / hstep) / 2)) acc
+                else
+                    if hst = hstep then
+                        let! w = horizmaxwidth1 (double nh) optk wstep ws
+                        printfn "%.9f : %.9f ---- %d / %d" nh w n total
+                        if w = ws then return! hmw nh w (1048576M * hstep) (n + 1048576) ((nh, w) :: acc)
+                        else return! hmw nh w hstep (n + 1) ((nh, w) :: acc)
+                    else
+                        let! _, s = horiz2 optk (init (double ws) (double nh))
+                        if s then
+                            printfn "%.9f : %.9f ---- %d / %d" nh ws n total
+                            if hst = 1048576M * hstep then return! hmw nh ws hst (n + 1048576) ((nh, ws) :: acc)
+                            else return! hmw nh ws (hst / 2M) (n + (int (hst / hstep) / 2)) ((nh, ws) :: acc)
+                        else return! hmw h ws (hst / 2M) (n - (int (hst / hstep) / 2)) acc
             }
         async {
             printfn "Hauteurs dans [ %.9f , %.9f ] avec un pas de %.9f" hstart hend hstep
-            let! res = hmw hstart wstart 1 []
+            let! res = hmw hstart wstart hstep 1 []
             use fstr = File.Open ("res.txt", FileMode.Create)
             fstr.Flush ()
             use sr = new StreamWriter (fstr :> Stream)
