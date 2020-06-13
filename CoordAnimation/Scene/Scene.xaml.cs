@@ -155,6 +155,7 @@ namespace CoordAnimation
             Plane.Grid.VerticalStep = Plane.Grid.HorizontalStep = 1.0;
             Plane.Axes.Direction = Plane.AxesNumbers.Direction = AxesDirection.None;
             Plane.Items.Add(m_tronc);
+            //Plane.Items.Add(FunctionCurve(h => Parallelogram.plgmModule.mth.Invoke(h), false).Style(new Pen(FlatBrushes.Amethyst, 2.0)));
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

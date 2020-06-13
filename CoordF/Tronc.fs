@@ -28,6 +28,7 @@ type Tronc() =
     static let ReverseProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Reverse", false)
     static let PhantomProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Phantom", false)
     static let ZNProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "ZN", false)
+    static let MTHProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "MTH", false)
 
     let mutable data : plgm = plgm.init 1.0 1.0
 
@@ -86,6 +87,9 @@ type Tronc() =
     member this.ZN
         with get() = this.GetValue(ZNProperty) :?> bool
         and set(value : bool) = this.SetValue(ZNProperty, value)
+    member this.MTH
+        with get() = this.GetValue(MTHProperty) :?> bool
+        and set(value : bool) = this.SetValue(MTHProperty, value)
     member __.Data = data
 
     member this.RCenter =
@@ -238,10 +242,13 @@ type Tronc() =
                 if not this.Phantom && plgm.containstrees newdata then this.Width <- e.OldValue :?> float else data <- newdata
         else if (e.Property = HeightProperty) then
             let h = e.NewValue :?> float
+            let w = this.Width
             if h > 0.0 then
+                let nw = if this.MTH then plgm.mthop h |> Option.defaultValue w else w
                 let o, (u, v) = data
-                let newdata = (o, (u, vec2.relength h v))
+                let newdata = (o, (vec2.relength nw u, vec2.relength h v))
                 if not this.Phantom && plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
+                this.Width <- nw
         else if (e.Property = PhantomProperty) then
             let p = e.NewValue :?> bool
             if not p then

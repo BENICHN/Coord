@@ -8,6 +8,8 @@ open Coord
 
 [<Literal>]
 let tau = 6.28318530711641949889
+[<Literal>]
+let nan = Double.NaN
 
 type dobj = DependencyObject
 type nobj = NotifyObject
