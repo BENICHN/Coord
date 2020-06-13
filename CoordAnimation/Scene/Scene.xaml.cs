@@ -212,6 +212,9 @@ namespace CoordAnimation
                 case Key.N:
                     m_tronc.NCS();
                     break;
+                case Key.T:
+                    m_tronc.Tans();
+                    break;
             }
         }
 

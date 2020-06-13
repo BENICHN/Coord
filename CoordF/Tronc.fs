@@ -193,6 +193,13 @@ type Tronc() =
         let optk = this.OpTK true
         plgm.horizmaxwidths hmin hmax hstep optk wstep wstart |> Async.Ignore |> Async.Start
 
+    member this.Tans () =
+        let heights = this.Heights
+        let hmin, hmax = heights.Start.Value, heights.End.Value
+        let hstep = this.HStep
+        let optk = this.OpTK true
+        plgm.tans hmin hmax hstep optk |> Async.Ignore |> Async.Start
+
     member this.Resetpos () = data <- plgm.init this.Width this.Height
 
     override this.GetCharactersCore csm =

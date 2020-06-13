@@ -389,5 +389,35 @@ module plgm =
             |> List.iter (fun s -> sr.WriteLine s)
             return res
         }
+
+    let tans (hstart : decimal) (hend : decimal) (hstep : decimal) optk =
+        let total = int ((hend - hstart) / hstep) + 1
+        let rec ts h n acc =
+            async {
+                if h > hend then return acc
+                else
+                    let dh = double h
+                    let nxt = ts (h + hstep) (n + 1)
+                    match mthop dh with
+                    | Some (_, w, pl) when not pl ->
+                        let! (_, (_, { x = xv ; y = yv })), s = horiz2 optk (init (double w) dh)
+                        if s then return! nxt acc
+                        else
+                            let t = yv / xv
+                            printfn "%.9f : %.9f ---- %d / %d" h t n total
+                            return! nxt ((h, t) :: acc)
+                    | _ -> return! nxt acc
+            }
+        async {
+            printfn "Tangentes dans [ %.9f , %.9f ] avec un pas de %.9f" hstart hend hstep
+            let! res = ts hstart 1 []
+            use fstr = File.Open ("tans.txt", FileMode.Create)
+            fstr.Flush ()
+            use sr = new StreamWriter (fstr :> Stream)
+            res
+            |> List.map (fun (h, w) -> sprintf "%.9f : %.9f" h w)
+            |> List.iter (fun s -> sr.WriteLine s)
+            return res
+        }
         
 
