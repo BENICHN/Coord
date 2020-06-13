@@ -47,7 +47,6 @@
     <Compile Include="Matrix.fs" />
     <Compile Include="Numeric.fs" />
     <Compile Include="Gateau.fs" />
-    <Content Include="packages.config" />
     <None Include="Snippets\fpdpn.snippet" />
     <None Include="Snippets\fpdpnc.snippet" />
     <None Include="Snippets\pdpncr.snippet" />
@@ -55,6 +54,7 @@
     <Compile Include="Parallelogram.fs" />
     <Compile Include="Tronc.fs" />
     <Compile Include="Valises.fs" />
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="BenLib.Framework">
@@ -67,10 +67,10 @@
       <HintPath>..\..\BenLib\BenLib.WPF\bin\Release\BenLib.WPF.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Control.AsyncSeq">
-      <HintPath>..\packages\FSharp.Control.AsyncSeq.2.0.23\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
+      <HintPath>..\packages\FSharp.Control.AsyncSeq.2.0.24\lib\net45\FSharp.Control.AsyncSeq.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.7.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="PresentationCore" />
@@ -83,8 +83,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\CoordLib\CoordLib.csproj">
       <Name>CoordLib</Name>
       <Project>{e2ca3fac-92d4-4fea-a1af-a2f04fcbddba}</Project>
