@@ -99,7 +99,8 @@
                         </HierarchicalDataTemplate>
                     </TreeView.Resources>
                 </TreeView>
-                <TextBox x:Name="VOInfo" Grid.Row="2" Background="{StaticResource VSBackground}" Foreground="White" Text="{Binding Info}" BorderBrush="{StaticResource VSBorderBrush}" AcceptsReturn="True" IsReadOnly="True" VerticalContentAlignment="Top"/>
+                <GridSplitter Grid.Row="1" Height="1" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="{StaticResource VSBorderBrush}" Panel.ZIndex="1"/>
+                <TextBlock x:Name="VOInfo" Grid.Row="2" Background="{StaticResource VSBackground}" Foreground="White" Text="{Binding Info}"/>
             </Grid>
         </Grid>
     </Grid>

@@ -245,13 +245,16 @@ type Tronc() =
             let w = this.Width
             if h > 0.0 then
                 let o, (u, v) = data
+                let mth = this.MTH
                 let newdata, nw = match plgm.mthop h with
                                   | Some (n, nw, pl) ->
-                                      this.Info <- sprintf "h = %f\r\nPartie %d [√%d, √%d]\r\n%s" h n (if n = 0 then 0 else int plgm.b008784.[n-1]) (int plgm.b008784.[n]) (if pl then "Palier" else "Transition")
-                                      if this.MTH then (o, (vec2.relength nw u, vec2.relength h v)), nw else (o, (u, vec2.relength h v)), nw
-                                  | None -> (o, (u, vec2.relength h v)), w
+                                      this.Info <- sprintf "h = %f\r\nPartie %d [√%d, √%d]\r\n%s\r\nwmax = %f" h n (if n = 0 then 0 else int plgm.b008784.[n-1]) (int plgm.b008784.[n]) (if pl then "Palier" else "Transition") nw
+                                      if mth then (o, (vec2.relength nw u, vec2.relength h v)), nw else (o, (u, vec2.relength h v)), nw
+                                  | None ->
+                                    this.Info <- "Pas d'infos"
+                                    (o, (u, vec2.relength h v)), w
                 if not this.Phantom && plgm.containstrees newdata then this.Height <- e.OldValue :?> float else data <- newdata
-                this.Width <- nw
+                if mth then this.Width <- nw
         else if (e.Property = PhantomProperty) then
             let p = e.NewValue :?> bool
             if not p then
