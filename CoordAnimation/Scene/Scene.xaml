@@ -100,7 +100,7 @@
                     </TreeView.Resources>
                 </TreeView>
                 <GridSplitter Grid.Row="1" Height="1" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Background="{StaticResource VSBorderBrush}" Panel.ZIndex="1"/>
-                <TextBlock x:Name="VOInfo" Grid.Row="2" Background="{StaticResource VSBackground}" Foreground="White" Text="{Binding Info}"/>
+                <TextBlock x:Name="VOInfo" Grid.Row="2" Background="{StaticResource VSBackground}" Foreground="White" Text="{Binding DataString}"/>
             </Grid>
         </Grid>
     </Grid>

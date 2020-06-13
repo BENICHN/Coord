@@ -20,6 +20,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using static Coord.VisualObjects;
+using static CoordF.Tronc;
 
 namespace CoordAnimation
 {
@@ -32,7 +33,7 @@ namespace CoordAnimation
         public Plane Plane => configuration.plane;
         public ElementTree Elements { get; }
 
-        private readonly CoordF.Tronc m_tronc = new CoordF.Tronc();
+        private readonly Tronc m_tronc = new Tronc();
 
         public bool IsPlaying { get; private set; }
 
@@ -214,6 +215,9 @@ namespace CoordAnimation
                     break;
                 case Key.T:
                     m_tronc.Tans();
+                    break;
+                case Key.C:
+                    m_tronc.HS();
                     break;
             }
         }

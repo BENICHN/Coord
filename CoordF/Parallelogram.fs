@@ -268,13 +268,12 @@ module plgm =
                     else
                         let! aris = ris (o, (u, v))
                         let! aus = usf aris
-                        if aus = aris then 
-                            return aus, false
+                        if aus = aris then return aus, false
                         else return! hz aus
                 }
             hz data
     
-    let horiz2 (_, _, _, opsfast, trtomid) data =
+    let horiz2 (_, _, _, opsfast, trtomid) all data =
 
             let rf = opsfast rotateOrNotAtCenterH
             let uf = opsfast translateOrNotUR
@@ -284,17 +283,16 @@ module plgm =
     
             let rec hz ((o, (u, v)) : plgm) =
                 async {
-                    if v.y <= 0.0 then
-                        return (o, (u, v)), true
+                    if v.y <= 0.0 then return (o, (u, v)), true
                     else
                         let! arf = rf (o, (u, v))
                         let! auf = uf arf
                         let! avf = vf auf
                         let! aum = um avf
-                        let! (no, (nu, nv)) = vm aum
-                        if u = nu then 
-                            return (no, (nu, nv)), false
-                        else return! hz (no, (nu, nv))
+                        let! avm = vm aum
+                        let (_, (nu, _)) = avm
+                        if not all || u = nu then return avm, false
+                        else return! hz avm
                 }
             hz data
 
@@ -341,7 +339,7 @@ module plgm =
     let horizmaxwidth1 height optk (wstep : decimal) (wstart : decimal) =
             let rec hmw width =
                 async {
-                    let! _, success = horiz2 optk (init (double width) height)
+                    let! _, success = horiz2 optk true (init (double width) height)
                     if success then return width
                     else let w = width - wstep in return! hmw w
                 }
@@ -350,7 +348,7 @@ module plgm =
     let horizmaxwidth2 height optk (wstep : decimal) (wstart : decimal) =
             let rec hmw width data =
                 async {
-                    let! (o, (u, v)), success = horiz2 optk data
+                    let! (o, (u, v)), success = horiz2 optk true data
                     if success then return width
                     else let w = width - wstep in return! hmw w (o, (vec2.relength (double w) u, v))
                 }
@@ -371,7 +369,7 @@ module plgm =
                         if w = ws then return! hmw nh w (1048576M * hstep) (n + 1048576) ((nh, w) :: acc)
                         else return! hmw nh w hstep (n + 1) ((nh, w) :: acc)
                     else
-                        let! _, s = horiz2 optk (init (double ws) (double nh))
+                        let! _, s = horiz2 optk true (init (double ws) (double nh))
                         if s then
                             printfn "%.9f : %.9f ---- %d / %d" nh ws n total
                             if hst = 1048576M * hstep then return! hmw nh ws hst (n + 1048576) ((nh, ws) :: acc)
@@ -400,7 +398,7 @@ module plgm =
                     let nxt = ts (h + hstep) (n + 1)
                     match mthop dh with
                     | Some (_, w, pl) when not pl ->
-                        let! (_, (_, { x = xv ; y = yv })), s = horiz2 optk (init (double w) dh)
+                        let! (_, (_, { x = xv ; y = yv })), s = horiz2 optk true (init (double w) dh)
                         if s then return! nxt acc
                         else
                             let t = yv / xv
@@ -419,5 +417,3 @@ module plgm =
             |> List.iter (fun s -> sr.WriteLine s)
             return res
         }
-        
-

@@ -11,6 +11,8 @@ let tau = 6.28318530711641949889
 [<Literal>]
 let nan = Double.NaN
 
+let nl = Environment.NewLine
+
 type dobj = DependencyObject
 type nobj = NotifyObject
 type vobj = VisualObject

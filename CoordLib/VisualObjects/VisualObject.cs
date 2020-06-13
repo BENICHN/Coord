@@ -27,8 +27,13 @@ namespace Coord
         public bool? RenderAtChange { get; set; }
         public bool? RenderAtSelectionChange { get; set; }
 
-        public string Info { get => (string)GetValue(InfoProperty); set => SetValue(InfoProperty, value); }
-        public static readonly DependencyProperty InfoProperty = CreateProperty<VisualObject, string>(false, false, false, "Info");
+        public object Data { get => GetValue(DataProperty); set => SetValue(DataProperty, value); }
+        public static readonly DependencyProperty DataProperty = CreateProperty<VisualObject, object>(false, false, false, "Data");
+
+        public string DataString { get => (string)GetValue(DataStringProperty); set => SetValue(DataStringProperty, value); }
+        public static readonly DependencyProperty DataStringProperty = CreateProperty<VisualObject, string>(false, false, false, "DataString");
+
+        protected virtual string DataFormat(object data) => string.Empty;
 
         public Brush Fill { get => (Brush)GetValue(FillProperty); set => SetValue(FillProperty, value); }
         public static readonly DependencyProperty FillProperty = CreateProperty<VisualObject, Brush>(true, true, true, "Fill");
@@ -103,6 +108,7 @@ namespace Coord
                     newValue.SelectionChanged += OnChildrenSelectionChanged;
                 }
             }
+            if (e.Property == DataProperty) DataString = DataFormat(e.NewValue);
             base.OnPropertyChanged(e);
         }
 
