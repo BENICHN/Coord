@@ -40,6 +40,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="25"/>
                     <RowDefinition/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Menu>
                     <MenuItem Name="menuPP" Header="PP" HorizontalAlignment="Left" Click="MenuPP_Click"/>
@@ -98,6 +99,7 @@
                         </HierarchicalDataTemplate>
                     </TreeView.Resources>
                 </TreeView>
+                <TextBox x:Name="VOInfo" Grid.Row="2" Background="{StaticResource VSBackground}" Foreground="White" Text="{Binding Info}" BorderBrush="{StaticResource VSBorderBrush}" AcceptsReturn="True" IsReadOnly="True" VerticalContentAlignment="Top"/>
             </Grid>
         </Grid>
     </Grid>

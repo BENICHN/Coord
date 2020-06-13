@@ -27,6 +27,9 @@ namespace Coord
         public bool? RenderAtChange { get; set; }
         public bool? RenderAtSelectionChange { get; set; }
 
+        public string Info { get => (string)GetValue(InfoProperty); set => SetValue(InfoProperty, value); }
+        public static readonly DependencyProperty InfoProperty = CreateProperty<VisualObject, string>(false, false, false, "Info");
+
         public Brush Fill { get => (Brush)GetValue(FillProperty); set => SetValue(FillProperty, value); }
         public static readonly DependencyProperty FillProperty = CreateProperty<VisualObject, Brush>(true, true, true, "Fill");
 

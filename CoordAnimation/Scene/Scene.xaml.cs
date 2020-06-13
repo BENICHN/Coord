@@ -264,7 +264,11 @@ namespace CoordAnimation
         private void VisualObjectsTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             var vo = e.NewValue is VisualObjectElement visualObjectElement ? visualObjectElement.VisualObject : null;
-            if (VisualObjectSelector.GetUsageCount(Plane.Selection) == 0) VisualObjectsEditor.Object = vo;
+            if (VisualObjectSelector.GetUsageCount(Plane.Selection) == 0)
+            {
+                VisualObjectsEditor.Object = vo;
+                VOInfo.DataContext = vo;
+            }
         }
 
         private void MenuAddVisualObject_Click(object sender, RoutedEventArgs e)
@@ -273,6 +277,7 @@ namespace CoordAnimation
             {
                 Plane.Items.Add(visualObject);
                 VisualObjectsEditor.Object = visualObject;
+                VOInfo.DataContext = visualObject;
             }
         }
 
