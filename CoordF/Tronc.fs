@@ -3,6 +3,7 @@
 open System.Windows
 open System.Windows.Media
 open BenLib.Standard
+open BenLib.Framework
 open BenLib.WPF
 open Coord
 open Parallelogram
@@ -47,6 +48,7 @@ module Tronc =
         static let PhantomProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "Phantom", false)
         static let ZNProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "ZN", false)
         static let MTHProperty = nobj.CreateProperty<Tronc, bool>(true, true, true, "MTH", false)
+        static let ClrProperty = nobj.CreateProperty<Tronc, NotifyObjectCollection<NotifyObjectTuple<int, int, Brush>>>(true, true, true, "Clr")
     
         let mutable data = { hinfo = None ; indata = plgm.init 1.0 1.0 ; dims = 1.0, 1.0 }
     
@@ -108,9 +110,38 @@ module Tronc =
         member this.MTH
             with get() = this.GetValue(MTHProperty) :?> bool
             and set(value : bool) = this.SetValue(MTHProperty, value)
+        member this.Clr
+            with get() = this.GetValue(ClrProperty) :?> NotifyObjectCollection<NotifyObjectTuple<int, int, Brush>>
+            and set(value : NotifyObjectCollection<NotifyObjectTuple<int, int, Brush>>) = this.SetValue(ClrProperty, value)
         member this.Data
             with get() = this.GetValue(VisualObject.DataProperty) :?> troncdata
             and set(value : troncdata) = this.SetValue(VisualObject.DataProperty, value)
+
+        member this.CEqs (bb, ll, tt, rr) =
+            let clr = this.Clr
+            if clr = null then []
+            else
+                [
+                    for t in clr do
+                        let a, b, brush = t.Item1, t.Item2, t.Item3
+                        let brush = if brush = null then FlatBrushes.Nephritis :> Brush else brush
+                        if a = 0 && b = 0 then yield [], brush
+                        else
+                            let d = gcd a b
+                            let a, b = a / d, b / d
+                            let a, b = if b < 0 then -a, -b else a, b
+                            let eq i = (-b, a, i)
+                            if a = 0 then yield [ ll .. rr ] |> List.map eq, brush
+                            elif b = 0 then yield [ bb .. tt ] |> List.map ((~-) >> eq), brush
+                            else
+                                let bb, ll, tt, rr = double bb, double ll, double tt, double rr
+                                let a, b = double a, double b
+                                let xt = tt * a / b
+                                let xb = bb * a / b
+                                let kl = b * (ll - if a > 0.0 then xt else xb) |> floor |> int
+                                let kr = b * (rr - if a > 0.0 then xb else xt) |> ceil |> int
+                                yield [ kl .. kr ] |> List.map eq, brush
+                ]
     
         member this.RCenter =
             let rp = this.RotationCenter
@@ -237,6 +268,8 @@ module Tronc =
             let z = this.ZN
             let w, h = data.dims
             let bottom, left, top, right = inr.Bottom, inr.Left, inr.Top, inr.Right
+            let bb, ll, tt, rr = int <| floor bottom, int <| floor left, int <| ceil top, int <| ceil right
+            let trees = [ for i in  ll .. rr do for j in  bb .. tt do yield double i, double j ]
             seq {
                 if r then
                     let l = w * w + h * h
@@ -247,10 +280,7 @@ module Tronc =
                     yield! trees |> List.map (fun tree -> Character.Ellipse(Point(tree.x, tree.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.Pomegranate, 1.0)).WithData 0)
                     yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
                 else
-                    if t then
-                        let bb, ll, tt, rr = int <| floor bottom, int <| floor left, int <| ceil top, int <| ceil right
-                        let trees = [ for i in  ll .. rr do for j in  bb .. tt do yield double i, double j ]
-                        yield! trees |> List.map (fun (i, j) -> Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin))
+                    if t then yield! trees |> List.map (fun (i, j) -> Character.Ellipse(Point(float i, float j) |*> csm, 5.0, 5.0).Color(FlatBrushes.Alizarin))
                     yield (data.indata |> plgm.bycsm csm |> plgm.geometry).ToCharacter(fill, stroke)
                     if m then yield Character.Rectangle(csm.ComputeOutCoordinates(Rect(Point(xs, ys), Point(xe, ye)))).Color(Pen(FlatBrushes.Alizarin, 1.0))
                     yield Character.Ellipse(Point(c.x, c.y) |*> csm, 5.0, 5.0).Color(Pen(FlatBrushes.SunFlower, 1.0))
@@ -260,6 +290,7 @@ module Tronc =
                     let s, us = plgm.ncs w h 1.0 a a csm
                     if s then yield! us |> List.map (fun g -> Character (g, FlatBrushes.Nephritis, new Pen (FlatBrushes.Nephritis, 1.0)))
                     yield! [ ((0.0, 0.5), (1.0, 0.5)) ; ((0.5, 0.0), (0.5, 1.0)) ] |> List.map (fun ((sx, sy), (ex, ey)) -> Character.Line(Point (sx, sy) |*> csm, Point (ex, ey) |*> csm).Color(Pen (Brushes.YellowGreen, 1.0)))
+                yield! this.CEqs (bb, ll, tt, rr) |> List.collect (fun (eqs, brush) -> eqs |> List.map (fun (a, b, c) -> let struct (p1, p2) = LineVisualObject.GetEndpoints(new LinearEquation(a |> double, b |> double, c |> double), csm) in Character.Line(p1 |*> csm, p2 |*> csm).Color(new Pen(brush, 1.0))))
             } |> Seq.sortBy (fun ch -> ch.Data <> null)
     
         override this.OnPropertyChanged(e : DependencyPropertyChangedEventArgs) =

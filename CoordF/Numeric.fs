@@ -20,9 +20,11 @@ type vobj = VisualObject
 let inline clamp minValue maxValue x = max minValue (min maxValue x)
 let inline minmax a b = if a < b then a, b else b, a
 
-let rec gcd x y =
-    if y = 0L then x
-    else gcd y (x % y)
+let inline gcd x y =
+    let rec g x y =
+        if y = LanguagePrimitives.GenericZero then x
+        else g y (x % y)
+    g x y
 
 let (|*>) (p : Point) (csm : ReadOnlyCoordinatesSystemManager) = csm.ComputeOutCoordinates p
 

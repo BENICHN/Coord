@@ -43,9 +43,11 @@ namespace Coord
         public static (Point Point1, Point Point2) GetEndpoints(LinearEquation equation, ReadOnlyCoordinatesSystemManager coordinatesSystemManager)
         {
             var inRange = coordinatesSystemManager.InputRange;
-            if (equation.B == 0.0)
+            var (a, b, c) = (equation.A, equation.B, equation.C);
+            if (b == 0.0)
             {
-                double x = equation.X(0.0);
+                if (a == 0.0) return (new Point(double.NaN, double.NaN), new Point(double.NaN, double.NaN));
+                double x = -c / a;
                 return (new Point(x, inRange.Bottom), new Point(x, inRange.Top));
             }
             else
